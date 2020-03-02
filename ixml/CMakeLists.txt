@@ -1,0 +1,34 @@
+cmake_minimum_required(VERSION 3.4.1)
+
+add_compile_options(-DDEBUG
+-DWIN32
+-D_USRDLL
+-DLIBUPNP_EXPORTS
+-DUPNP_USE_MSVCPP
+-DIXML_HAVE_SCRIPTSUPPORT
+-D_CRT_NONSTDC_NO_WARNINGS
+-D_CRT_NONSTDC_NO_DEPRECATE
+-D_CRT_SECURE_NO_WARNINGS
+-D_CRT_SECURE_NO_DEPRECATE
+-D_SECURE_SCL
+-D_SCL_SECURE_NO_WARNINGS
+-D_SCL_SECURE_NO_DEPRECATE
+-D_AFX_SECURE_NO_WARNINGS
+-D_AFX_SECURE_NO_DEPRECATE
+-D_SECURE_ATL
+-D_ATL_NO_COM_SUPPORT
+-D_ATL_SECURE_NO_WARNINGS
+-D_ATL_SECURE_NO_DEPRECATE)
+
+include_directories(ixml ${PROJECT_SOURCE_DIR}/ixml/inc ${PROJECT_SOURCE_DIR}/ixml/src/inc)
+link_directories(ixml ${PROJECT_SOURCE_DIR}/ixml/lib)
+add_library(ixml SHARED ${PROJECT_SOURCE_DIR}/ixml/src/attr.c 
+ ${PROJECT_SOURCE_DIR}/ixml/src/document.c 
+ ${PROJECT_SOURCE_DIR}/ixml/src/element.c 
+ ${PROJECT_SOURCE_DIR}/ixml/src/ixml.c 
+ ${PROJECT_SOURCE_DIR}/ixml/src/ixmldebug.c 
+ ${PROJECT_SOURCE_DIR}/ixml/src/ixmlmembuf.c 
+ ${PROJECT_SOURCE_DIR}/ixml/src/ixmlparser.c 
+ ${PROJECT_SOURCE_DIR}/ixml/src/namedNodeMap.c 
+ ${PROJECT_SOURCE_DIR}/ixml/src/node.c 
+ ${PROJECT_SOURCE_DIR}/ixml/src/nodeList.c )
