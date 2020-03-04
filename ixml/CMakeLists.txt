@@ -20,15 +20,15 @@ add_compile_options(-DDEBUG
 -D_ATL_SECURE_NO_WARNINGS
 -D_ATL_SECURE_NO_DEPRECATE)
 
-include_directories(ixml ${PROJECT_SOURCE_DIR}/ixml/inc ${PROJECT_SOURCE_DIR}/ixml/src/inc)
-link_directories(ixml ${PROJECT_SOURCE_DIR}/ixml/lib)
-add_library(ixml SHARED ${PROJECT_SOURCE_DIR}/ixml/src/attr.c 
- ${PROJECT_SOURCE_DIR}/ixml/src/document.c 
- ${PROJECT_SOURCE_DIR}/ixml/src/element.c 
- ${PROJECT_SOURCE_DIR}/ixml/src/ixml.c 
- ${PROJECT_SOURCE_DIR}/ixml/src/ixmldebug.c 
- ${PROJECT_SOURCE_DIR}/ixml/src/ixmlmembuf.c 
- ${PROJECT_SOURCE_DIR}/ixml/src/ixmlparser.c 
- ${PROJECT_SOURCE_DIR}/ixml/src/namedNodeMap.c 
- ${PROJECT_SOURCE_DIR}/ixml/src/node.c 
- ${PROJECT_SOURCE_DIR}/ixml/src/nodeList.c )
+set(UPNP_ROOT_DIR ${PROJECT_SOURCE_DIR}/upnp)
+set(UPNP_INC_DIR ${UPNP_ROOT_DIR}/inc)
+set(UPNP_SRC_DIR ${UPNP_ROOT_DIR}/src)
+
+set(IXML_ROOT_DIR ${PROJECT_SOURCE_DIR}/ixml)
+set(IXML_INC_DIR ${IXML_ROOT_DIR}/inc)
+set(IXML_SRC_DIR ${IXML_ROOT_DIR}/src)
+file(GLOB IXML_SRCS ${IXML_SRC_DIR}/*.c)
+
+include_directories(ixml ${IXML_INC_DIR} ${IXML_SRC_DIR}/inc ${UPNP_INC_DIR} ${UPNP_SRC_DIR}/inc)
+link_directories(ixml ${IXML_SRC_DIR})
+add_library(ixml SHARED ${IXML_SRCS} )

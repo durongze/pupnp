@@ -355,15 +355,10 @@ int TvCtrlPointSendAction(int service,
 				actionname, TvServiceType[service], 0, NULL);
 		} else {
 			for (param = 0; param < param_count; param++) {
-				if (UpnpAddToAction(&actionNode,
-					    actionname,
-					    TvServiceType[service],
-					    param_name[param],
-					    param_val[param]) !=
-					UPNP_E_SUCCESS) {
-					SampleUtil_Print(
-						"ERROR: TvCtrlPointSendAction: "
-						"Trying to add action param\n");
+				int ret = UpnpAddToAction(&actionNode, actionname,
+					TvServiceType[service], param_name[param], param_val[param]);
+				if (ret != UPNP_E_SUCCESS) {
+					SampleUtil_Print("ERROR: UpnpAddToAction:%d\n", ret);
 					/*return -1; // TBD - BAD! leaves mutex
 					 * locked */
 				}
@@ -372,12 +367,8 @@ int TvCtrlPointSendAction(int service,
 
 		rc = UpnpSendActionAsync(ctrlpt_handle,
 			devnode->device.TvService[service].ControlURL,
-			TvServiceType[service],
-			NULL,
-			actionNode,
-			TvCtrlPointCallbackEventHandler,
-			NULL);
-
+			TvServiceType[service],	NULL,
+			actionNode,	TvCtrlPointCallbackEventHandler, NULL);
 		if (rc != UPNP_E_SUCCESS) {
 			SampleUtil_Print(
 				"Error in UpnpSendActionAsync -- %d\n", rc);

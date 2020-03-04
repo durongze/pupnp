@@ -122,7 +122,8 @@
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "1.12.0"
 
-/* Define to necessary symbol if this constant uses a non-standard name on
+/* Define to necessary symbol if this constant
+ uses a non-standard name on
    your system. */
 /* #undef PTHREAD_CREATE_JOINABLE */
 
@@ -133,7 +134,7 @@
 #define UPNP_ENABLE_BLOCKING_TCP_CONNECTIONS 1
 
 /* see upnpconfig.h */
-#define UPNP_ENABLE_IPV6 1
+// #define UPNP_ENABLE_IPV6 
 
 /* see upnpconfig.h */
 /* #undef UPNP_ENABLE_OPEN_SSL */
