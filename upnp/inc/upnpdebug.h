@@ -75,7 +75,8 @@ typedef enum Upnp_Module {
 	MSERV,
 	DOM,
 	API,
-	HTTP
+	HTTP,
+	APP,
 } Dbg_Module;
 
 /*@{*/
@@ -220,6 +221,7 @@ static UPNP_INLINE void UpnpPrintf(Upnp_LogLevel DLevel, Dbg_Module Module,
 }
 #endif /* DEBUG */
 
+#define UpnpDebug(fmt, ...)  UpnpPrintf(UPNP_INFO, APP, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 
 #ifdef __cplusplus
 }
