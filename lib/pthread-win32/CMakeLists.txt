@@ -29,8 +29,10 @@ file(GLOB PTHREAD_WIN32_SRCS ${PTHREAD_WIN32_SRC_DIR}/attr.c
  ${PTHREAD_WIN32_SRC_DIR}/tsd.c 
  ${PTHREAD_WIN32_SRC_DIR}/nonportable.c)
     
-include_directories(pthreadVC ${PTHREAD_WIN32_INC_DIR})
+include_directories(pthreadVC2 ${PTHREAD_WIN32_INC_DIR})
 
-link_directories(pthreadVC ${PTHREAD_WIN32_SRC_DIR}/)
+link_directories(pthreadVC2 ${PTHREAD_WIN32_SRC_DIR}/)
 
-add_library(pthreadVC SHARED ${PTHREAD_WIN32_SRCS})
+add_library(pthreadVC2 SHARED ${PTHREAD_WIN32_SRCS})
+
+target_link_libraries(pthreadVC2 ws2_32 iphlpapi kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
