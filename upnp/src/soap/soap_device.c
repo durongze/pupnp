@@ -286,11 +286,7 @@ static UPNP_INLINE void send_action_response(
 		end_body,
 		strlen(end_body));
 	if (ret_code != 0) {
-		UpnpPrintf(UPNP_INFO,
-			SOAP,
-			
-			
-			"Failed to send response: err code = %d\n",
+		SoapPrintf(UPNP_INFO, "http_SendMessage err code = %d\n",
 			ret_code);
 	}
 	err_code = 0;
@@ -344,11 +340,7 @@ static UPNP_INLINE void handle_query_variable(
 	/* send event */
 	soap_info->callback(
 		UPNP_CONTROL_GET_VAR_REQUEST, variable, soap_info->cookie);
-	UpnpPrintf(UPNP_INFO,
-		SOAP,
-		
-		
-		"Return from callback for var request\n");
+	SoapPrintf(UPNP_INFO, "Return from callback for var request\n");
 	/* validate, and handle result */
 	if (UpnpStateVarRequest_get_CurrentVal(variable) == NULL)
 		goto error_handler;
@@ -424,7 +416,7 @@ static void handle_invoke_action(
 	UpnpActionRequest_set_ActionResult(action, NULL);
 	UpnpActionRequest_set_CtrlPtIPAddr(action, &info->foreign_sockaddr);
 
-	UpnpPrintf(UPNP_INFO, SOAP,   "Calling Callback\n");
+	SoapPrintf(UPNP_INFO, "Calling Callback\n");
 	soap_info->callback(
 		UPNP_CONTROL_ACTION_REQUEST, action, soap_info->cookie);
 	err_code = UpnpActionRequest_get_ErrCode(action);

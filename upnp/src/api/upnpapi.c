@@ -1644,11 +1644,7 @@ static int GetDescDocumentAndURL(Upnp_DescType descriptionType,
 	#if EXCLUDE_SSDP == 0
 int UpnpSendAdvertisement(UpnpDevice_Handle Hnd, int Exp)
 {
-	UpnpPrintf(UPNP_ALL,
-		API,
-		
-		
-		"Inside UpnpSendAdvertisement \n");
+	ApiPrintf(UPNP_ALL, "Inside \n");
 	return UpnpSendAdvertisementLowPower(Hnd, Exp, -1, -1, -1);
 }
 

@@ -549,8 +549,7 @@ SoapSendAction( char *action_url,
 
     err_code = UPNP_E_OUTOF_MEMORY; /* default error */
 
-    UpnpPrintf( UPNP_INFO, SOAP,  
-        "Inside SoapSendAction():" );
+    SoapPrintf( UPNP_INFO, "Inside " );
     /* init */
     membuffer_init( &request );
     membuffer_init( &responsename );
@@ -571,8 +570,7 @@ SoapSendAction( char *action_url,
         goto error_handler;
     }
 
-    UpnpPrintf( UPNP_INFO, SOAP,  
-        "path=%.*s, hostport=%.*s\n",
+    SoapPrintf( UPNP_INFO, "path:%.*s, hostport:%.*s\n",
         (int)url.pathquery.size,
         url.pathquery.buff,
         (int)url.hostport.text.size,
@@ -699,8 +697,7 @@ int SoapSendActionEx(
 
     err_code = UPNP_E_OUTOF_MEMORY; /* default error */
 
-    UpnpPrintf( UPNP_INFO, SOAP,  
-        "Inside SoapSendActionEx():" );
+    SoapPrintf( UPNP_INFO, "Inside " );
     /* init */
     membuffer_init( &request );
     membuffer_init( &responsename );
@@ -726,8 +723,7 @@ int SoapSendActionEx(
         goto error_handler;
     }
 
-    UpnpPrintf( UPNP_INFO, SOAP,  
-        "path=%.*s, hostport=%.*s\n",
+    SoapPrintf(UPNP_INFO, "path=%.*s, hostport=%.*s\n",
         (int)url.pathquery.size,
         url.pathquery.buff,
         (int)url.hostport.text.size,

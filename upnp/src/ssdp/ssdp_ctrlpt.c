@@ -578,8 +578,7 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 	requestType = ssdp_request_type1(St);
 	if (requestType == SSDP_SERROR)
 		return UPNP_E_INVALID_PARAM;
-	UpnpPrintf(UPNP_INFO, SSDP,  
-		   "Inside SearchByTarget\n");
+	SsdpPrintf(UPNP_INFO, "Inside\n");
 	timeTillRead = Mx;
 	if (timeTillRead < MIN_SEARCH_TIME)
 		timeTillRead = MIN_SEARCH_TIME;
@@ -653,8 +652,7 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 	ret = select(max_fd + 1, NULL, &wrSet, NULL, NULL);
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_INFO, SSDP,  
-			   "SSDP_LIB: Error in select(): %s\n", errorBuffer);
+		SsdpPrintf(UPNP_INFO, "Error in select(): %s\n", errorBuffer);
 		UpnpCloseSocket(gSsdpReqSocket4);
 #ifdef UPNP_ENABLE_IPV6
 		UpnpCloseSocket(gSsdpReqSocket6);
@@ -667,8 +665,7 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 		int NumCopy = 0;
 
 		while (NumCopy < NUM_SSDP_COPY) {
-			UpnpPrintf(UPNP_INFO, SSDP,  
-				   ">>> SSDP SEND M-SEARCH >>>\n%s\n",
+			SsdpPrintf(UPNP_INFO, ">>> SSDP SEND M-SEARCH >>>\n%s\n",
 				   ReqBufv6UlaGua);
 			sendto(gSsdpReqSocket6,
 			       ReqBufv6UlaGua, strlen(ReqBufv6UlaGua), 0,
@@ -680,8 +677,7 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 		NumCopy = 0;
 		inet_pton(AF_INET6, SSDP_IPV6_LINKLOCAL, &destAddr6->sin6_addr);
 		while (NumCopy < NUM_SSDP_COPY) {
-			UpnpPrintf(UPNP_INFO, SSDP,  
-				   ">>> SSDP SEND M-SEARCH >>>\n%s\n",
+			SsdpPrintf(UPNP_INFO, ">>> SSDP SEND M-SEARCH >>>\n%s\n",
 				   ReqBufv6);
 			sendto(gSsdpReqSocket6,
 			       ReqBufv6, strlen(ReqBufv6), 0,
@@ -696,8 +692,7 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 	    FD_ISSET(gSsdpReqSocket4, &wrSet)) {
 		int NumCopy = 0;
 		while (NumCopy < NUM_SSDP_COPY) {
-			UpnpPrintf(UPNP_INFO, SSDP,  
-				   ">>> SSDP SEND M-SEARCH >>>\n%s\n",
+			SsdpPrintf(UPNP_INFO, ">>> SSDP SEND M-SEARCH >>>\n%s\n",
 				   ReqBufv4);
 			sendto(gSsdpReqSocket4,
 			       ReqBufv4, strlen(ReqBufv4), 0,

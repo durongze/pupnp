@@ -587,8 +587,7 @@ static UPNP_INLINE int valid_ssdp_msg(
 		     memptr_cmp(&hdr_value, "[ff02::c]:1900") != 0 &&
 		     memptr_cmp(&hdr_value, "[FF05::C]:1900") != 0 &&
 		     memptr_cmp(&hdr_value, "[ff05::c]:1900") != 0)) {
-			UpnpPrintf(UPNP_INFO, SSDP,  
-				   "Invalid HOST header from SSDP message\n");
+			SsdpPrintf(UPNP_INFO, "Invalid HOST header from SSDP message\n");
 
 			return 0;
 		}
@@ -618,15 +617,13 @@ static UPNP_INLINE int start_event_handler(
 	if (status == (parse_status_t)PARSE_FAILURE) {
 		if (parser->msg.method != (http_method_t)HTTPMETHOD_NOTIFY ||
 		    !parser->valid_ssdp_notify_hack) {
-			UpnpPrintf(UPNP_INFO, SSDP,  
-				   "SSDP recvd bad msg code = %d\n", status);
+			SsdpPrintf(UPNP_INFO, "SSDP recvd bad msg code:%d\n", status);
 			/* ignore bad msg, or not enuf mem */
 			goto error_handler;
 		}
 		/* valid notify msg */
 	} else if (status != (parse_status_t)PARSE_SUCCESS) {
-		UpnpPrintf(UPNP_INFO, SSDP,  
-			   "SSDP recvd bad msg code = %d\n", status);
+		SsdpPrintf(UPNP_INFO, "SSDP recvd bad msg code:%d\n", status);
 
 		goto error_handler;
 	}
@@ -732,11 +729,10 @@ void readFromSSDPSocket(SOCKET socket)
 			strncpy(ntop_buf, "<Invalid address family>",
 				sizeof(ntop_buf) - 1);
 		}
-		UpnpPrintf(UPNP_INFO, SSDP,  
-			   "Start of received response ----------------------------------------------------\n"
+		SsdpPrintf(UPNP_INFO, "\nStart of received response\n"
 			   "%s\n"
-			   "End of received response ------------------------------------------------------\n"
-			   "From host %s\n", requestBuf, ntop_buf);
+			   "End of received response From host %s\n",
+			   requestBuf, ntop_buf);
 		/* add thread pool job to handle request */
 		if (data != NULL) {
 			data->parser.msg.msg.length += (size_t) byteReceived;
@@ -774,8 +770,7 @@ static int create_ssdp_sock_v4(
 	*ssdpSock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (*ssdpSock == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in socket(): %s\n", errorBuffer);
+		SsdpPrintf(UPNP_CRITICAL, "Error in socket(): %s\n", errorBuffer);
 
 		return UPNP_E_OUTOF_SOCKET;
 	}
@@ -784,8 +779,7 @@ static int create_ssdp_sock_v4(
 			 (char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() SO_REUSEADDR: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt() SO_REUSEADDR: %s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -796,8 +790,7 @@ static int create_ssdp_sock_v4(
 			 (char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() SO_REUSEPORT: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt() SO_REUSEPORT: %s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -810,8 +803,7 @@ static int create_ssdp_sock_v4(
 	ret = bind(*ssdpSock, (struct sockaddr *)ssdpAddr4, sizeof(*ssdpAddr4));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in bind(), addr=0x%08X, port=%d: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in bind(), addr=0x%08X, port=%d: %s\n",
 			   INADDR_ANY, SSDP_PORT, errorBuffer);
 		ret = UPNP_E_SOCKET_BIND;
 		goto error_handler;
@@ -823,8 +815,7 @@ static int create_ssdp_sock_v4(
 			 (char *)&ssdpMcastAddr, sizeof(struct ip_mreq));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() IP_ADD_MEMBERSHIP (join multicast group): %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt() IP_ADD_MEMBERSHIP:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -836,8 +827,7 @@ static int create_ssdp_sock_v4(
 			 (char *)&addr, sizeof addr);
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_INFO, SSDP,  
-			   "Error in setsockopt() IP_MULTICAST_IF (set multicast interface): %s\n",
+		SsdpPrintf(UPNP_INFO, "Error in setsockopt() IP_MULTICAST_IF:%s\n",
 			   errorBuffer);
 		/* This is probably not a critical error, so let's continue. */
 	}
@@ -849,8 +839,7 @@ static int create_ssdp_sock_v4(
 			 (char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() SO_BROADCAST (set broadcast): %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt() SO_BROADCAST:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_NETWORK_ERROR;
 		goto error_handler;
@@ -881,8 +870,7 @@ static int create_ssdp_sock_reqv4(
 	*ssdpReqSock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (*ssdpReqSock == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in socket(): %s\n", errorBuffer);
+		SsdpPrintf(UPNP_CRITICAL, "Error in socket(): %s\n", errorBuffer);
 		return UPNP_E_OUTOF_SOCKET;
 	}
 	setsockopt(*ssdpReqSock, IPPROTO_IP, IP_MULTICAST_TTL,
@@ -912,8 +900,7 @@ static int create_ssdp_sock_v6(
 	*ssdpSock = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (*ssdpSock == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in socket(): %s\n", errorBuffer);
+		SsdpPrintf(UPNP_CRITICAL, "Error in socket(): %s\n", errorBuffer);
 
 		return UPNP_E_OUTOF_SOCKET;
 	}
@@ -922,8 +909,7 @@ static int create_ssdp_sock_v6(
 			 (char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() SO_REUSEADDR: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt() SO_REUSEADDR:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -934,8 +920,7 @@ static int create_ssdp_sock_v6(
 			 (char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() SO_REUSEPORT: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt() SO_REUSEPORT:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -946,8 +931,7 @@ static int create_ssdp_sock_v6(
 			 (char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() IPV6_V6ONLY: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt() IPV6_V6ONLY:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -960,8 +944,7 @@ static int create_ssdp_sock_v6(
 	ret = bind(*ssdpSock, (struct sockaddr *)ssdpAddr6, sizeof(*ssdpAddr6));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in bind(), addr=0x%032lX, port=%d: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in bind(),addr:0x%032lX,port:%d:%s\n",
 			   0lu, SSDP_PORT, errorBuffer);
 		ret = UPNP_E_SOCKET_BIND;
 		goto error_handler;
@@ -974,8 +957,7 @@ static int create_ssdp_sock_v6(
 			(char *)&ssdpMcastAddr, sizeof(ssdpMcastAddr));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() IPV6_JOIN_GROUP (join multicast group): %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt()IPV6_JOIN_GROUP:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -985,8 +967,7 @@ static int create_ssdp_sock_v6(
 			 (char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() SO_BROADCAST (set broadcast): %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt()SO_BROADCAST:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_NETWORK_ERROR;
 		goto error_handler;
@@ -1020,8 +1001,7 @@ static int create_ssdp_sock_v6_ula_gua(
 	*ssdpSock = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (*ssdpSock == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in socket(): %s\n", errorBuffer);
+		SsdpPrintf(UPNP_CRITICAL, "Error in socket(): %s\n", errorBuffer);
 
 		return UPNP_E_OUTOF_SOCKET;
 	}
@@ -1030,8 +1010,7 @@ static int create_ssdp_sock_v6_ula_gua(
 			 (char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() SO_REUSEADDR: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt()SO_REUSEADDR:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -1042,8 +1021,7 @@ static int create_ssdp_sock_v6_ula_gua(
 			 (char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() SO_REUSEPORT: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt()SO_REUSEPORT:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -1054,8 +1032,7 @@ static int create_ssdp_sock_v6_ula_gua(
 			(char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() IPV6_V6ONLY: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt()IPV6_V6ONLY:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -1068,8 +1045,7 @@ static int create_ssdp_sock_v6_ula_gua(
 	ret = bind(*ssdpSock, (struct sockaddr *)ssdpAddr6, sizeof(*ssdpAddr6));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in bind(), addr=0x%032lX, port=%d: %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in bind(),addr:0x%032lX,port:%d:%s\n",
 			   0lu, SSDP_PORT, errorBuffer);
 		ret = UPNP_E_SOCKET_BIND;
 		goto error_handler;
@@ -1083,8 +1059,7 @@ static int create_ssdp_sock_v6_ula_gua(
 			(char *)&ssdpMcastAddr, sizeof(ssdpMcastAddr));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() IPV6_JOIN_GROUP (join multicast group): %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt()IPV6_JOIN_GROUP:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_SOCKET_ERROR;
 		goto error_handler;
@@ -1094,8 +1069,7 @@ static int create_ssdp_sock_v6_ula_gua(
 			 (char *)&onOff, sizeof(onOff));
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in setsockopt() SO_BROADCAST (set broadcast): %s\n",
+		SsdpPrintf(UPNP_CRITICAL, "Error in setsockopt()SO_BROADCAST:%s\n",
 			   errorBuffer);
 		ret = UPNP_E_NETWORK_ERROR;
 		goto error_handler;
@@ -1126,8 +1100,7 @@ static int create_ssdp_sock_reqv6(
 	*ssdpReqSock = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (*ssdpReqSock == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, SSDP,  
-			   "Error in socket(): %s\n", errorBuffer);
+		SsdpPrintf(UPNP_CRITICAL, "Error in socket(): %s\n", errorBuffer);
 		return UPNP_E_OUTOF_SOCKET;
 	}
 	/* MUST use scoping of IPv6 addresses to control the propagation os SSDP
