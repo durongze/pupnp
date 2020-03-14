@@ -439,11 +439,13 @@ int TvCtrlPointSendSetVolume(int devnum, int volume)
 
 int TvCtrlPointSendSetLog(int devnum, int level, int mod)
 {
-	TvCtrlPointSendActionNumericArg(devnum,
-		TV_SERVICE_CONTROL,
-		SET_LOG,
-		CTRL_LOGLVL,
-		(level << 16) + mod);
+    if (devnum == 0) {
+        UpnpSetLogLevel(level);
+        UpnpSetLogModule(mod);
+    } else {
+	    TvCtrlPointSendActionNumericArg(devnum,
+		    TV_SERVICE_CONTROL, SET_LOG, CTRL_LOGLVL, (level << 16) + mod);
+    }
     return 0;
 }
 
