@@ -98,11 +98,7 @@ void genaCallback(
 			/* subscribe */
 			gena_process_subscription_request(info, request);
 		}
-		UpnpPrintf(UPNP_ALL,
-			GENA,
-			__FUNCTION__,
-			__LINE__,
-			"got subscription request\n");
+		GenaPrintf(UPNP_ALL, "got subscription request\n");
 	} else if (request->method == HTTPMETHOD_UNSUBSCRIBE) {
 		found_function = 1;
 		/* unsubscribe */

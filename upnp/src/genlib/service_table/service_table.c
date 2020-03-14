@@ -798,12 +798,8 @@ service_info *getServiceList(
 				if (!(getSubElement("controlURL", current_service, &controlURL)) ||
 				    !(tempDOMString = getElementValue(controlURL)) ||
 				    !(current->controlURL = resolve_rel_url(URLBase, tempDOMString))) {
-					UpnpPrintf(UPNP_INFO, GENA, 
-						   
-						   "BAD OR MISSING CONTROL URL");
-					UpnpPrintf(UPNP_INFO, GENA, 
-						   
-						   "CONTROL URL SET TO NULL IN SERVICE INFO");
+					GenaPrintf(UPNP_INFO, "BAD OR MISSING CONTROL URL");
+					GenaPrintf(UPNP_INFO, "CONTROL URL SET TO NULL IN SERVICE INFO");
 					current->controlURL = NULL;
 					fail = 0;
 				}
@@ -812,12 +808,8 @@ service_info *getServiceList(
 				if (!getSubElement("eventSubURL", current_service, &eventURL) ||
 				    !(tempDOMString = getElementValue(eventURL)) ||
 				    !(current->eventURL = resolve_rel_url(URLBase, tempDOMString))) {
-					UpnpPrintf(UPNP_INFO, GENA, 
-						   
-						   "BAD OR MISSING EVENT URL");
-					UpnpPrintf(UPNP_INFO, GENA, 
-						   
-						   "EVENT URL SET TO NULL IN SERVICE INFO");
+					GenaPrintf(UPNP_INFO, "BAD OR MISSING EVENT URL");
+					GenaPrintf(UPNP_INFO, "EVENT URL SET TO NULL IN SERVICE INFO");
 					current->eventURL = NULL;
 					fail = 0;
 				}
