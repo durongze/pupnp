@@ -1338,11 +1338,6 @@ int TvCtrlPointStop(void)
 	return TV_SUCCESS;
 }
 
-void TvCtrlPointPrintShortHelp(void)
-{
-    TvCtrlPointPrintCommands();
-}
-
 void TvCtrlPointPrintLongHelp(void)
 {
 	SampleUtil_Print(
@@ -1442,47 +1437,10 @@ void TvCtrlPointPrintLongHelp(void)
 		"       Exits the control point application.\n");
 }
 
-/*! Tags for valid commands issued at the command prompt. */
-enum cmdloop_tvcmds
-{
-	PRTHELP = 0,
-	PRTFULLHELP,
-	POWON,
-	POWOFF,
-	SETCHAN,
-	SETVOL,
-	SETCOL,
-	SETTINT,
-	SETCONT,
-	SETBRT,
-	SETLOG,
-	CTRLACTION,
-	PICTACTION,
-	CTRLGETVAR,
-	PICTGETVAR,
-	PRTDEV,
-	LSTDEV,
-	REFRESH,
-	EXITCMD
-};
-
-/*! Data structure for parsing commands from the command line. */
-struct cmdloop_commands
-{
-	/* the string  */
-	const char *str;
-	/* the command */
-	int cmdnum;
-	/* the number of arguments */
-	int numargs;
-	/* the args */
-	const char *args;
-} cmdloop_commands;
-
 /*! Mappings between command text names, command tag,
  * and required command arguments for command line
  * commands */
-static struct cmdloop_commands cmdloop_cmdlist[] = {
+static cmdloop cpCmdList[] = {
     {"Help", PRTHELP, 1, ""},
 	{"HelpFull", PRTFULLHELP, 1, ""},
 	{"ListDev", LSTDEV, 1, ""},
@@ -1503,20 +1461,6 @@ static struct cmdloop_commands cmdloop_cmdlist[] = {
 	{"PictGetVar", PICTGETVAR, 2, "<devnum> <varname (string)>"},
 	{"Exit", EXITCMD, 1, ""}};
 
-void TvCtrlPointPrintCommands(void)
-{
-	int i;
-	int numofcmds = (sizeof cmdloop_cmdlist) / sizeof(cmdloop_commands);
-
-	SampleUtil_Print("Valid Commands:\n");
-	for (i = 0; i < numofcmds; ++i) {
-		SampleUtil_Print("  %-14s %s\n",
-			cmdloop_cmdlist[i].str,
-			cmdloop_cmdlist[i].args);
-	}
-	SampleUtil_Print("\n");
-}
-
 void *TvCtrlPointCommandLoop(void *args)
 {
 	char cmdline[100];
@@ -1536,26 +1480,25 @@ void *TvCtrlPointCommandLoop(void *args)
 
 int TvCtrlPointProcessCommand(char *cmdline)
 {
-	char cmd[100];
-	char strarg[100];
+	char cmd[100] = {0};
+	char strarg[100] = {0};
 	int arg_val_err = -99999;
     int devnum = arg_val_err;
     int arg1 = arg_val_err;
 	int arg2 = arg_val_err;
 	int cmdnum = -1;
-	int numofcmds = (sizeof cmdloop_cmdlist) / sizeof(cmdloop_commands);
+	int numofcmds = (sizeof cpCmdList) / sizeof(cmdloop);
 	int cmdfound = 0;
-	int i;
 	int rc;
 	int invalidargs = 0;
 	int validargs;
 
 	validargs = sscanf(cmdline, "%s %d %d", cmd, &arg1, &arg2);
-	for (i = 0; i < numofcmds; ++i) {
-		if (strcasecmp(cmd, cmdloop_cmdlist[i].str) == 0) {
-			cmdnum = cmdloop_cmdlist[i].cmdnum;
+	for (int i = 0; i < numofcmds; ++i) {
+		if (strcasecmp(cmd, cpCmdList[i].str) == 0) {
+			cmdnum = cpCmdList[i].cmdnum;
 			cmdfound++;
-			if (validargs != cmdloop_cmdlist[i].numargs)
+			if (validargs != cpCmdList[i].numargs)
 				invalidargs++;
 			break;
 		}
@@ -1570,7 +1513,7 @@ int TvCtrlPointProcessCommand(char *cmdline)
 	}
 	switch (cmdnum) {
 	case PRTHELP:
-		TvCtrlPointPrintShortHelp();
+		TvPrintCommands(sizeof(cpCmdList) / sizeof(cmdloop), cpCmdList);
 		break;
 	case PRTFULLHELP:
 		TvCtrlPointPrintLongHelp();

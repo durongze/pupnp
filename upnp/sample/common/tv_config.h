@@ -91,4 +91,58 @@
 /*! Max value length */
 #define TV_MAX_VAL_LEN 7
 
+/*! Tags for valid commands issued at the command prompt. */
+enum cmdloop_tvcmds
+{
+	PRTHELP = 0,
+	PRTFULLHELP,
+	POWON,
+	POWOFF,
+	SETCHAN,
+	SETVOL,
+	SETCOL,
+	SETTINT,
+	SETCONT,
+	SETBRT,
+	SETLOG,
+	CTRLACTION,
+	PICTACTION,
+	CTRLGETVAR,
+	PICTGETVAR,
+	PRTDEV,
+	LSTDEV,
+	REFRESH,
+	EXITCMD
+};
+
+/*! Data structure for parsing commands from the command line. */
+typedef struct
+{
+	/* the string  */
+	const char *str;
+	/* the command */
+	int cmdnum;
+	/* the number of arguments */
+	int numargs;
+	/* the args */
+	const char *args;
+} cmdloop;
+
+/*!
+ * \briefPrint the list of valid command line commands to the user
+ */
+static UPNP_INLINE void TvPrintCommands(int cmdc, cmdloop *cmds)
+{
+    int i;
+    int numofcmds = cmdc;
+
+    SampleUtil_Print("Valid Commands:\n");
+    for (i = 0; i < numofcmds; ++i) {
+        SampleUtil_Print("  %-14s %s\n",
+            cmds[i].str,
+            cmds[i].args);
+    }
+    SampleUtil_Print("\n");
+}
+
 #endif

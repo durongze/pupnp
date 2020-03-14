@@ -167,19 +167,11 @@ int		TvCtrlPointStart(print_string printFunctionPtr, state_update updateFunction
 int		TvCtrlPointStop(void);
 
 /*!
- * \brief Print help info for this application.
- */
-void TvCtrlPointPrintShortHelp(void);
-
-/*!
  * \brief Print long help info for this application.
  */
 void TvCtrlPointPrintLongHelp(void);
 
-/*!
- * \briefPrint the list of valid command line commands to the user
- */
-void TvCtrlPointPrintCommands(void);
+
 
 /*!
  * \brief Function that receives commands from the user at the command prompt

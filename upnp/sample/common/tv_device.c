@@ -1497,32 +1497,86 @@ int TvDeviceStop(void)
 	return UPNP_E_SUCCESS;
 }
 
+static cmdloop devCmdList[] = {
+    {"Help", PRTHELP, 1, ""},
+	{"HelpFull", PRTFULLHELP, 1, ""},
+	{"ListDev", LSTDEV, 1, ""},
+	{"Refresh", REFRESH, 1, ""},
+	{"PrintDev", PRTDEV, 2, "<devnum>"},
+	{SET_POWER_ON, POWON, 2, "<devnum>"},
+	{SET_POWER_OFF, POWOFF, 2, "<devnum>"},
+	{SET_CHANNEL, SETCHAN, 3, "<devnum> <channel (int)>"},
+	{SET_VOLUME, SETVOL, 3, "<devnum> <volume (int)>"},
+	{SET_COLOR, SETCOL, 3, "<devnum> <color (int)>"},
+	{SET_TINT, SETTINT, 3, "<devnum> <tint (int)>"},
+	{SET_CONTRAST, SETCONT, 3, "<devnum> <contrast (int)>"},
+	{SET_BRIGHTNESS, SETBRT, 3, "<devnum> <brightness (int)>"},
+	{SET_LOG, SETLOG, 3, "<devnum> <level (int)> <module (int)>"},
+	{"CtrlAction", CTRLACTION, 2, "<devnum> <action (string)>"},
+	{"PictAction", PICTACTION, 2, "<devnum> <action (string)>"},
+	{"CtrlGetVar", CTRLGETVAR, 2, "<devnum> <varname (string)>"},
+	{"PictGetVar", PICTGETVAR, 2, "<devnum> <varname (string)>"},
+	{"Exit", EXITCMD, 1, ""}};
+
+int TvDeviceProcessCommand(char *cmdline)
+{
+	char cmd[100] = { 0 };
+    int cmdnum = -1;
+    int arg1 = -1;
+	int arg2 = -1;
+
+	int cmdc = sizeof(devCmdList) / sizeof(cmdloop);
+	int invalidCmd = 0;
+	int invalidArgs = 0;
+	int argc;
+
+	argc = sscanf(cmdline, "%s %d %d", cmd, &arg1, &arg2);
+	for (int i = 0; i < cmdc; ++i) {
+		if (strcasecmp(cmd, devCmdList[i].str) == 0) {
+			cmdnum = devCmdList[i].cmdnum;
+			invalidCmd++;
+			if (argc != devCmdList[i].numargs)
+				invalidArgs++;
+			break;
+		}
+	}
+	if (!invalidCmd) {
+		SampleUtil_Print("Command not found; try 'Help'\n");
+		return 0;
+	}
+	if (invalidArgs) {
+		SampleUtil_Print("Invalid arguments; try 'Help'\n");
+		return 0;
+	}
+	switch (cmdnum) {
+	    case PRTHELP:
+            TvPrintCommands(sizeof(devCmdList) / sizeof(cmdloop), devCmdList);
+            break;
+		case EXITCMD:
+		    SampleUtil_Print("Shutting down...\n");
+			TvDeviceStop();
+			exit(0);
+        default:
+		    SampleUtilPrint("\n   Unknown command: %s\n\n", cmd);
+			SampleUtilPrint("   Valid Commands:\n"
+					 "     Exit\n\n");
+            break;
+    }
+}
+
 void *TvDeviceCommandLoop(void *args)
 {
-	int stoploop = 0;
 	char cmdline[100];
-	char cmd[100];
 	char *s;
 	(void)args;
 
-	while (!stoploop) {
-		sprintf(cmdline, " ");
-		sprintf(cmd, " ");
-		SampleUtilPrint("\n>> ");
+	while (1) {
+		SampleUtil_Print("\n>> ");
 		/* Get a command line */
 		s = fgets(cmdline, 100, stdin);
 		if (!s)
 			break;
-		sscanf(cmdline, "%s", cmd);
-		if (strcasecmp(cmd, "exit") == 0) {
-			SampleUtilPrint("Shutting down...\n");
-			TvDeviceStop();
-			exit(0);
-		} else {
-			SampleUtilPrint("\n   Unknown command: %s\n\n", cmd);
-			SampleUtilPrint("   Valid Commands:\n"
-					 "     Exit\n\n");
-		}
+		TvDeviceProcessCommand(cmdline);
 	}
 
 	return NULL;
