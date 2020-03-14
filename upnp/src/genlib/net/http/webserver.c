@@ -554,11 +554,7 @@ static int get_file_info(
 	UpnpFileInfo_set_LastModified(info, s.st_mtime);
 	rc = get_content_type(filename, info);
 	aux_LastModified = UpnpFileInfo_get_LastModified(info);
-	UpnpPrintf(UPNP_INFO,
-		HTTP,
-		
-		
-		"file info: %s, length: %lld, last_mod=%s readable=%d\n",
+	HttpPrintf(UPNP_INFO, "fileInfo:%s,len:%lld,lastMod:%s,readable:%d\n",
 		filename,
 		(long long)UpnpFileInfo_get_FileLength(info),
 		web_server_asctime_r(
@@ -1600,12 +1596,7 @@ static int http_RecvPostMessage(
 				}
 			} else if (num_read == 0) {
 				if (ok_on_close) {
-					UpnpPrintf(UPNP_INFO,
-						HTTP,
-						
-						
-						"<<< (RECVD) "
-						"<<<\n%s\n-----------------\n",
+					HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n-----------------\n",
 						parser->msg.msg.buf);
 					print_http_headers(&parser->msg);
 					parser->position = POS_COMPLETE;
@@ -1750,19 +1741,11 @@ void web_server_callback(
 				headers.length);
 			break;
 		default:
-			UpnpPrintf(UPNP_INFO,
-				HTTP,
-				
-				
-				"webserver: Invalid response type received.\n");
+			HttpPrintf(UPNP_INFO, "webserver: Invalid response type received.\n");
 			assert(0);
 		}
 	}
-	UpnpPrintf(UPNP_INFO,
-		HTTP,
-		
-		
-		"webserver: request processed...\n");
+	HttpPrintf(UPNP_INFO, "webserver: request processed...\n");
 	membuffer_destroy(&headers);
 	membuffer_destroy(&filename);
 }

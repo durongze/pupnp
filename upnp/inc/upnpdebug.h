@@ -76,7 +76,9 @@ typedef enum Upnp_Module_e {
 	DOM = (1 << 5),
 	API = (1 << 6),
 	HTTP = (1 << 7),
-	APP = (1 << 8),
+	DEV = (1 << 8),
+	SRV = (1 << 9),
+	APP = (1 << 10),
 	ALLMOD = (~0)
 } Dbg_Module;
 
@@ -236,7 +238,18 @@ static UPNP_INLINE void Upnp_Printf(Upnp_LogLevel DLevel, Dbg_Module Module,
 }
 #endif /* DEBUG */
 
-#define UpnpPrintf(l, m, fmt, ...)  Upnp_Printf(l, m, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define UpnpPrintf(l, m, fmt, ...) Upnp_Printf(l, m, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define SsdpPrintf(l, fmt, ...) UpnpPrintf(l, SSDP, fmt, ##__VA_ARGS__)
+#define SoapPrintf(l, fmt, ...) UpnpPrintf(l, SOAP, fmt, ##__VA_ARGS__)
+#define GenaPrintf(l, fmt, ...) UpnpPrintf(l, GENA, fmt, ##__VA_ARGS__)
+#define TpoolPrintf(l, fmt, ...) UpnpPrintf(l, TPOOL, fmt, ##__VA_ARGS__)
+#define MservPrintf(l, fmt, ...) UpnpPrintf(l, MSERV, fmt, ##__VA_ARGS__)
+#define DomPrintf(l, fmt, ...) UpnpPrintf(l, DOM, fmt, ##__VA_ARGS__)
+#define ApiPrintf(l, fmt, ...) UpnpPrintf(l, API, fmt, ##__VA_ARGS__)
+#define HttpPrintf(l, fmt, ...) UpnpPrintf(l, HTTP, fmt, ##__VA_ARGS__)
+#define DevPrintf(l, fmt, ...) UpnpPrintf(l, DEV, fmt, ##__VA_ARGS__)
+#define SrvPrintf(l, fmt, ...) UpnpPrintf(l, SRV, fmt, ##__VA_ARGS__)
+#define AppPrintf(l, fmt, ...) UpnpPrintf(l, APP, fmt, ##__VA_ARGS__)
  
 #ifdef __cplusplus
 }

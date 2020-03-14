@@ -115,8 +115,7 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 	memset(devType, 0, sizeof(devType));
 	memset(servType, 0, sizeof(servType));
 
-	UpnpPrintf(UPNP_ALL, API,  
-		   "Inside AdvertiseAndReply with AdFlag = %d\n", AdFlag);
+	SrvPrintf(UPNP_ALL, "Inside with AdFlag = %d\n", AdFlag);
 
 	/* Use a read lock */
 	HandleReadLock();
@@ -131,77 +130,63 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 			imillisleep(SSDP_PAUSE);
 		NumCopy++;
 		for (i = 0lu;; i++) {
-			UpnpPrintf(UPNP_ALL, API,  
-				   "Entering new device list with i = %lu\n\n",
+			SrvPrintf(UPNP_ALL, "Entering new device list with i = %lu\n",
 				   i);
 			tmpNode = ixmlNodeList_item(SInfo->DeviceList, i);
 			if (!tmpNode) {
-				UpnpPrintf(UPNP_ALL, API,  
-					   "Exiting new device list with i = %lu\n\n",
+				SrvPrintf(UPNP_ALL, "Exiting new device list with i = %lu\n",
 					   i);
 				break;
 			}
 			dbgStr = ixmlNode_getNodeName(tmpNode);
-			UpnpPrintf(UPNP_INFO, API,  
-				   "Extracting device type once for %s\n",
+			SrvPrintf(UPNP_INFO, "Extracting device type once for %s\n",
 				   dbgStr);
 			ixmlNodeList_free(nodeList);
 			nodeList = ixmlElement_getElementsByTagName((IXML_Element *) tmpNode, "deviceType");
 			if (!nodeList)
 				continue;
-			UpnpPrintf(UPNP_ALL, API,  
-				   "Extracting UDN for %s\n", dbgStr);
-			UpnpPrintf(UPNP_ALL, API,  
-				   "Extracting device type\n");
+			SrvPrintf(UPNP_ALL, "Extracting UDN for %s\n", dbgStr);
+			SrvPrintf(UPNP_ALL, "Extracting device type\n");
 			tmpNode2 = ixmlNodeList_item(nodeList, 0lu);
 			if (!tmpNode2)
 				continue;
 			textNode = ixmlNode_getFirstChild(tmpNode2);
 			if (!textNode)
 				continue;
-			UpnpPrintf(UPNP_ALL, API,  
-				   "Extracting device type \n");
+			SrvPrintf(UPNP_ALL, "Extracting device type \n");
 			tmpStr = ixmlNode_getNodeValue(textNode);
 			if (!tmpStr)
 				continue;
 			strncpy(devType, tmpStr, sizeof(devType) - 1);
-			UpnpPrintf(UPNP_ALL, API,  
-				   "Extracting device type = %s\n", devType);
+			SrvPrintf(UPNP_ALL, "Extracting device type = %s\n", devType);
 			if (!tmpNode) {
-				UpnpPrintf(UPNP_ALL, API,  
-					   "TempNode is NULL\n");
+				SrvPrintf(UPNP_ALL, "TempNode is NULL\n");
 			}
 			dbgStr = ixmlNode_getNodeName(tmpNode);
-			UpnpPrintf(UPNP_ALL, API,  
-				   "Extracting UDN for %s\n", dbgStr);
+			SrvPrintf(UPNP_ALL, "Extracting UDN for %s\n", dbgStr);
 			ixmlNodeList_free(nodeList);
 			nodeList = ixmlElement_getElementsByTagName((IXML_Element *) tmpNode, "UDN");
 			if (!nodeList) {
-				UpnpPrintf(UPNP_CRITICAL, API, 
-					    "UDN not found!\n");
+				SrvPrintf(UPNP_CRITICAL, "UDN not found!\n");
 				continue;
 			}
 			tmpNode2 = ixmlNodeList_item(nodeList, 0lu);
 			if (!tmpNode2) {
-				UpnpPrintf(UPNP_CRITICAL, API, 
-					    "UDN not found!\n");
+				SrvPrintf(UPNP_CRITICAL, "UDN not found!\n");
 				continue;
 			}
 			textNode = ixmlNode_getFirstChild(tmpNode2);
 			if (!textNode) {
-				UpnpPrintf(UPNP_CRITICAL, API, 
-					    "UDN not found!\n");
+				SrvPrintf(UPNP_CRITICAL, "UDN not found!\n");
 				continue;
 			}
 			tmpStr = ixmlNode_getNodeValue(textNode);
 			if (!tmpStr) {
-				UpnpPrintf(UPNP_CRITICAL, API, 
-					    "UDN not found!\n");
+				SrvPrintf(UPNP_CRITICAL, "UDN not found!\n");
 				continue;
 			}
 			strncpy(UDNstr, tmpStr, sizeof(UDNstr) - 1);
-			UpnpPrintf(UPNP_INFO, API,  
-				   "Sending UDNStr = %s \n", UDNstr);
+			SrvPrintf(UPNP_INFO, "Sending UDNStr = %s \n", UDNstr);
 			if (AdFlag) {
 				/* send the device advertisement */
 				if (AdFlag == 1) {
@@ -244,11 +229,11 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 				case SSDP_DEVICEUDN: {
 					if (DeviceUDN && strlen(DeviceUDN) != (size_t)0) {
 						if (strcasecmp(DeviceUDN, UDNstr)) {
-							UpnpPrintf(UPNP_INFO, API,  
+							SrvPrintf(UPNP_INFO,  
 								"DeviceUDN=%s and search UDN=%s DID NOT match\n",
 								UDNstr, DeviceUDN);
 						} else {
-							UpnpPrintf(UPNP_INFO, API,  
+							SrvPrintf(UPNP_INFO,  
 								"DeviceUDN=%s and search UDN=%s MATCH\n",
 								UDNstr, DeviceUDN);
 							SendReply(DestAddr, devType, 0, UDNstr, SInfo->DescURL, defaultExp, 0,
@@ -266,7 +251,7 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 							/* the requested version is lower than the device version
 							 * must reply with the lower version number and the lower
 							 * description URL */
-							UpnpPrintf(UPNP_INFO, API,  
+							SrvPrintf(UPNP_INFO,  
 								   "DeviceType=%s and search devType=%s MATCH\n",
 								   devType, DeviceType);
 							SendReply(DestAddr, DeviceType, 0, UDNstr, SInfo->LowerDescURL,
@@ -276,7 +261,7 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 								  SInfo->RegistrationState);
 						} else if (atoi(strrchr(DeviceType, ':') + 1)
 							   == atoi(&devType[strlen(devType) - (size_t)1])) {
-							UpnpPrintf(UPNP_INFO, API,  
+							SrvPrintf(UPNP_INFO,  
 								   "DeviceType=%s and search devType=%s MATCH\n",
 								   devType, DeviceType);
 							SendReply(DestAddr, DeviceType, 0, UDNstr, SInfo->DescURL,
@@ -285,12 +270,12 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 								  SInfo->SleepPeriod,
 								  SInfo->RegistrationState);
 						} else {
-							UpnpPrintf(UPNP_INFO, API,  
+							SrvPrintf(UPNP_INFO,  
 								   "DeviceType=%s and search devType=%s DID NOT MATCH\n",
 								   devType, DeviceType);
 						}
 					} else {
-						UpnpPrintf(UPNP_INFO, API,  
+						SrvPrintf(UPNP_INFO,  
 							   "DeviceType=%s and search devType=%s DID NOT MATCH\n",
 							   devType, DeviceType);
 					}
@@ -302,8 +287,7 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 			}
 			/* send service advertisements for services corresponding
 			 * to the same device */
-			UpnpPrintf(UPNP_INFO, API,  
-				   "Sending service Advertisement\n");
+			SrvPrintf(UPNP_INFO, "Sending service Advertisement\n");
 			/* Correct service traversal such that each device's serviceList
 			 * is directly traversed as a child of its parent device. This
 			 * ensures that the service's alive message uses the UDN of
@@ -325,8 +309,7 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 			}
 			nodeList = ixmlElement_getElementsByTagName((IXML_Element *) tmpNode, "service");
 			if (!nodeList) {
-				UpnpPrintf(UPNP_INFO, API,  
-					   "Service not found 3\n");
+				SrvPrintf(UPNP_INFO, "Service not found 3\n");
 				continue;
 			}
 			for (j = 0lu;; j++) {
@@ -337,9 +320,7 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 				ixmlNodeList_free(tmpNodeList);
 				tmpNodeList = ixmlElement_getElementsByTagName((IXML_Element *) tmpNode, "serviceType");
 				if (!tmpNodeList) {
-					UpnpPrintf(UPNP_CRITICAL, API, 
-						   
-						   "ServiceType not found \n");
+					SrvPrintf(UPNP_CRITICAL, "ServiceType not found \n");
 					continue;
 				}
 				tmpNode2 = ixmlNodeList_item(tmpNodeList, 0lu);
@@ -353,8 +334,7 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 				if (!tmpStr)
 					continue;
 				strncpy(servType, tmpStr, sizeof(servType) - 1);
-				UpnpPrintf(UPNP_INFO, API,  
-					   "ServiceType = %s\n", servType);
+				SrvPrintf(UPNP_INFO, "ServiceType = %s\n", servType);
 				if (AdFlag) {
 					if (AdFlag == 1) {
 						ServiceAdvertisement(UDNstr,
@@ -391,7 +371,7 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 									/* the requested version is lower than the service version
 									 * must reply with the lower version number and the lower
 									 * description URL */
-									UpnpPrintf(UPNP_INFO, API,  
+									SrvPrintf(UPNP_INFO,  
 										   "ServiceType=%s and search servType=%s MATCH\n",
 										   ServiceType, servType);
 									SendReply(DestAddr, ServiceType, 0, UDNstr, SInfo->LowerDescURL,
@@ -401,7 +381,7 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 										  SInfo->RegistrationState);
 								} else if (atoi(strrchr (ServiceType, ':') + 1) ==
 									   atoi(&servType[strlen(servType) - (size_t)1])) {
-									UpnpPrintf(UPNP_INFO, API,  
+									SrvPrintf(UPNP_INFO,  
 										   "ServiceType=%s and search servType=%s MATCH\n",
 										   ServiceType, servType);
 									SendReply(DestAddr, ServiceType, 0, UDNstr, SInfo->DescURL,
@@ -410,12 +390,12 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 										  SInfo->SleepPeriod,
 										  SInfo->RegistrationState);
 								} else {
-									UpnpPrintf(UPNP_INFO, API,  
+									SrvPrintf(UPNP_INFO,  
 									   "ServiceType=%s and search servType=%s DID NOT MATCH\n",
 									   ServiceType, servType);
 								}
 							} else {
-								UpnpPrintf(UPNP_INFO, API,  
+								SrvPrintf(UPNP_INFO, 
 									   "ServiceType=%s and search servType=%s DID NOT MATCH\n",
 									   ServiceType, servType);
 							}
@@ -436,8 +416,7 @@ int AdvertiseAndReply(int AdFlag, UpnpDevice_Handle Hnd,
 end_function:
 	ixmlNodeList_free(tmpNodeList);
 	ixmlNodeList_free(nodeList);
-	UpnpPrintf(UPNP_ALL, API,  
-		   "Exiting AdvertiseAndReply.\n");
+	SrvPrintf(UPNP_ALL, "Exiting .\n");
 	HandleUnlock();
 
 	return retVal;

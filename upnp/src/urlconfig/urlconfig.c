@@ -187,8 +187,7 @@ static UPNP_INLINE int calc_descURL(
 	if (len > (size_t)LINE_SIZE)
 		return UPNP_E_URL_TOO_BIG;
 	snprintf(descURL, len, "%s%s%s", http_scheme, ipPortStr, alias);
-	UpnpPrintf(UPNP_INFO, API,  
-		   "desc url: %s\n", descURL);
+	UpnpPrintf(UPNP_INFO, API, "desc url: %s\n", descURL);
 
 	return UPNP_E_SUCCESS;
 }
@@ -410,10 +409,8 @@ configure_urlbase( IXML_Document * doc,
         goto error_handler;
     }
 
-    UpnpPrintf( UPNP_INFO, API,  
-        "desc url: %s\n", docURL );
-    UpnpPrintf( UPNP_INFO, API,  
-        "doc = %s\n", xml_str );
+    UpnpPrintf(UPNP_INFO, API, "desc url: %s\n", docURL );
+    UpnpPrintf(UPNP_INFO, API, "doc = %s\n", xml_str );
     /* store in web server */
     err_code =
         web_server_set_alias( new_alias, xml_str, strlen( xml_str ),

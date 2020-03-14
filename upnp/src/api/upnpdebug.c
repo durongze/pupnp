@@ -177,6 +177,8 @@ char *UpnpGetModuleName(Dbg_Module Module)
     	case DOM: smod="DOM_";break;
     	case API: smod="API_";break;
     	case HTTP: smod="HTTP";break;
+    	case DEV: smod="DEV_";break;
+    	case SRV: smod="SRV_";break;
         case APP: smod="APP_";break;
     	default: smod="UNKN";break;
 	}

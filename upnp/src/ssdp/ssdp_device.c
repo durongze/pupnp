@@ -131,16 +131,11 @@ void ssdp_handle_device_request(http_message_t *hmsg, struct sockaddr_storage *d
 		maxAge = dev_info->MaxAge;
 		HandleUnlock();
 
-		UpnpPrintf(UPNP_INFO, API,  
-				   "MAX-AGE     =  %d\n", maxAge);
-		UpnpPrintf(UPNP_INFO, API,  
-				   "MX     =  %d\n", event.Mx);
-		UpnpPrintf(UPNP_INFO, API,  
-				   "DeviceType   =  %s\n", event.DeviceType);
-		UpnpPrintf(UPNP_INFO, API,  
-				   "DeviceUuid   =  %s\n", event.UDN);
-		UpnpPrintf(UPNP_INFO, API,  
-				   "ServiceType =  %s\n", event.ServiceType);
+		DevPrintf(UPNP_INFO, "MAX-AGE     =  %d\n", maxAge);
+		DevPrintf(UPNP_INFO, "MX     =  %d\n", event.Mx);
+		DevPrintf(UPNP_INFO, "DeviceType   =  %s\n", event.DeviceType);
+		DevPrintf(UPNP_INFO, "DeviceUuid   =  %s\n", event.UDN);
+		DevPrintf(UPNP_INFO, "ServiceType =  %s\n", event.ServiceType);
 		threadArg = (SsdpSearchReply *)malloc(sizeof(SsdpSearchReply));
 		if (threadArg == NULL)
 			return;
