@@ -149,58 +149,66 @@ static int DebugAtThisLevel(Upnp_LogLevel DLevel, Dbg_Module Module)
 	return (DLevel <= g_log_level) && (Module & g_log_mod);
 }
 
+char *UpnpGetLevelName(Upnp_LogLevel DLevel)
+{
+	char *slev;
+	/* Code kept around in case, but I think it's actually more convenient
+	   to display a numeric level */
+	switch (DLevel) {
+    	case UPNP_CRITICAL: slev="CRI";break;
+    	case UPNP_ERROR: slev="ERR";break;
+    	case UPNP_INFO: slev="INF";break;
+    	case UPNP_ALL: slev="ALL";break;
+    	default: slev="UNK";break;
+	}
+    return slev;
+}
+
+char *UpnpGetModuleName(Dbg_Module Module)
+{
+	char *smod;
+    switch(Module) {
+    	case SSDP: smod="SSDP";break;
+    	case SOAP: smod="SOAP";break;
+    	case GENA: smod="GENA";break;
+    	case TPOOL: smod="TPOL";break;
+    	case MSERV: smod="MSER";break;
+    	case DOM: smod="DOM_";break;
+    	case API: smod="API_";break;
+    	case HTTP: smod="HTTP";break;
+    	default: smod="UNKN";break;
+	}
+    return smod;
+}
+
+unsigned long int GetThdId()
+{
+#ifdef _WIN32
+	return (unsigned long int)ithread_self().p;
+#else
+	return (unsigned long int)ithread_self();
+#endif
+}
+
 static void UpnpDisplayFileAndLine(
-	FILE *fp, const char *DbgFileName,
+	FILE *fp, const char *DbgFunName,
 	int DbgLineNo, Upnp_LogLevel DLevel, Dbg_Module Module)
 {
 	char timebuf[26];
 	time_t now = time(NULL);
 	struct tm *timeinfo;
-	char *smod;
-#if 0
-	char *slev;
-	/* Code kept around in case, but I think it's actually more convenient
-	   to display a numeric level */
-	switch (DLevel) {
-	case UPNP_CRITICAL: slev="CRI";break;
-	case UPNP_ERROR: slev="ERR";break;
-	case UPNP_INFO: slev="INF";break;
-	case UPNP_ALL: slev="ALL";break;
-	default: slev="UNK";break;
-	}
-#else
-	char slev[25];
-	snprintf(slev, 25, "%d", DLevel);
-#endif
-		
-	switch(Module) {
-	case SSDP: smod="SSDP";break;
-	case SOAP: smod="SOAP";break;
-	case GENA: smod="GENA";break;
-	case TPOOL: smod="TPOL";break;
-	case MSERV: smod="MSER";break;
-	case DOM: smod="DOM_";break;
-	case API: smod="API_";break;
-	case HTTP: smod="HTTP";break;
-	default: smod="UNKN";break;
-	}
-
+	char *slev = UpnpGetLevelName(DLevel);
+    char *smod = UpnpGetModuleName(Module);
 	timeinfo = localtime(&now);
-	strftime(timebuf, 26, "%Y-%m-%d %H:%M:%S", timeinfo);
-
-	fprintf(fp, "%s UPNP-%s-%s: Thread:0x%lX [%s:%d]: ", timebuf, smod, slev,
-#ifdef _WIN32
-		(unsigned long int)ithread_self().p
-#else
-		(unsigned long int)ithread_self()
-#endif
-	, DbgFileName, DbgLineNo);
+	strftime(timebuf, sizeof(timebuf), "%Y-%m-%d %H:%M:%S", timeinfo);
+	fprintf(fp, "Upnp:%s:%s:0x%lX[%s:%d]:",
+        smod, slev, GetThdId(), DbgFunName, DbgLineNo);
 	fflush(fp);
 }
 
 void UpnpPrintf(
 	Upnp_LogLevel DLevel, Dbg_Module Module,
-	const char *DbgFileName, int DbgLineNo, const char *FmtStr, ...)
+	const char *DbgFunName, int DbgLineNo, const char *FmtStr, ...)
 {
 	/*fprintf(stderr, "UpnpPrintf: fp %p level %d glev %d mod %d DEBUG_ALL %d\n",
 	  fp, DLevel, g_log_level, Module, DEBUG_ALL);*/
@@ -215,8 +223,8 @@ void UpnpPrintf(
 	}
 
 	va_start(ArgList, FmtStr);
-	if (DbgFileName) {
-		UpnpDisplayFileAndLine(fp, DbgFileName, DbgLineNo, DLevel, Module);
+	if (DbgFunName) {
+		UpnpDisplayFileAndLine(fp, DbgFunName, DbgLineNo, DLevel, Module);
 		vfprintf(fp, FmtStr, ArgList);
 		fflush(fp);
 	}

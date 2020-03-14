@@ -74,7 +74,7 @@ int genaUnregisterDevice(
 	if (GetHandleInfo(device_handle, &handle_info) != HND_DEVICE) {
 		UpnpPrintf(UPNP_CRITICAL,
 			GENA,
-			__FILE__,
+			__FUNCTION__,
 			__LINE__,
 			"genaUnregisterDevice: BAD Handle: %d\n",
 			device_handle);
@@ -191,7 +191,7 @@ static UPNP_INLINE int notify_send_and_recv(
 	/* connect */
 	UpnpPrintf(UPNP_ALL,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"gena notify to: %.*s\n",
 		(int)destination_url->hostport.text.size,
@@ -460,7 +460,7 @@ ExitFunction:
 	if (headers == NULL || rc < 0 || (unsigned int)rc >= headers_size) {
 		UpnpPrintf(UPNP_ALL,
 			GENA,
-			__FILE__,
+			__FUNCTION__,
 			line,
 			"AllocGenaHeaders(): Error UPNP_E_OUTOF_MEMORY\n");
 	}
@@ -514,7 +514,7 @@ static int genaInitNotifyCommon(UpnpDevice_Handle device_handle,
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"GENA BEGIN INITIAL NOTIFY COMMON");
 
@@ -564,7 +564,7 @@ static int genaInitNotifyCommon(UpnpDevice_Handle device_handle,
 	}
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"FOUND SERVICE IN INIT NOTFY: UDN %s, ServID: %s",
 		UDN,
@@ -578,7 +578,7 @@ static int genaInitNotifyCommon(UpnpDevice_Handle device_handle,
 	}
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"FOUND SUBSCRIPTION IN INIT NOTIFY: SID %s",
 		sid);
@@ -651,7 +651,7 @@ ExitFunction:
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		line,
 		"GENA END INITIAL NOTIFY COMMON, ret = %d",
 		ret);
@@ -673,7 +673,7 @@ int genaInitNotify(UpnpDevice_Handle device_handle,
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"GENA BEGIN INITIAL NOTIFY");
 
@@ -690,7 +690,7 @@ int genaInitNotify(UpnpDevice_Handle device_handle,
 	}
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"GENERATED PROPERTY SET IN INIT NOTIFY: %s",
 		propertySet);
@@ -702,7 +702,7 @@ ExitFunction:
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		line,
 		"GENA END INITIAL NOTIFY, ret = %d",
 		ret);
@@ -723,7 +723,7 @@ int genaInitNotifyExt(UpnpDevice_Handle device_handle,
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"GENA BEGIN INITIAL NOTIFY EXT");
 
@@ -741,7 +741,7 @@ int genaInitNotifyExt(UpnpDevice_Handle device_handle,
 	}
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"GENERATED PROPERTY SET IN INIT EXT NOTIFY: %s",
 		propertySet);
@@ -753,7 +753,7 @@ ExitFunction:
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		line,
 		"GENA END INITIAL NOTIFY EXT, ret = %d",
 		ret);
@@ -821,7 +821,7 @@ static int genaNotifyAllCommon(UpnpDevice_Handle device_handle,
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"GENA BEGIN NOTIFY ALL COMMON");
 
@@ -954,7 +954,7 @@ ExitFunction:
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		line,
 		"GENA END NOTIFY ALL COMMON, ret = %d",
 		ret);
@@ -974,7 +974,7 @@ int genaNotifyAllExt(UpnpDevice_Handle device_handle,
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"GENA BEGIN NOTIFY ALL EXT");
 
@@ -986,7 +986,7 @@ int genaNotifyAllExt(UpnpDevice_Handle device_handle,
 	}
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"GENERATED PROPERTY SET IN EXT NOTIFY: %s",
 		propertySet);
@@ -997,7 +997,7 @@ ExitFunction:
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		line,
 		"GENA END NOTIFY ALL EXT, ret = %d",
 		ret);
@@ -1018,7 +1018,7 @@ int genaNotifyAll(UpnpDevice_Handle device_handle,
 	DOMString propertySet = NULL;
 
 	UpnpPrintf(
-		UPNP_INFO, GENA, __FILE__, __LINE__, "GENA BEGIN NOTIFY ALL");
+		UPNP_INFO, GENA, __FUNCTION__, __LINE__, "GENA BEGIN NOTIFY ALL");
 
 	ret = GeneratePropertySet(VarNames, VarValues, var_count, &propertySet);
 	if (ret != XML_SUCCESS) {
@@ -1027,7 +1027,7 @@ int genaNotifyAll(UpnpDevice_Handle device_handle,
 	}
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"GENERATED PROPERTY SET IN EXT NOTIFY: %s",
 		propertySet);
@@ -1038,7 +1038,7 @@ ExitFunction:
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		line,
 		"GENA END NOTIFY ALL, ret = %d",
 		ret);
@@ -1239,7 +1239,7 @@ void gena_process_subscription_request(SOCKINFO *info, http_message_t *request)
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"Subscription Request Received:\n");
 
@@ -1272,7 +1272,7 @@ void gena_process_subscription_request(SOCKINFO *info, http_message_t *request)
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"SubscriptionRequest for event URL path: %s\n",
 		event_url_path);
@@ -1299,7 +1299,7 @@ void gena_process_subscription_request(SOCKINFO *info, http_message_t *request)
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"Subscription Request: Number of Subscriptions already %d\n "
 		"Max Subscriptions allowed: %d\n",
@@ -1481,7 +1481,7 @@ void gena_process_subscription_renewal_request(
 
 	UpnpPrintf(UPNP_INFO,
 		GENA,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"Renew request: Number of subscriptions already: %d\n "
 		"Max Subscriptions allowed:%d\n",

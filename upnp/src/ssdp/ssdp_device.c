@@ -131,15 +131,15 @@ void ssdp_handle_device_request(http_message_t *hmsg, struct sockaddr_storage *d
 		maxAge = dev_info->MaxAge;
 		HandleUnlock();
 
-		UpnpPrintf(UPNP_INFO, API, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, API, __FUNCTION__, __LINE__,
 				   "MAX-AGE     =  %d\n", maxAge);
-		UpnpPrintf(UPNP_INFO, API, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, API, __FUNCTION__, __LINE__,
 				   "MX     =  %d\n", event.Mx);
-		UpnpPrintf(UPNP_INFO, API, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, API, __FUNCTION__, __LINE__,
 				   "DeviceType   =  %s\n", event.DeviceType);
-		UpnpPrintf(UPNP_INFO, API, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, API, __FUNCTION__, __LINE__,
 				   "DeviceUuid   =  %s\n", event.UDN);
-		UpnpPrintf(UPNP_INFO, API, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, API, __FUNCTION__, __LINE__,
 				   "ServiceType =  %s\n", event.ServiceType);
 		threadArg = (SsdpSearchReply *)malloc(sizeof(SsdpSearchReply));
 		if (threadArg == NULL)
@@ -197,7 +197,7 @@ static int NewRequestHandler(
 	ReplySock = socket((int)DestAddr->sa_family, SOCK_DGRAM, 0);
 	if (ReplySock == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_INFO, SSDP, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, SSDP, __FUNCTION__, __LINE__,
 			   "SSDP_LIB: New Request Handler:"
 			   "Error in socket(): %s\n", errorBuffer);
 
@@ -226,7 +226,7 @@ static int NewRequestHandler(
 		break;
 #endif
 	default:
-		UpnpPrintf(UPNP_CRITICAL, SSDP, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_CRITICAL, SSDP, __FUNCTION__, __LINE__,
 			   "Invalid destination address specified.");
 		ret = UPNP_E_NETWORK_ERROR;
 		goto end_NewRequestHandler;
@@ -234,14 +234,14 @@ static int NewRequestHandler(
 
 	for (Index = 0; Index < NumPacket; Index++) {
 		ssize_t rc;
-		UpnpPrintf(UPNP_INFO, SSDP, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, SSDP, __FUNCTION__, __LINE__,
 			   ">>> SSDP SEND to %s >>>\n%s\n",
 			   buf_ntop, *(RqPacket + Index));
 		rc = sendto(ReplySock, *(RqPacket + Index),
 			    strlen(*(RqPacket + Index)), 0, DestAddr, socklen);
 		if (rc == -1) {
 			strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-			UpnpPrintf(UPNP_INFO, SSDP, __FILE__, __LINE__,
+			UpnpPrintf(UPNP_INFO, SSDP, __FUNCTION__, __LINE__,
 				   "SSDP_LIB: New Request Handler:"
 				   "Error in socket(): %s\n", errorBuffer);
 			ret = UPNP_E_SOCKET_WRITE;
@@ -505,7 +505,7 @@ int DeviceAdvertisement(char *DevType, int RootDev, char *Udn, char *Location,
 	int ret_code = UPNP_E_OUTOF_MEMORY;
 	int rc = 0;
 
-	UpnpPrintf(UPNP_INFO, SSDP, __FILE__, __LINE__,
+	UpnpPrintf(UPNP_INFO, SSDP, __FUNCTION__, __LINE__,
 		   "In function DeviceAdvertisement\n");
 	memset(&__ss, 0, sizeof(__ss));
 	switch (AddressFamily) {
@@ -523,7 +523,7 @@ int DeviceAdvertisement(char *DevType, int RootDev, char *Udn, char *Location,
 		DestAddr6->sin6_scope_id = gIF_INDEX;
 		break;
 	default:
-		UpnpPrintf(UPNP_CRITICAL, SSDP, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_CRITICAL, SSDP, __FUNCTION__, __LINE__,
 			   "Invalid device address family.\n");
 	}
 	msgs[0] = NULL;
@@ -732,7 +732,7 @@ int ServiceAdvertisement(char *Udn, char *ServType, char *Location,
 		DestAddr6->sin6_scope_id = gIF_INDEX;
 		break;
 	default:
-		UpnpPrintf(UPNP_CRITICAL, SSDP, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_CRITICAL, SSDP, __FUNCTION__, __LINE__,
 			   "Invalid device address family.\n");
 	}
 	rc = snprintf(Mil_Usn, sizeof(Mil_Usn), "%s::%s", Udn, ServType);
@@ -809,7 +809,7 @@ int ServiceShutdown(char *Udn, char *ServType, char *Location, int Duration,
 		DestAddr6->sin6_scope_id = gIF_INDEX;
 		break;
 	default:
-		UpnpPrintf(UPNP_CRITICAL, SSDP, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_CRITICAL, SSDP, __FUNCTION__, __LINE__,
 			   "Invalid device address family.\n");
 	}
 	/* sprintf(Mil_Nt,"%s",ServType); */
@@ -862,7 +862,7 @@ int DeviceShutdown(char *DevType, int RootDev, char *Udn,
 		DestAddr6->sin6_scope_id = gIF_INDEX;
 		break;
 	default:
-		UpnpPrintf(UPNP_CRITICAL, SSDP, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_CRITICAL, SSDP, __FUNCTION__, __LINE__,
 			   "Invalid device address family.\n");
 	}
 	/* root device has one extra msg */
@@ -876,7 +876,7 @@ int DeviceShutdown(char *DevType, int RootDev, char *Udn,
 				    AddressFamily, PowerState, SleepPeriod,
 				    RegistrationState);
 	}
-	UpnpPrintf(UPNP_INFO, SSDP, __FILE__, __LINE__,
+	UpnpPrintf(UPNP_INFO, SSDP, __FUNCTION__, __LINE__,
 		   "In function DeviceShutdown\n");
 	/* both root and sub-devices need to send these two messages */
 	CreateServicePacket(MSGTYPE_SHUTDOWN, Udn, Udn,

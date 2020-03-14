@@ -234,7 +234,7 @@ int TvDeviceStateTableInit(char *DescDocURL)
 
 	/*Download description document */
 	if (UpnpDownloadXmlDoc(DescDocURL, &DescDoc) != UPNP_E_SUCCESS) {
-		SampleUtil_Print("TvDeviceStateTableInit -- Error Parsing %s\n",
+		SampleUtilPrint("TvDeviceStateTableInit -- Error Parsing %s\n",
 			DescDocURL);
 		ret = UPNP_E_INVALID_DESC;
 		goto error_handler;
@@ -247,7 +247,7 @@ int TvDeviceStateTableInit(char *DescDocURL)
 		    &servid_ctrl,
 		    &evnturl_ctrl,
 		    &ctrlurl_ctrl)) {
-		SampleUtil_Print("TvDeviceStateTableInit -- Error: Could not "
+		SampleUtilPrint("TvDeviceStateTableInit -- Error: Could not "
 				 "find Service: %s\n",
 			TvServiceType[TV_SERVICE_CONTROL]);
 		ret = UPNP_E_INVALID_DESC;
@@ -267,7 +267,7 @@ int TvDeviceStateTableInit(char *DescDocURL)
 		    &servid_pict,
 		    &evnturl_pict,
 		    &ctrlurl_pict)) {
-		SampleUtil_Print("TvDeviceStateTableInit -- Error: Could not "
+		SampleUtilPrint("TvDeviceStateTableInit -- Error: Could not "
 				 "find Service: %s\n",
 			TvServiceType[TV_SERVICE_PICTURE]);
 		ret = UPNP_E_INVALID_DESC;
@@ -398,7 +398,7 @@ int TvDeviceHandleGetVarRequest(UpnpStateVarRequest *cgv_event)
 	if (getvar_succeeded) {
 		UpnpStateVarRequest_set_ErrCode(cgv_event, UPNP_E_SUCCESS);
 	} else {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"Error in UPNP_CONTROL_GET_VAR_REQUEST callback:\n"
 			"   Unknown variable name = %s\n",
 			UpnpString_get_String(
@@ -552,7 +552,7 @@ static int TvDeviceSetPower(
 	int ret = 0;
 
 	if (on != POWER_ON && on != POWER_OFF) {
-		SampleUtil_Print("error: can't set power to value %d\n", on);
+		SampleUtilPrint("error: can't set power to value %d\n", on);
 		return 0;
 	}
 
@@ -631,7 +631,7 @@ int TvDeviceSetChannel(
 	channel = atoi(value);
 	if (channel < MIN_CHANNEL || channel > MAX_CHANNEL) {
 		free(value);
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"error: can't change to channel %d\n", channel);
 		(*errorString) = "Invalid Channel";
 		return UPNP_E_INVALID_PARAM;
@@ -683,7 +683,7 @@ int IncrementChannel(int incr,
 	newchannel = curchannel + incr;
 
 	if (newchannel < MIN_CHANNEL || newchannel > MAX_CHANNEL) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"error: can't change to channel %d\n", newchannel);
 		(*errorString) = "Invalid Channel";
 		return UPNP_E_INVALID_PARAM;
@@ -734,7 +734,7 @@ int TvDeviceSetVolume(
 	}
 	volume = atoi(value);
 	if (volume < MIN_VOLUME || volume > MAX_VOLUME) {
-		SampleUtil_Print("error: can't change to volume %d\n", volume);
+		SampleUtilPrint("error: can't change to volume %d\n", volume);
 		(*errorString) = "Invalid Volume";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -793,7 +793,7 @@ static int IncrementVolume(
 
 	newvolume = curvolume + incr;
 	if (newvolume < MIN_VOLUME || newvolume > MAX_VOLUME) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"error: can't change to volume %d\n", newvolume);
 		(*errorString) = "Invalid Volume";
 		return UPNP_E_INVALID_PARAM;
@@ -886,7 +886,7 @@ int TvDeviceSetColor(
 	}
 	color = atoi(value);
 	if (color < MIN_COLOR || color > MAX_COLOR) {
-		SampleUtil_Print("error: can't change to color %d\n", color);
+		SampleUtilPrint("error: can't change to color %d\n", color);
 		(*errorString) = "Invalid Color";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -945,7 +945,7 @@ static int IncrementColor(
 
 	newcolor = curcolor + incr;
 	if (newcolor < MIN_COLOR || newcolor > MAX_COLOR) {
-		SampleUtil_Print("error: can't change to color %d\n", newcolor);
+		SampleUtilPrint("error: can't change to color %d\n", newcolor);
 		(*errorString) = "Invalid Color";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -995,7 +995,7 @@ int TvDeviceSetTint(
 	}
 	tint = atoi(value);
 	if (tint < MIN_TINT || tint > MAX_TINT) {
-		SampleUtil_Print("error: can't change to tint %d\n", tint);
+		SampleUtilPrint("error: can't change to tint %d\n", tint);
 		(*errorString) = "Invalid Tint";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -1059,7 +1059,7 @@ int IncrementTint(int incr,
 
 	newtint = curtint + incr;
 	if (newtint < MIN_TINT || newtint > MAX_TINT) {
-		SampleUtil_Print("error: can't change to tint %d\n", newtint);
+		SampleUtilPrint("error: can't change to tint %d\n", newtint);
 		(*errorString) = "Invalid Tint";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -1151,7 +1151,7 @@ int TvDeviceSetContrast(
 	}
 	contrast = atoi(value);
 	if (contrast < MIN_CONTRAST || contrast > MAX_CONTRAST) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"error: can't change to contrast %d\n", contrast);
 		(*errorString) = "Invalid Contrast";
 		return UPNP_E_INVALID_PARAM;
@@ -1211,7 +1211,7 @@ static int IncrementContrast(
 
 	newcontrast = curcontrast + incr;
 	if (newcontrast < MIN_CONTRAST || newcontrast > MAX_CONTRAST) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"error: can't change to contrast %d\n", newcontrast);
 		(*errorString) = "Invalid Contrast";
 		return UPNP_E_INVALID_PARAM;
@@ -1262,7 +1262,7 @@ int TvDeviceSetBrightness(
 	}
 	brightness = atoi(value);
 	if (brightness < MIN_BRIGHTNESS || brightness > MAX_BRIGHTNESS) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"error: can't change to brightness %d\n", brightness);
 		(*errorString) = "Invalid Brightness";
 		return UPNP_E_INVALID_PARAM;
@@ -1322,7 +1322,7 @@ static int IncrementBrightness(
 
 	newbrightness = curbrightness + incr;
 	if (newbrightness < MIN_BRIGHTNESS || newbrightness > MAX_BRIGHTNESS) {
-		SampleUtil_Print("error: can't change to brightness %d\n",
+		SampleUtilPrint("error: can't change to brightness %d\n",
 			newbrightness);
 		(*errorString) = "Invalid Brightness";
 		return UPNP_E_INVALID_PARAM;
@@ -1387,7 +1387,7 @@ int TvDeviceCallbackEventHandler(
 	case UPNP_EVENT_UNSUBSCRIBE_COMPLETE:
 		break;
 	default:
-		SampleUtil_Print("Error in TvDeviceCallbackEventHandler: "
+		SampleUtilPrint("Error in TvDeviceCallbackEventHandler: "
 				 "unknown event type %d\n",
 			EventType);
 	}
@@ -1416,14 +1416,14 @@ int TvDeviceStart(char *ip_address,
 		port);
 	ret = UpnpInit2(ip_address, port);
 	if (ret != UPNP_E_SUCCESS) {
-		SampleUtil_Print("Error with UpnpInit2 -- %d\n", ret);
+		SampleUtilPrint("Error with UpnpInit2 -- %d\n", ret);
 		UpnpFinish();
 
 		return ret;
 	}
 	ip_address = UpnpGetServerIpAddress();
 	port = UpnpGetServerPort();
-	SampleUtil_Print("UPnP Initialized\n"
+	SampleUtilPrint("UPnP Initialized\n"
 			 "\tipaddress = %s port = %u\n",
 		ip_address ? ip_address : "{NULL}",
 		port);
@@ -1443,11 +1443,11 @@ int TvDeviceStart(char *ip_address,
 		ip_address,
 		port,
 		desc_doc_name);
-	SampleUtil_Print("Specifying the webserver root directory -- %s\n",
+	SampleUtilPrint("Specifying the webserver root directory -- %s\n",
 		web_dir_path);
 	ret = UpnpSetWebServerRootDir(web_dir_path);
 	if (ret != UPNP_E_SUCCESS) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"Error specifying webserver root directory -- %s: %d\n",
 			web_dir_path,
 			ret);
@@ -1455,7 +1455,7 @@ int TvDeviceStart(char *ip_address,
 
 		return ret;
 	}
-	SampleUtil_Print("Registering the RootDevice\n"
+	SampleUtilPrint("Registering the RootDevice\n"
 			 "\t with desc_doc_url: %s\n",
 		desc_doc_url);
 	ret = UpnpRegisterRootDevice(desc_doc_url,
@@ -1463,25 +1463,25 @@ int TvDeviceStart(char *ip_address,
 		&device_handle,
 		&device_handle);
 	if (ret != UPNP_E_SUCCESS) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"Error registering the rootdevice : %d\n", ret);
 		UpnpFinish();
 
 		return ret;
 	} else {
-		SampleUtil_Print("RootDevice Registered\n"
+		SampleUtilPrint("RootDevice Registered\n"
 				 "Initializing State Table\n");
 		TvDeviceStateTableInit(desc_doc_url);
-		SampleUtil_Print("State Table Initialized\n");
+		SampleUtilPrint("State Table Initialized\n");
 		ret = UpnpSendAdvertisement(device_handle, default_advr_expire);
 		if (ret != UPNP_E_SUCCESS) {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Error sending advertisements : %d\n", ret);
 			UpnpFinish();
 
 			return ret;
 		}
-		SampleUtil_Print("Advertisements Sent\n");
+		SampleUtilPrint("Advertisements Sent\n");
 	}
 
 	return UPNP_E_SUCCESS;
@@ -1508,19 +1508,19 @@ void *TvDeviceCommandLoop(void *args)
 	while (!stoploop) {
 		sprintf(cmdline, " ");
 		sprintf(cmd, " ");
-		SampleUtil_Print("\n>> ");
+		SampleUtilPrint("\n>> ");
 		/* Get a command line */
 		s = fgets(cmdline, 100, stdin);
 		if (!s)
 			break;
 		sscanf(cmdline, "%s", cmd);
 		if (strcasecmp(cmd, "exit") == 0) {
-			SampleUtil_Print("Shutting down...\n");
+			SampleUtilPrint("Shutting down...\n");
 			TvDeviceStop();
 			exit(0);
 		} else {
-			SampleUtil_Print("\n   Unknown command: %s\n\n", cmd);
-			SampleUtil_Print("   Valid Commands:\n"
+			SampleUtilPrint("\n   Unknown command: %s\n\n", cmd);
+			SampleUtilPrint("   Valid Commands:\n"
 					 "     Exit\n\n");
 		}
 	}
@@ -1549,12 +1549,12 @@ int device_main(int argc, char *argv[])
 		} else if (strcmp(argv[i], "-webdir") == 0) {
 			web_dir_path = argv[++i];
 		} else if (strcmp(argv[i], "-help") == 0) {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Usage: %s -ip ipaddress -port port"
 				" -desc desc_doc_name -webdir web_dir_path"
 				" -help (this message)\n",
 				argv[0]);
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"\tipaddress:     IP address of the device"
 				" (must match desc. doc)\n"
 				"\t\te.g.: 192.168.0.4\n"

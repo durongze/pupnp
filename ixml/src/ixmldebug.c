@@ -58,7 +58,7 @@ void printNodes(IXML_Node *tmpRoot, int depth)
         NodeType = ixmlNode_getNodeType(ChildNode1);
         NodeValue = ixmlNode_getNodeValue(ChildNode1);
         NodeName = ixmlNode_getNodeName(ChildNode1);
-	IxmlPrintf(__FILE__, __LINE__, "printNodes",
+	IxmlPrintf(__FUNCTION__, __LINE__, "printNodes",
             "DEPTH-%2d-IXML_Node Type %d, "
             "IXML_Node Name: %s, IXML_Node Value: %s\n",
             depth, NodeType, NodeName, NodeValue);

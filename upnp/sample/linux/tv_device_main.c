@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 	sigemptyset(&sigs_to_catch);
 	sigaddset(&sigs_to_catch, SIGINT);
 	sigwait(&sigs_to_catch, &sig);
-	SampleUtil_Print("Shutting down on signal %d...\n", sig);
+	SampleUtilPrint("Shutting down on signal %d...\n", sig);
 #endif
 	rc = TvDeviceStop();
 

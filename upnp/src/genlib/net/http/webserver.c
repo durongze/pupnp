@@ -556,7 +556,7 @@ static int get_file_info(
 	aux_LastModified = UpnpFileInfo_get_LastModified(info);
 	UpnpPrintf(UPNP_INFO,
 		HTTP,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"file info: %s, length: %lld, last_mod=%s readable=%d\n",
 		filename,
@@ -1602,7 +1602,7 @@ static int http_RecvPostMessage(
 				if (ok_on_close) {
 					UpnpPrintf(UPNP_INFO,
 						HTTP,
-						__FILE__,
+						__FUNCTION__,
 						__LINE__,
 						"<<< (RECVD) "
 						"<<<\n%s\n-----------------\n",
@@ -1752,7 +1752,7 @@ void web_server_callback(
 		default:
 			UpnpPrintf(UPNP_INFO,
 				HTTP,
-				__FILE__,
+				__FUNCTION__,
 				__LINE__,
 				"webserver: Invalid response type received.\n");
 			assert(0);
@@ -1760,7 +1760,7 @@ void web_server_callback(
 	}
 	UpnpPrintf(UPNP_INFO,
 		HTTP,
-		__FILE__,
+		__FUNCTION__,
 		__LINE__,
 		"webserver: request processed...\n");
 	membuffer_destroy(&headers);

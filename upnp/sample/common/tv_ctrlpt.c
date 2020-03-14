@@ -98,7 +98,7 @@ int TvCtrlPointDeleteNode(struct TvDeviceNode *node)
 	int rc, service, var;
 
 	if (NULL == node) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"ERROR: TvCtrlPointDeleteNode: Node is empty\n");
 		return TV_ERROR;
 	}
@@ -111,12 +111,12 @@ int TvCtrlPointDeleteNode(struct TvDeviceNode *node)
 			rc = UpnpUnSubscribe(ctrlpt_handle,
 				node->device.TvService[service].SID);
 			if (UPNP_E_SUCCESS == rc) {
-				SampleUtil_Print("Unsubscribed from Tv %s "
+				SampleUtilPrint("Unsubscribed from Tv %s "
 						 "EventURL with SID=%s\n",
 					TvServiceName[service],
 					node->device.TvService[service].SID);
 			} else {
-				SampleUtil_Print("Error unsubscribing to Tv %s "
+				SampleUtilPrint("Error unsubscribing to Tv %s "
 						 "EventURL -- %d\n",
 					TvServiceName[service],
 					rc);
@@ -159,7 +159,7 @@ int TvCtrlPointRemoveDevice(const char *UDN)
 
 	curdevnode = GlobalDeviceList;
 	if (!curdevnode) {
-		SampleUtil_Print("WARNING: TvCtrlPointRemoveDevice: Device "
+		SampleUtilPrint("WARNING: TvCtrlPointRemoveDevice: Device "
 				 "list empty\n");
 	} else {
 		if (0 == strcmp(curdevnode->device.UDN, UDN)) {
@@ -235,7 +235,7 @@ int TvCtrlPointRefresh(void)
 	 * waiting for up to 5 seconds for the response */
 	rc = UpnpSearchAsync(ctrlpt_handle, 5, TvDeviceType, NULL);
 	if (UPNP_E_SUCCESS != rc) {
-		SampleUtil_Print("Error sending search request%d\n", rc);
+		SampleUtilPrint("Error sending search request%d\n", rc);
 
 		return TV_ERROR;
 	}
@@ -272,7 +272,7 @@ int TvCtrlPointGetVar(int service, int devnum, const char *varname)
 			TvCtrlPointCallbackEventHandler,
 			NULL);
 		if (rc != UPNP_E_SUCCESS) {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Error in UpnpGetServiceVarStatusAsync -- %d\n",
 				rc);
 			rc = TV_ERROR;
@@ -359,7 +359,7 @@ int TvCtrlPointSendAction(int service,
 				int ret = UpnpAddToAction(&actionNode, actionname,
 					TvServiceType[service], param_name[param], param_val[param]);
 				if (ret != UPNP_E_SUCCESS) {
-					SampleUtil_Print("ERROR: UpnpAddToAction:%d\n", ret);
+					SampleUtilPrint("ERROR: UpnpAddToAction:%d\n", ret);
 					/*return -1; // TBD - BAD! leaves mutex
 					 * locked */
 				}
@@ -371,7 +371,7 @@ int TvCtrlPointSendAction(int service,
 			TvServiceType[service],	NULL,
 			actionNode,	TvCtrlPointCallbackEventHandler, NULL);
 		if (rc != UPNP_E_SUCCESS) {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Error in UpnpSendActionAsync -- %d\n", rc);
 			rc = TV_ERROR;
 		}
@@ -503,7 +503,7 @@ int TvCtrlPointGetDevice(int devnum, struct TvDeviceNode **devnode)
 		tmpdevnode = tmpdevnode->next;
 	}
 	if (!tmpdevnode) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"Error finding TvDevice number -- %d\n", devnum);
 		return TV_ERROR;
 	}
@@ -530,13 +530,13 @@ int TvCtrlPointPrintList()
 
 	ithread_mutex_lock(&DeviceListMutex);
 
-	SampleUtil_Print("TvCtrlPointPrintList:\n");
+	SampleUtilPrint("TvCtrlPointPrintList:\n");
 	tmpdevnode = GlobalDeviceList;
 	while (tmpdevnode) {
-		SampleUtil_Print(" %3d -- %s\n", ++i, tmpdevnode->device.UDN);
+		SampleUtilPrint(" %3d -- %s\n", ++i, tmpdevnode->device.UDN);
 		tmpdevnode = tmpdevnode->next;
 	}
-	SampleUtil_Print("\n");
+	SampleUtilPrint("\n");
 	ithread_mutex_unlock(&DeviceListMutex);
 
 	return TV_SUCCESS;
@@ -561,7 +561,7 @@ int TvCtrlPointPrintDevice(int devnum)
 	char spacer[15];
 
 	if (devnum <= 0) {
-		SampleUtil_Print("Error in TvCtrlPointPrintDevice: "
+		SampleUtilPrint("Error in TvCtrlPointPrintDevice: "
 				 "invalid devnum = %d\n",
 			devnum);
 		return TV_ERROR;
@@ -569,7 +569,7 @@ int TvCtrlPointPrintDevice(int devnum)
 
 	ithread_mutex_lock(&DeviceListMutex);
 
-	SampleUtil_Print("TvCtrlPointPrintDevice:\n");
+	SampleUtilPrint("TvCtrlPointPrintDevice:\n");
 	tmpdevnode = GlobalDeviceList;
 	while (tmpdevnode) {
 		i++;
@@ -578,13 +578,13 @@ int TvCtrlPointPrintDevice(int devnum)
 		tmpdevnode = tmpdevnode->next;
 	}
 	if (!tmpdevnode) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"Error in TvCtrlPointPrintDevice: "
 			"invalid devnum = %d  --  actual device count = %d\n",
 			devnum,
 			i);
 	} else {
-		SampleUtil_Print("  TvDevice -- %d\n"
+		SampleUtilPrint("  TvDevice -- %d\n"
 				 "    |                  \n"
 				 "    +- UDN        = %s\n"
 				 "    +- DescDocURL     = %s\n"
@@ -602,7 +602,7 @@ int TvCtrlPointPrintDevice(int devnum)
 				sprintf(spacer, "    |    ");
 			else
 				sprintf(spacer, "         ");
-			SampleUtil_Print("    |                  \n"
+			SampleUtilPrint("    |                  \n"
 					 "    +- Tv %s Service\n"
 					 "%s+- ServiceId       = %s\n"
 					 "%s+- ServiceType     = %s\n"
@@ -625,7 +625,7 @@ int TvCtrlPointPrintDevice(int devnum)
 				tmpdevnode->device.TvService[service].SID,
 				spacer);
 			for (var = 0; var < TvVarCount[service]; var++) {
-				SampleUtil_Print("%s     +- %-10s = %s\n",
+				SampleUtilPrint("%s     +- %-10s = %s\n",
 					spacer,
 					TvVarName[service][var],
 					tmpdevnode->device.TvService[service]
@@ -633,7 +633,7 @@ int TvCtrlPointPrintDevice(int devnum)
 			}
 		}
 	}
-	SampleUtil_Print("\n");
+	SampleUtilPrint("\n");
 	ithread_mutex_unlock(&DeviceListMutex);
 
 	return TV_SUCCESS;
@@ -687,12 +687,12 @@ void TvCtrlPointAddDevice(
 	ret = UpnpResolveURL2((baseURL ? baseURL : location), relURL, &presURL);
 
 	if (UPNP_E_SUCCESS != ret)
-		SampleUtil_Print("Error generating presURL from %s + %s\n",
+		SampleUtilPrint("Error generating presURL from %s + %s\n",
 			baseURL,
 			relURL);
 
 	if (strcmp(deviceType, TvDeviceType) == 0) {
-		SampleUtil_Print("Found Tv device\n");
+		SampleUtilPrint("Found Tv device\n");
 
 		/* Check if this device is already in the list */
 		tmpdevnode = GlobalDeviceList;
@@ -717,7 +717,7 @@ void TvCtrlPointAddDevice(
 					    &serviceId[service],
 					    &eventURL[service],
 					    &controlURL[service])) {
-					SampleUtil_Print("Subscribing to "
+					SampleUtilPrint("Subscribing to "
 							 "EventURL %s...\n",
 						eventURL[service]);
 					ret = UpnpSubscribe(ctrlpt_handle,
@@ -725,20 +725,20 @@ void TvCtrlPointAddDevice(
 						&TimeOut[service],
 						eventSID[service]);
 					if (ret == UPNP_E_SUCCESS) {
-						SampleUtil_Print(
+						SampleUtilPrint(
 							"Subscribed to "
 							"EventURL with "
 							"SID=%s\n",
 							eventSID[service]);
 					} else {
-						SampleUtil_Print(
+						SampleUtilPrint(
 							"Error Subscribing to "
 							"EventURL -- %d\n",
 							ret);
 						strcpy(eventSID[service], "");
 					}
 				} else {
-					SampleUtil_Print("Error: Could not "
+					SampleUtilPrint("Error: Could not "
 							 "find Service: %s\n",
 						TvServiceType[service]);
 				}
@@ -843,7 +843,7 @@ void TvStateUpdate(
 	char *tmpstate = NULL;
 	(void)UDN;
 
-	SampleUtil_Print("Tv State Update (service %d):\n", Service);
+	SampleUtilPrint("Tv State Update (service %d):\n", Service);
 	/* Find all of the e:property tags in the document */
 	properties = ixmlDocument_getElementsByTagName(
 		ChangedVariables, "e:property");
@@ -873,7 +873,7 @@ void TvStateUpdate(
 						if (tmpstate) {
 							strcpy(State[j],
 								tmpstate);
-							SampleUtil_Print(
+							SampleUtilPrint(
 								" Variable "
 								"Name: %s New "
 								"Value:'%s'\n",
@@ -922,7 +922,7 @@ void TvCtrlPointHandleEvent(
 		for (service = 0; service < TV_SERVICE_SERVCOUNT; ++service) {
 			if (strcmp(tmpdevnode->device.TvService[service].SID,
 				    sid) == 0) {
-				SampleUtil_Print(
+				SampleUtilPrint(
 					"Received Tv %s Event: %d for SID %s\n",
 					TvServiceName[service],
 					evntkey,
@@ -971,7 +971,7 @@ void TvCtrlPointHandleSubscribeUpdate(
 			if (strcmp(tmpdevnode->device.TvService[service]
 					    .EventURL,
 				    eventURL) == 0) {
-				SampleUtil_Print("Received Tv %s Event Renewal "
+				SampleUtilPrint("Received Tv %s Event Renewal "
 						 "for eventURL %s\n",
 					TvServiceName[service],
 					eventURL);
@@ -1049,7 +1049,7 @@ int TvCtrlPointCallbackEventHandler(
 		int errCode = UpnpDiscovery_get_ErrCode(d_event);
 
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Error in Discovery Callback -- %d\n", errCode);
 		}
 
@@ -1057,7 +1057,7 @@ int TvCtrlPointCallbackEventHandler(
 			UpnpDiscovery_get_Location(d_event));
 		errCode = UpnpDownloadXmlDoc(location, &DescDoc);
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtil_Print("Error obtaining device description "
+			SampleUtilPrint("Error obtaining device description "
 					 "from %s -- error = %d\n",
 				location,
 				errCode);
@@ -1082,13 +1082,13 @@ int TvCtrlPointCallbackEventHandler(
 			UpnpDiscovery_get_DeviceID(d_event));
 
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Error in Discovery ByeBye Callback -- %d\n",
 				errCode);
 		}
-		SampleUtil_Print("Received ByeBye for Device: %s\n", deviceId);
+		SampleUtilPrint("Received ByeBye for Device: %s\n", deviceId);
 		TvCtrlPointRemoveDevice(deviceId);
-		SampleUtil_Print("After byebye:\n");
+		SampleUtilPrint("After byebye:\n");
 		TvCtrlPointPrintList();
 		break;
 	}
@@ -1097,7 +1097,7 @@ int TvCtrlPointCallbackEventHandler(
 		UpnpActionComplete *a_event = (UpnpActionComplete *)Event;
 		int errCode = UpnpActionComplete_get_ErrCode(a_event);
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Error in  Action Complete Callback -- %d\n",
 				errCode);
 		}
@@ -1109,7 +1109,7 @@ int TvCtrlPointCallbackEventHandler(
 		UpnpStateVarComplete *sv_event = (UpnpStateVarComplete *)Event;
 		int errCode = UpnpStateVarComplete_get_ErrCode(sv_event);
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Error in Get Var Complete Callback -- %d\n",
 				errCode);
 		} else {
@@ -1139,7 +1139,7 @@ int TvCtrlPointCallbackEventHandler(
 
 		errCode = UpnpEventSubscribe_get_ErrCode(es_event);
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Error in Event Subscribe Callback -- %d\n",
 				errCode);
 		} else {
@@ -1165,7 +1165,7 @@ int TvCtrlPointCallbackEventHandler(
 			&TimeOut,
 			newSID);
 		if (errCode == UPNP_E_SUCCESS) {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Subscribed to EventURL with SID=%s\n", newSID);
 			TvCtrlPointHandleSubscribeUpdate(
 				UpnpString_get_String(
@@ -1174,7 +1174,7 @@ int TvCtrlPointCallbackEventHandler(
 				newSID,
 				TimeOut);
 		} else {
-			SampleUtil_Print(
+			SampleUtilPrint(
 				"Error Subscribing to EventURL -- %d\n",
 				errCode);
 		}
@@ -1202,7 +1202,7 @@ void TvCtrlPointVerifyTimeouts(int incr)
 	curdevnode = GlobalDeviceList;
 	while (curdevnode) {
 		curdevnode->device.AdvrTimeOut -= incr;
-		/*SampleUtil_Print("Advertisement Timeout: %d\n",
+		/*SampleUtilPrint("Advertisement Timeout: %d\n",
 		 * curdevnode->device.AdvrTimeOut); */
 		if (curdevnode->device.AdvrTimeOut <= 0) {
 			/* This advertisement has expired, so we should remove
@@ -1226,7 +1226,7 @@ void TvCtrlPointVerifyTimeouts(int incr)
 					curdevnode->device.UDN,
 					NULL);
 				if (ret != UPNP_E_SUCCESS)
-					SampleUtil_Print(
+					SampleUtilPrint(
 						"Error sending search request "
 						"for Device UDN: %s -- err = "
 						"%d\n",
@@ -1308,13 +1308,13 @@ int TvCtrlPointStart(print_string printFunctionPtr,
 		&ctrlpt_handle,
 		&ctrlpt_handle);
 	if (rc != UPNP_E_SUCCESS) {
-		SampleUtil_Print("Error registering CP: %d\n", rc);
+		SampleUtilPrint("Error registering CP: %d\n", rc);
 		UpnpFinish();
 
 		return TV_ERROR;
 	}
 
-	SampleUtil_Print("Ctrl Point Registered\n");
+	SampleUtilPrint("Ctrl Point Registered\n");
 
 	TvCtrlPointRefresh();
 
@@ -1343,7 +1343,7 @@ void TvCtrlPointPrintShortHelp(void)
 
 void TvCtrlPointPrintLongHelp(void)
 {
-	SampleUtil_Print(
+	SampleUtilPrint(
 		"\n"
 		"******************************\n"
 		"* TV Control Point Help Info *\n"
@@ -1506,13 +1506,13 @@ void TvCtrlPointPrintCommands(void)
 	int i;
 	int numofcmds = (sizeof cmdloop_cmdlist) / sizeof(cmdloop_commands);
 
-	SampleUtil_Print("Valid Commands:\n");
+	SampleUtilPrint("Valid Commands:\n");
 	for (i = 0; i < numofcmds; ++i) {
-		SampleUtil_Print("  %-14s %s\n",
+		SampleUtilPrint("  %-14s %s\n",
 			cmdloop_cmdlist[i].str,
 			cmdloop_cmdlist[i].args);
 	}
-	SampleUtil_Print("\n");
+	SampleUtilPrint("\n");
 }
 
 void *TvCtrlPointCommandLoop(void *args)
@@ -1522,7 +1522,7 @@ void *TvCtrlPointCommandLoop(void *args)
 	(void)args;
 
 	while (1) {
-		SampleUtil_Print("\n>> ");
+		SampleUtilPrint("\n>> ");
 		s = fgets(cmdline, 100, stdin);
 		if (!s)
 			break;
@@ -1559,11 +1559,11 @@ int TvCtrlPointProcessCommand(char *cmdline)
 		}
 	}
 	if (!cmdfound) {
-		SampleUtil_Print("Command not found; try 'Help'\n");
+		SampleUtilPrint("Command not found; try 'Help'\n");
 		return TV_SUCCESS;
 	}
 	if (invalidargs) {
-		SampleUtil_Print("Invalid arguments; try 'Help'\n");
+		SampleUtilPrint("Invalid arguments; try 'Help'\n");
 		return TV_SUCCESS;
 	}
 	switch (cmdnum) {
@@ -1662,11 +1662,11 @@ int TvCtrlPointProcessCommand(char *cmdline)
 		exit(rc);
 		break;
 	default:
-		SampleUtil_Print("Command not implemented; see 'Help'\n");
+		SampleUtilPrint("Command not implemented; see 'Help'\n");
 		break;
 	}
 	if (invalidargs)
-		SampleUtil_Print("Invalid args in command; see 'Help'\n");
+		SampleUtilPrint("Invalid args in command; see 'Help'\n");
 
 	return TV_SUCCESS;
 }

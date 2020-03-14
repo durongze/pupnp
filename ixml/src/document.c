@@ -169,7 +169,7 @@ IXML_Element *ixmlDocument_createElement(
 
 	ret = ixmlDocument_createElementEx(doc, tagName, &newElement);
 	if (ret != IXML_SUCCESS) {
-                IxmlPrintf(__FILE__, __LINE__, "ixmlDocument_createElement",
+                IxmlPrintf(__FUNCTION__, __LINE__, "ixmlDocument_createElement",
 			"Error %d\n", ret);
 		return NULL;
         }
@@ -491,7 +491,7 @@ int ixmlDocument_createElementNSEx(
 ErrorHandler:
 	*rtElement = newElement;
 	if (ret != IXML_SUCCESS) {
-		IxmlPrintf(__FILE__, line, "ixmlDocument_createElementNSEx", "Error %d\n", ret);
+		IxmlPrintf(__FUNCTION__, line, "ixmlDocument_createElementNSEx", "Error %d\n", ret);
 	}
 
 	return ret;

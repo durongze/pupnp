@@ -173,7 +173,7 @@ static void ixmlPrintDomTreeRecursive(
 			break;
 
 		default:
-			IxmlPrintf(__FILE__, __LINE__, "ixmlPrintDomTreeRecursive",
+			IxmlPrintf(__FUNCTION__, __LINE__, "ixmlPrintDomTreeRecursive",
 				"Warning, unknown node type %d\n",
 				(int)ixmlNode_getNodeType(nodeptr));
 			break;
@@ -245,7 +245,7 @@ static void ixmlPrintDomTree(
 		break;
 
 	default:
-		IxmlPrintf(__FILE__, __LINE__, "ixmlPrintDomTree",
+		IxmlPrintf(__FUNCTION__, __LINE__, "ixmlPrintDomTree",
 			"Warning, unknown node type %d\n",
 			(int)ixmlNode_getNodeType(nodeptr));
 		break;
@@ -316,7 +316,7 @@ static void ixmlDomTreetoString(
 		break;
 
 	default:
-		IxmlPrintf(__FILE__, __LINE__, "ixmlPrintDomTreeRecursive",
+		IxmlPrintf(__FUNCTION__, __LINE__, "ixmlPrintDomTreeRecursive",
 			"Warning, unknown node type %d\n",
 			(int)ixmlNode_getNodeType(nodeptr));
 		break;

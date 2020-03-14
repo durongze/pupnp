@@ -21,7 +21,7 @@
  */ 
 #ifdef DEBUG
 void IxmlPrintf(
-	/*! [in] The file name, usually __FILE__. */
+	/*! [in] The file name, usually __FUNCTION__. */
 	const char *DbgFileName,
 	/*! [in] The line number, usually __LINE__ or a variable that got the
 	 * __LINE__ at the appropriate place. */

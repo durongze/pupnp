@@ -137,7 +137,7 @@ static int dispatch_request(
 	case HTTPMETHOD_NOTIFY:
 	case HTTPMETHOD_SUBSCRIBE:
 	case HTTPMETHOD_UNSUBSCRIBE:
-		UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 			"miniserver %d: got GENA msg\n", info->socket);
 			callback = gGenaCallback;
 		break;
@@ -207,7 +207,7 @@ static void handle_request(
 	struct mserv_request_t *request = (struct mserv_request_t *)args;
 	SOCKET connfd = request->connfd;
 
-	UpnpPrintf( UPNP_INFO, MSERV, __FILE__, __LINE__,
+	UpnpPrintf( UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 		"miniserver %d: READING\n", connfd );
 	/* parser_request_init( &parser ); */ /* LEAK_FIX_MK */
 	hmsg = &parser.msg;
@@ -224,7 +224,7 @@ static void handle_request(
 	if (ret_code != 0) {
 		goto error_handler;
 	}
-	UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+	UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 		"miniserver %d: PROCESSING...\n", connfd);
 	/* dispatch */
 	http_error_code = dispatch_request(&info, &parser);
@@ -245,7 +245,7 @@ error_handler:
 	httpmsg_destroy(hmsg);
 	free(request);
 
-	UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+	UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 		"miniserver %d: COMPLETE\n", connfd);
 }
 
@@ -267,7 +267,7 @@ static UPNP_INLINE void schedule_request_job(
 	request = (struct mserv_request_t *)malloc(
 		sizeof (struct mserv_request_t));
 	if (request == NULL) {
-		UpnpPrintf( UPNP_INFO, MSERV, __FILE__, __LINE__,
+		UpnpPrintf( UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 			"mserv %d: out of memory\n", connfd);
 		sock_close(connfd);
 		return;
@@ -280,7 +280,7 @@ static UPNP_INLINE void schedule_request_job(
 	TPJobSetFreeFunction(&job, free_handle_request_arg);
 	TPJobSetPriority(&job, MED_PRIORITY);
 	if (ThreadPoolAdd(&gMiniServerThreadPool, &job, NULL) != 0) {
-		UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 			"mserv %d: cannot schedule request\n", connfd);
 		free(request);
 		sock_close(connfd);
@@ -310,7 +310,7 @@ static void web_server_accept(SOCKET lsock, fd_set *set)
 			&clientLen);
 		if (asock == INVALID_SOCKET) {
 			strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-			UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+			UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 				"miniserver: Error in accept(): %s\n",
 				errorBuffer);
 		} else {
@@ -346,10 +346,10 @@ static int receive_from_stopSock(SOCKET ssock, fd_set *set)
 			inet_ntop(AF_INET,
 				&((struct sockaddr_in*)&clientAddr)->sin_addr,
 				buf_ntop, sizeof(buf_ntop));
-			UpnpPrintf( UPNP_INFO, MSERV, __FILE__, __LINE__,
+			UpnpPrintf( UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 				"Received response: %s From host %s \n",
 				requestBuf, buf_ntop );
-			UpnpPrintf( UPNP_PACKET, MSERV, __FILE__, __LINE__,
+			UpnpPrintf( UPNP_PACKET, MSERV, __FUNCTION__, __LINE__,
 				"Received multicast packet: \n %s\n",
 				requestBuf);
 			if (NULL != strstr(requestBuf, "ShutDown")) {
@@ -415,7 +415,7 @@ static void RunMiniServer(
 		}
 		if (ret == SOCKET_ERROR) {
 			strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-			UpnpPrintf(UPNP_CRITICAL, SSDP, __FILE__, __LINE__,
+			UpnpPrintf(UPNP_CRITICAL, SSDP, __FUNCTION__, __LINE__,
 				"Error in select(): %s\n", errorBuffer);
 			continue;
 		} else {
@@ -475,7 +475,7 @@ static int get_port(
 	} else if(sockinfo.ss_family == AF_INET6) {
 		*port = ntohs(((struct sockaddr_in6*)&sockinfo)->sin6_port);
 	}
-	UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+	UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 		"sockfd = %d, .... port = %d\n", sockfd, (int)*port);
 
 	return 0;
@@ -537,7 +537,7 @@ static int get_miniserver_sockets(
 	listenfd4 = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenfd4 == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 			"get_miniserver_sockets: IPv4 socket not available: %s\n",
 			errorBuffer);
 	}
@@ -545,7 +545,7 @@ static int get_miniserver_sockets(
 	listenfd6 = socket(AF_INET6, SOCK_STREAM, 0);
 	if (listenfd6 == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 			"get_miniserver_sockets: IPv6 socket not available: %s\n",
 			errorBuffer);
 	} else {
@@ -554,7 +554,7 @@ static int get_miniserver_sockets(
 							   (char *)&onOff, sizeof(onOff));
 		if (sockError == SOCKET_ERROR) {
 			strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-			UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+			UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 				"get_miniserver_sockets: unable to set IPv6 socket protocol: %s\n",
 				errorBuffer);
 			sock_close(listenfd6);
@@ -567,7 +567,7 @@ static int get_miniserver_sockets(
 	    && listenfd6 == INVALID_SOCKET
 #endif
 	) {
-		UpnpPrintf(UPNP_CRITICAL, MSERV, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_CRITICAL, MSERV, __FUNCTION__, __LINE__,
 			"get_miniserver_sockets: no protocols available\n");
 		return UPNP_E_OUTOF_SOCKET;
 	}
@@ -600,7 +600,7 @@ static int get_miniserver_sockets(
 		 * AFTER OUR SERVER HAS BEEN CLOSED
 		 * THIS MAY CAUSE TCP TO BECOME LESS RELIABLE
 		 * HOWEVER IT HAS BEEN SUGESTED FOR TCP SERVERS. */
-		UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 			"get_miniserver_sockets: resuseaddr is set.\n");
 		if (listenfd4 != INVALID_SOCKET) {
 			sockError = setsockopt(listenfd4, SOL_SOCKET,
@@ -653,7 +653,7 @@ static int get_miniserver_sockets(
 			strerror_r(errno, errorBuffer,
 				   ERROR_BUFFER_LEN);
 			UpnpPrintf(UPNP_INFO, MSERV,
-				   __FILE__, __LINE__,
+				   __FUNCTION__, __LINE__,
 				   "get_miniserver_sockets: "
 				   "Error in IPv4 bind(): %s\n",
 				   errorBuffer);
@@ -691,7 +691,7 @@ static int get_miniserver_sockets(
 			strerror_r(errno, errorBuffer,
 				   ERROR_BUFFER_LEN);
 			UpnpPrintf(UPNP_INFO, MSERV,
-				   __FILE__, __LINE__,
+				   __FUNCTION__, __LINE__,
 				   "get_miniserver_sockets: "
 				   "Error in IPv6 bind(): %s\n",
 				   errorBuffer);
@@ -703,13 +703,13 @@ static int get_miniserver_sockets(
 	}
 #endif
 
-	UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+	UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 		"get_miniserver_sockets: bind successful\n");
 	if (listenfd4 != INVALID_SOCKET) {
 		ret_code = listen(listenfd4, SOMAXCONN);
 		if (ret_code == SOCKET_ERROR) {
 			strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-			UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+			UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 				"mserv start: Error in IPv4 listen(): %s\n",
 				errorBuffer);
 			sock_close(listenfd4);
@@ -733,7 +733,7 @@ static int get_miniserver_sockets(
 		ret_code = listen(listenfd6, SOMAXCONN);
 		if (ret_code == SOCKET_ERROR) {
 			strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-			UpnpPrintf(UPNP_INFO, MSERV, __FILE__, __LINE__,
+			UpnpPrintf(UPNP_INFO, MSERV, __FUNCTION__, __LINE__,
 				"mserv start: Error in IPv6 listen(): %s\n",
 				errorBuffer);
 			sock_close(listenfd4);
@@ -779,7 +779,7 @@ static int get_miniserver_stopsock(
 	miniServerStopSock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (miniServerStopSock == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_CRITICAL, MSERV, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_CRITICAL, MSERV, __FUNCTION__, __LINE__,
 			"Error in socket(): %s\n", errorBuffer);
 		return UPNP_E_OUTOF_SOCKET;
 	}
@@ -791,7 +791,7 @@ static int get_miniserver_stopsock(
 		sizeof(stop_sockaddr));
 	if (ret == SOCKET_ERROR) {
 		UpnpPrintf(UPNP_CRITICAL,
-		MSERV, __FILE__, __LINE__,
+		MSERV, __FUNCTION__, __LINE__,
 			"Error in binding localhost!!!\n");
 		sock_close(miniServerStopSock);
 		return UPNP_E_SOCKET_BIND;
@@ -949,7 +949,7 @@ int StopMiniServer()
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		UpnpPrintf(UPNP_INFO, SSDP, __FILE__, __LINE__,
+		UpnpPrintf(UPNP_INFO, SSDP, __FUNCTION__, __LINE__,
 			"SSDP_SERVER: StopSSDPServer: Error in socket() %s\n",
 			errorBuffer);
 		return 0;

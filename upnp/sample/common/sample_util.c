@@ -159,7 +159,7 @@ static IXML_NodeList *SampleUtil_GetNthServiceList(
 	 *
 	 *  return (NodeList*) A pointer to a NodeList containing the
 	 *                      matching items or NULL on an error. 	 */
-	SampleUtil_Print("SampleUtil_GetNthServiceList called : n = %d\n", n);
+	SampleUtilPrint("SampleUtil_GetNthServiceList called : n = %d\n", n);
 	servlistnodelist =
 		ixmlDocument_getElementsByTagName(doc, "serviceList");
 	if (servlistnodelist && ixmlNodeList_length(servlistnodelist) &&
@@ -179,9 +179,9 @@ static IXML_NodeList *SampleUtil_GetNthServiceList(
 			ServiceList = ixmlElement_getElementsByTagName(
 				(IXML_Element *)servlistnode, "service");
 		} else
-			SampleUtil_Print("%s(%d): ixmlNodeList_item(nodeList, "
+			SampleUtilPrint("%s(%d): ixmlNodeList_item(nodeList, "
 					 "n) returned NULL\n",
-				__FILE__,
+				__FUNCTION__,
 				__LINE__);
 	}
 	if (servlistnodelist)
@@ -205,40 +205,40 @@ char *SampleUtil_GetFirstDocumentItem(IXML_Document *doc, const char *item)
 		if (tmpNode) {
 			textNode = ixmlNode_getFirstChild(tmpNode);
 			if (!textNode) {
-				SampleUtil_Print("%s(%d): (BUG) "
+				SampleUtilPrint("%s(%d): (BUG) "
 						 "ixmlNode_getFirstChild("
 						 "tmpNode) returned NULL\n",
-					__FILE__,
+					__FUNCTION__,
 					__LINE__);
 				ret = strdup("");
 				goto epilogue;
 			}
 			nodeValue = ixmlNode_getNodeValue(textNode);
 			if (!nodeValue) {
-				SampleUtil_Print(
+				SampleUtilPrint(
 					"%s(%d): ixmlNode_getNodeValue "
 					"returned NULL\n",
-					__FILE__,
+					__FUNCTION__,
 					__LINE__);
 				ret = strdup("");
 				goto epilogue;
 			}
 			ret = strdup(nodeValue);
 			if (!ret) {
-				SampleUtil_Print("%s(%d): Error allocating "
+				SampleUtilPrint("%s(%d): Error allocating "
 						 "memory for XML Node value\n",
-					__FILE__,
+					__FUNCTION__,
 					__LINE__);
 				ret = strdup("");
 			}
 		} else
-			SampleUtil_Print("%s(%d): ixmlNodeList_item(nodeList, "
+			SampleUtilPrint("%s(%d): ixmlNodeList_item(nodeList, "
 					 "0) returned NULL\n",
-				__FILE__,
+				__FUNCTION__,
 				__LINE__);
 	} else
-		SampleUtil_Print("%s(%d): Error finding %s in XML Node\n",
-			__FILE__,
+		SampleUtilPrint("%s(%d): Error finding %s in XML Node\n",
+			__FUNCTION__,
 			__LINE__,
 			item);
 
@@ -258,16 +258,16 @@ char *SampleUtil_GetFirstElementItem(IXML_Element *element, const char *item)
 
 	nodeList = ixmlElement_getElementsByTagName(element, (char *)item);
 	if (nodeList == NULL) {
-		SampleUtil_Print("%s(%d): Error finding %s in XML Node\n",
-			__FILE__,
+		SampleUtilPrint("%s(%d): Error finding %s in XML Node\n",
+			__FUNCTION__,
 			__LINE__,
 			item);
 		return NULL;
 	}
 	tmpNode = ixmlNodeList_item(nodeList, 0);
 	if (!tmpNode) {
-		SampleUtil_Print("%s(%d): Error finding %s value in XML Node\n",
-			__FILE__,
+		SampleUtilPrint("%s(%d): Error finding %s value in XML Node\n",
+			__FUNCTION__,
 			__LINE__,
 			item);
 		ixmlNodeList_free(nodeList);
@@ -276,9 +276,9 @@ char *SampleUtil_GetFirstElementItem(IXML_Element *element, const char *item)
 	textNode = ixmlNode_getFirstChild(tmpNode);
 	ret = strdup(ixmlNode_getNodeValue(textNode));
 	if (!ret) {
-		SampleUtil_Print(
+		SampleUtilPrint(
 			"%s(%d): Error allocating memory for %s in XML Node\n",
-			__FILE__,
+			__FUNCTION__,
 			__LINE__,
 			item);
 		ixmlNodeList_free(nodeList);
@@ -294,51 +294,51 @@ void SampleUtil_PrintEventType(Upnp_EventType S)
 	switch (S) {
 	/* Discovery */
 	case UPNP_DISCOVERY_ADVERTISEMENT_ALIVE:
-		SampleUtil_Print("UPNP_DISCOVERY_ADVERTISEMENT_ALIVE\n");
+		SampleUtilPrint("UPNP_DISCOVERY_ADVERTISEMENT_ALIVE\n");
 		break;
 	case UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE:
-		SampleUtil_Print("UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE\n");
+		SampleUtilPrint("UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE\n");
 		break;
 	case UPNP_DISCOVERY_SEARCH_RESULT:
-		SampleUtil_Print("UPNP_DISCOVERY_SEARCH_RESULT\n");
+		SampleUtilPrint("UPNP_DISCOVERY_SEARCH_RESULT\n");
 		break;
 	case UPNP_DISCOVERY_SEARCH_TIMEOUT:
-		SampleUtil_Print("UPNP_DISCOVERY_SEARCH_TIMEOUT\n");
+		SampleUtilPrint("UPNP_DISCOVERY_SEARCH_TIMEOUT\n");
 		break;
 	/* SOAP */
 	case UPNP_CONTROL_ACTION_REQUEST:
-		SampleUtil_Print("UPNP_CONTROL_ACTION_REQUEST\n");
+		SampleUtilPrint("UPNP_CONTROL_ACTION_REQUEST\n");
 		break;
 	case UPNP_CONTROL_ACTION_COMPLETE:
-		SampleUtil_Print("UPNP_CONTROL_ACTION_COMPLETE\n");
+		SampleUtilPrint("UPNP_CONTROL_ACTION_COMPLETE\n");
 		break;
 	case UPNP_CONTROL_GET_VAR_REQUEST:
-		SampleUtil_Print("UPNP_CONTROL_GET_VAR_REQUEST\n");
+		SampleUtilPrint("UPNP_CONTROL_GET_VAR_REQUEST\n");
 		break;
 	case UPNP_CONTROL_GET_VAR_COMPLETE:
-		SampleUtil_Print("UPNP_CONTROL_GET_VAR_COMPLETE\n");
+		SampleUtilPrint("UPNP_CONTROL_GET_VAR_COMPLETE\n");
 		break;
 	/* GENA */
 	case UPNP_EVENT_SUBSCRIPTION_REQUEST:
-		SampleUtil_Print("UPNP_EVENT_SUBSCRIPTION_REQUEST\n");
+		SampleUtilPrint("UPNP_EVENT_SUBSCRIPTION_REQUEST\n");
 		break;
 	case UPNP_EVENT_RECEIVED:
-		SampleUtil_Print("UPNP_EVENT_RECEIVED\n");
+		SampleUtilPrint("UPNP_EVENT_RECEIVED\n");
 		break;
 	case UPNP_EVENT_RENEWAL_COMPLETE:
-		SampleUtil_Print("UPNP_EVENT_RENEWAL_COMPLETE\n");
+		SampleUtilPrint("UPNP_EVENT_RENEWAL_COMPLETE\n");
 		break;
 	case UPNP_EVENT_SUBSCRIBE_COMPLETE:
-		SampleUtil_Print("UPNP_EVENT_SUBSCRIBE_COMPLETE\n");
+		SampleUtilPrint("UPNP_EVENT_SUBSCRIBE_COMPLETE\n");
 		break;
 	case UPNP_EVENT_UNSUBSCRIBE_COMPLETE:
-		SampleUtil_Print("UPNP_EVENT_UNSUBSCRIBE_COMPLETE\n");
+		SampleUtilPrint("UPNP_EVENT_UNSUBSCRIBE_COMPLETE\n");
 		break;
 	case UPNP_EVENT_AUTORENEWAL_FAILED:
-		SampleUtil_Print("UPNP_EVENT_AUTORENEWAL_FAILED\n");
+		SampleUtilPrint("UPNP_EVENT_AUTORENEWAL_FAILED\n");
 		break;
 	case UPNP_EVENT_SUBSCRIPTION_EXPIRED:
-		SampleUtil_Print("UPNP_EVENT_SUBSCRIPTION_EXPIRED\n");
+		SampleUtilPrint("UPNP_EVENT_SUBSCRIPTION_EXPIRED\n");
 		break;
 	}
 }
@@ -347,7 +347,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 {
 	ithread_mutex_lock(&display_mutex);
 
-	SampleUtil_Print("====================================================="
+	SampleUtilPrint("====================================================="
 			 "=================\n"
 			 "-----------------------------------------------------"
 			 "-----------------\n");
@@ -358,7 +358,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 	case UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE:
 	case UPNP_DISCOVERY_SEARCH_RESULT: {
 		UpnpDiscovery *d_event = (UpnpDiscovery *)Event;
-		SampleUtil_Print("ErrCode     =  %d\n"
+		SampleUtilPrint("ErrCode     =  %d\n"
 				 "Expires     =  %d\n"
 				 "DeviceId    =  %s\n"
 				 "DeviceType  =  %s\n"
@@ -395,7 +395,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 		IXML_Document *actionResultDoc = NULL;
 		char *xmlbuff = NULL;
 
-		SampleUtil_Print("ErrCode     =  %d\n"
+		SampleUtilPrint("ErrCode     =  %d\n"
 				 "ErrStr      =  %s\n"
 				 "ActionName  =  %s\n"
 				 "UDN         =  %s\n"
@@ -413,25 +413,25 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 		if (actionRequestDoc) {
 			xmlbuff = ixmlPrintNode((IXML_Node *)actionRequestDoc);
 			if (xmlbuff) {
-				SampleUtil_Print(
+				SampleUtilPrint(
 					"ActRequest  =  %s\n", xmlbuff);
 				ixmlFreeDOMString(xmlbuff);
 			}
 			xmlbuff = NULL;
 		} else {
-			SampleUtil_Print("ActRequest  =  (null)\n");
+			SampleUtilPrint("ActRequest  =  (null)\n");
 		}
 		actionResultDoc = UpnpActionRequest_get_ActionResult(a_event);
 		if (actionResultDoc) {
 			xmlbuff = ixmlPrintNode((IXML_Node *)actionResultDoc);
 			if (xmlbuff) {
-				SampleUtil_Print(
+				SampleUtilPrint(
 					"ActResult   =  %s\n", xmlbuff);
 				ixmlFreeDOMString(xmlbuff);
 			}
 			xmlbuff = NULL;
 		} else {
-			SampleUtil_Print("ActResult   =  (null)\n");
+			SampleUtilPrint("ActResult   =  (null)\n");
 		}
 		break;
 	}
@@ -446,38 +446,38 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 		IXML_Document *actionResult =
 			UpnpActionComplete_get_ActionResult(a_event);
 
-		SampleUtil_Print("ErrCode     =  %d\n"
+		SampleUtilPrint("ErrCode     =  %d\n"
 				 "CtrlUrl     =  %s\n",
 			errCode,
 			ctrlURL);
 		if (actionRequest) {
 			xmlbuff = ixmlPrintNode((IXML_Node *)actionRequest);
 			if (xmlbuff) {
-				SampleUtil_Print(
+				SampleUtilPrint(
 					"ActRequest  =  %s\n", xmlbuff);
 				ixmlFreeDOMString(xmlbuff);
 			}
 			xmlbuff = NULL;
 		} else {
-			SampleUtil_Print("ActRequest  =  (null)\n");
+			SampleUtilPrint("ActRequest  =  (null)\n");
 		}
 		if (actionResult) {
 			xmlbuff = ixmlPrintNode((IXML_Node *)actionResult);
 			if (xmlbuff) {
-				SampleUtil_Print(
+				SampleUtilPrint(
 					"ActResult   =  %s\n", xmlbuff);
 				ixmlFreeDOMString(xmlbuff);
 			}
 			xmlbuff = NULL;
 		} else {
-			SampleUtil_Print("ActResult   =  (null)\n");
+			SampleUtilPrint("ActResult   =  (null)\n");
 		}
 		break;
 	}
 	case UPNP_CONTROL_GET_VAR_REQUEST: {
 		UpnpStateVarRequest *sv_event = (UpnpStateVarRequest *)Event;
 
-		SampleUtil_Print("ErrCode     =  %d\n"
+		SampleUtilPrint("ErrCode     =  %d\n"
 				 "ErrStr      =  %s\n"
 				 "UDN         =  %s\n"
 				 "ServiceID   =  %s\n"
@@ -498,7 +498,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 	case UPNP_CONTROL_GET_VAR_COMPLETE: {
 		UpnpStateVarComplete *sv_event = (UpnpStateVarComplete *)Event;
 
-		SampleUtil_Print("ErrCode     =  %d\n"
+		SampleUtilPrint("ErrCode     =  %d\n"
 				 "CtrlUrl     =  %s\n"
 				 "StateVarName=  %s\n"
 				 "CurrentVal  =  %s\n",
@@ -516,7 +516,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 		UpnpSubscriptionRequest *sr_event =
 			(UpnpSubscriptionRequest *)Event;
 
-		SampleUtil_Print("ServiceID   =  %s\n"
+		SampleUtilPrint("ServiceID   =  %s\n"
 				 "UDN         =  %s\n"
 				 "SID         =  %s\n",
 			UpnpString_get_String(
@@ -534,7 +534,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 
 		xmlbuff = ixmlPrintNode(
 			(IXML_Node *)UpnpEvent_get_ChangedVariables(e_event));
-		SampleUtil_Print("SID         =  %s\n"
+		SampleUtilPrint("SID         =  %s\n"
 				 "EventKey    =  %d\n"
 				 "ChangedVars =  %s\n",
 			UpnpString_get_String(UpnpEvent_get_SID(e_event)),
@@ -546,7 +546,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 	case UPNP_EVENT_RENEWAL_COMPLETE: {
 		UpnpEventSubscribe *es_event = (UpnpEventSubscribe *)Event;
 
-		SampleUtil_Print("SID         =  %s\n"
+		SampleUtilPrint("SID         =  %s\n"
 				 "ErrCode     =  %d\n"
 				 "TimeOut     =  %d\n",
 			UpnpString_get_String(
@@ -559,7 +559,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 	case UPNP_EVENT_UNSUBSCRIBE_COMPLETE: {
 		UpnpEventSubscribe *es_event = (UpnpEventSubscribe *)Event;
 
-		SampleUtil_Print("SID         =  %s\n"
+		SampleUtilPrint("SID         =  %s\n"
 				 "ErrCode     =  %d\n"
 				 "PublisherURL=  %s\n"
 				 "TimeOut     =  %d\n",
@@ -575,7 +575,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 	case UPNP_EVENT_SUBSCRIPTION_EXPIRED: {
 		UpnpEventSubscribe *es_event = (UpnpEventSubscribe *)Event;
 
-		SampleUtil_Print("SID         =  %s\n"
+		SampleUtilPrint("SID         =  %s\n"
 				 "ErrCode     =  %d\n"
 				 "PublisherURL=  %s\n"
 				 "TimeOut     =  %d\n",
@@ -588,7 +588,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 		break;
 	}
 	}
-	SampleUtil_Print("-----------------------------------------------------"
+	SampleUtilPrint("-----------------------------------------------------"
 			 "-----------------\n"
 			 "====================================================="
 			 "=================\n"
@@ -645,23 +645,23 @@ int SampleUtil_FindAndParseService(IXML_Document *DescDoc,
 			(IXML_Element *)service, "serviceType");
 		if (tempServiceType &&
 			strcmp(tempServiceType, serviceType) == 0) {
-			SampleUtil_Print("Found service: %s\n", serviceType);
+			SampleUtilPrint("Found service: %s\n", serviceType);
 			*serviceId = SampleUtil_GetFirstElementItem(
 				service, "serviceId");
-			SampleUtil_Print("serviceId: %s\n", *serviceId);
+			SampleUtilPrint("serviceId: %s\n", *serviceId);
 			relcontrolURL = SampleUtil_GetFirstElementItem(
 				service, "controlURL");
 			releventURL = SampleUtil_GetFirstElementItem(
 				service, "eventSubURL");
 			ret = UpnpResolveURL2(base, relcontrolURL, controlURL);
 			if (ret != UPNP_E_SUCCESS)
-				SampleUtil_Print("Error generating controlURL "
+				SampleUtilPrint("Error generating controlURL "
 						 "from %s + %s\n",
 					base,
 					relcontrolURL);
 			ret = UpnpResolveURL2(base, releventURL, eventURL);
 			if (ret != UPNP_E_SUCCESS)
-				SampleUtil_Print("Error generating eventURL "
+				SampleUtilPrint("Error generating eventURL "
 						 "from %s + %s\n",
 					base,
 					releventURL);

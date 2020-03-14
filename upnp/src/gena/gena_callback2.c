@@ -100,7 +100,7 @@ void genaCallback(
 		}
 		UpnpPrintf(UPNP_ALL,
 			GENA,
-			__FILE__,
+			__FUNCTION__,
 			__LINE__,
 			"got subscription request\n");
 	} else if (request->method == HTTPMETHOD_UNSUBSCRIBE) {

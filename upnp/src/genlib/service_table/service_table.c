@@ -400,34 +400,34 @@ void printService(
 {
     if( service ) {
         if( service->serviceType ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "serviceType: %s\n", service->serviceType );
         }
         if( service->serviceId ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "serviceId: %s\n", service->serviceId );
         }
 	if( service->SCPDURL ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "SCPDURL: %s\n", service->SCPDURL );
         }
 	if( service->controlURL ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "controlURL: %s\n", service->controlURL );
         }
 	if( service->eventURL ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "eventURL: %s\n", service->eventURL );
         }
 	if( service->UDN ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "UDN: %s\n\n", service->UDN );
         }
 	if( service->active ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
             "Service is active\n" );
         } else {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
             "Service is inactive\n" );
         }
     }
@@ -457,34 +457,34 @@ void printServiceList(
 {
     while( service ) {
         if( service->serviceType ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "serviceType: %s\n", service->serviceType );
         }
         if( service->serviceId ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "serviceId: %s\n", service->serviceId );
         }
         if( service->SCPDURL ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "SCPDURL: %s\n", service->SCPDURL );
         }
         if( service->controlURL ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "controlURL: %s\n", service->controlURL );
         }
         if( service->eventURL ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "eventURL: %s\n", service->eventURL );
         }
         if( service->UDN ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "UDN: %s\n\n", service->UDN );
         }
         if( service->active ) {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "Service is active\n" );
         } else {
-            UpnpPrintf( level, module, __FILE__, __LINE__,
+            UpnpPrintf( level, module, __FUNCTION__, __LINE__,
                 "Service is inactive\n" );
         }
         service = service->next;
@@ -514,9 +514,9 @@ void printServiceTable(
     Upnp_LogLevel level,
     Dbg_Module module )
 {
-    UpnpPrintf( level, module, __FILE__, __LINE__,
+    UpnpPrintf( level, module, __FUNCTION__, __LINE__,
         "URL_BASE: %s\n", table->URLBase );
-    UpnpPrintf( level, module, __FILE__, __LINE__,
+    UpnpPrintf( level, module, __FUNCTION__, __LINE__,
         "Services: \n" );
     printServiceList( table->serviceList, level, module );}
 #endif
@@ -798,10 +798,10 @@ service_info *getServiceList(
 				if (!(getSubElement("controlURL", current_service, &controlURL)) ||
 				    !(tempDOMString = getElementValue(controlURL)) ||
 				    !(current->controlURL = resolve_rel_url(URLBase, tempDOMString))) {
-					UpnpPrintf(UPNP_INFO, GENA, __FILE__,
+					UpnpPrintf(UPNP_INFO, GENA, __FUNCTION__,
 						   __LINE__,
 						   "BAD OR MISSING CONTROL URL");
-					UpnpPrintf(UPNP_INFO, GENA, __FILE__,
+					UpnpPrintf(UPNP_INFO, GENA, __FUNCTION__,
 						   __LINE__,
 						   "CONTROL URL SET TO NULL IN SERVICE INFO");
 					current->controlURL = NULL;
@@ -812,10 +812,10 @@ service_info *getServiceList(
 				if (!getSubElement("eventSubURL", current_service, &eventURL) ||
 				    !(tempDOMString = getElementValue(eventURL)) ||
 				    !(current->eventURL = resolve_rel_url(URLBase, tempDOMString))) {
-					UpnpPrintf(UPNP_INFO, GENA, __FILE__,
+					UpnpPrintf(UPNP_INFO, GENA, __FUNCTION__,
 						   __LINE__,
 						   "BAD OR MISSING EVENT URL");
-					UpnpPrintf(UPNP_INFO, GENA, __FILE__,
+					UpnpPrintf(UPNP_INFO, GENA, __FUNCTION__,
 						   __LINE__,
 						   "EVENT URL SET TO NULL IN SERVICE INFO");
 					current->eventURL = NULL;
