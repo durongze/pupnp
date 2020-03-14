@@ -53,6 +53,7 @@ static ithread_mutex_t GlobalDebugMutex;
 
 /*! Global log level */
 static Upnp_LogLevel g_log_level = UPNP_DEFAULT_LOG_LEVEL;
+static Dbg_Module g_log_mod = ALLMOD;
 
 /* Output file pointer */
 static FILE *fp;
@@ -105,6 +106,11 @@ void UpnpSetLogLevel(Upnp_LogLevel log_level)
 	setlogwascalled = 1;
 }
 
+void UpnpSetLogModule(Dbg_Module log_mod)
+{
+	g_log_mod = log_mod;
+}
+
 void UpnpCloseLog(void)
 {
 	/* Calling lock() assumes that someone called UpnpInitLog(), but
@@ -140,14 +146,7 @@ static int DebugAtThisLevel(Upnp_LogLevel DLevel, Dbg_Module Module)
 {
 	(void)Module;
 
-	return (DLevel <= g_log_level) &&
-		(DEBUG_ALL ||
-		 (Module == SSDP && DEBUG_SSDP) ||
-		 (Module == SOAP && DEBUG_SOAP) ||
-		 (Module == GENA && DEBUG_GENA) ||
-		 (Module == TPOOL && DEBUG_TPOOL) ||
-		 (Module == MSERV && DEBUG_MSERV) ||
-		 (Module == DOM && DEBUG_DOM) || (Module == HTTP && DEBUG_HTTP));
+	return (DLevel <= g_log_level) && (Module & g_log_mod);
 }
 
 static void UpnpDisplayFileAndLine(

@@ -31,7 +31,7 @@
 
 #include "sample_util.h"
 #include "tv_device.h"
-
+#include "upnpdebug.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	sigset_t sigs_to_catch;
 #endif
 	int code;
-
+	UpnpSetLogLevel(UPNP_ALL);
 	rc = device_main(argc, argv);
 	if (rc != UPNP_E_SUCCESS) {
 		return rc;

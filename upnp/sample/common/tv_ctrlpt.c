@@ -44,6 +44,7 @@
 #include "tv_ctrlpt.h"
 
 #include "upnp.h"
+#include "sample_util.h"
 
 /*!
  * Mutex for protecting the global device list in a multi-threaded,
@@ -65,8 +66,8 @@ const char *TvServiceName[] = {"Control", "Picture"};
    TvControl and TvPicture services
  */
 const char *TvVarName[TV_SERVICE_SERVCOUNT][TV_MAXVARS] = {
-	{"Power", "Channel", "Volume", ""},
-	{"Color", "Tint", "Contrast", "Brightness"}};
+	{CTRL_POWER, CTRL_CHANNEL, CTRL_VOLUME, CTRL_LOGLVL},
+	{PIC_COLOR, PIC_TINT, PIC_CONTRAST, PIC_BRIGHTNESS}};
 char TvVarCount[TV_SERVICE_SERVCOUNT] = {
 	TV_CONTROL_VARCOUNT, TV_PICTURE_VARCOUNT};
 
@@ -285,37 +286,37 @@ int TvCtrlPointGetVar(int service, int devnum, const char *varname)
 
 int TvCtrlPointGetPower(int devnum)
 {
-	return TvCtrlPointGetVar(TV_SERVICE_CONTROL, devnum, "Power");
+	return TvCtrlPointGetVar(TV_SERVICE_CONTROL, devnum, CTRL_POWER);
 }
 
 int TvCtrlPointGetChannel(int devnum)
 {
-	return TvCtrlPointGetVar(TV_SERVICE_CONTROL, devnum, "Channel");
+	return TvCtrlPointGetVar(TV_SERVICE_CONTROL, devnum, CTRL_CHANNEL);
 }
 
 int TvCtrlPointGetVolume(int devnum)
 {
-	return TvCtrlPointGetVar(TV_SERVICE_CONTROL, devnum, "Volume");
+	return TvCtrlPointGetVar(TV_SERVICE_CONTROL, devnum, CTRL_VOLUME);
 }
 
 int TvCtrlPointGetColor(int devnum)
 {
-	return TvCtrlPointGetVar(TV_SERVICE_PICTURE, devnum, "Color");
+	return TvCtrlPointGetVar(TV_SERVICE_PICTURE, devnum, PIC_COLOR);
 }
 
 int TvCtrlPointGetTint(int devnum)
 {
-	return TvCtrlPointGetVar(TV_SERVICE_PICTURE, devnum, "Tint");
+	return TvCtrlPointGetVar(TV_SERVICE_PICTURE, devnum, PIC_TINT);
 }
 
 int TvCtrlPointGetContrast(int devnum)
 {
-	return TvCtrlPointGetVar(TV_SERVICE_PICTURE, devnum, "Contrast");
+	return TvCtrlPointGetVar(TV_SERVICE_PICTURE, devnum, PIC_CONTRAST);
 }
 
 int TvCtrlPointGetBrightness(int devnum)
 {
-	return TvCtrlPointGetVar(TV_SERVICE_PICTURE, devnum, "Brightness");
+	return TvCtrlPointGetVar(TV_SERVICE_PICTURE, devnum, PIC_BRIGHTNESS);
 }
 
 /********************************************************************************
@@ -415,45 +416,55 @@ int TvCtrlPointSendActionNumericArg(int devnum,
 int TvCtrlPointSendPowerOn(int devnum)
 {
 	return TvCtrlPointSendAction(
-		TV_SERVICE_CONTROL, devnum, "PowerOn", NULL, NULL, 0);
+		TV_SERVICE_CONTROL, devnum, SET_POWER_ON, NULL, NULL, 0);
 }
 
 int TvCtrlPointSendPowerOff(int devnum)
 {
 	return TvCtrlPointSendAction(
-		TV_SERVICE_CONTROL, devnum, "PowerOff", NULL, NULL, 0);
+		TV_SERVICE_CONTROL, devnum, SET_POWER_OFF, NULL, NULL, 0);
 }
 
 int TvCtrlPointSendSetChannel(int devnum, int channel)
 {
 	return TvCtrlPointSendActionNumericArg(
-		devnum, TV_SERVICE_CONTROL, "SetChannel", "Channel", channel);
+		devnum, TV_SERVICE_CONTROL, SET_CHANNEL, CTRL_CHANNEL, channel);
 }
 
 int TvCtrlPointSendSetVolume(int devnum, int volume)
 {
 	return TvCtrlPointSendActionNumericArg(
-		devnum, TV_SERVICE_CONTROL, "SetVolume", "Volume", volume);
+		devnum, TV_SERVICE_CONTROL, SET_VOLUME, CTRL_VOLUME, volume);
+}
+
+int TvCtrlPointSendSetLog(int devnum, int level, int mod)
+{
+	TvCtrlPointSendActionNumericArg(devnum,
+		TV_SERVICE_CONTROL,
+		SET_LOG,
+		CTRL_LOGLVL,
+		(level << 16) + mod);
+    return 0;
 }
 
 int TvCtrlPointSendSetColor(int devnum, int color)
 {
 	return TvCtrlPointSendActionNumericArg(
-		devnum, TV_SERVICE_PICTURE, "SetColor", "Color", color);
+		devnum, TV_SERVICE_PICTURE, SET_COLOR, PIC_COLOR, color);
 }
 
 int TvCtrlPointSendSetTint(int devnum, int tint)
 {
 	return TvCtrlPointSendActionNumericArg(
-		devnum, TV_SERVICE_PICTURE, "SetTint", "Tint", tint);
+		devnum, TV_SERVICE_PICTURE, SET_TINT, PIC_TINT, tint);
 }
 
 int TvCtrlPointSendSetContrast(int devnum, int contrast)
 {
 	return TvCtrlPointSendActionNumericArg(devnum,
 		TV_SERVICE_PICTURE,
-		"SetContrast",
-		"Contrast",
+		SET_CONTRAST,
+		PIC_CONTRAST,
 		contrast);
 }
 
@@ -461,8 +472,8 @@ int TvCtrlPointSendSetBrightness(int devnum, int brightness)
 {
 	return TvCtrlPointSendActionNumericArg(devnum,
 		TV_SERVICE_PICTURE,
-		"SetBrightness",
-		"Brightness",
+		SET_BRIGHTNESS,
+		PIC_BRIGHTNESS,
 		brightness);
 }
 
@@ -1270,14 +1281,12 @@ int TvCtrlPointStart(print_string printFunctionPtr,
 
 	ithread_mutex_init(&DeviceListMutex, 0);
 
-	SampleUtil_Print("Initializing UPnP Sdk with\n"
-			 "\tipaddress = %s port = %u\n",
+	rc = UpnpInit2(ip_address, port);
+	SampleUtilPrint("Init UPnP Sdk with ip:%s,port:%u\n",
 		ip_address ? ip_address : "{NULL}",
 		port);
-
-	rc = UpnpInit2(ip_address, port);
 	if (rc != UPNP_E_SUCCESS) {
-		SampleUtil_Print("WinCEStart: UpnpInit2() Error: %d\n", rc);
+		SampleUtilPrint("WinCE Start: UpnpInit2() Error: %d\n", rc);
 		if (!combo) {
 			UpnpFinish();
 
@@ -1291,11 +1300,10 @@ int TvCtrlPointStart(print_string printFunctionPtr,
 		port = UpnpGetServerPort();
 	}
 
-	SampleUtil_Print("UPnP Initialized\n"
-			 "\tipaddress = %s port = %u\n",
+	SampleUtilPrint("UPnP Init ip:%s,port:%u\n",
 		ip_address ? ip_address : "{NULL}",
 		port);
-	SampleUtil_Print("Registering Control Point\n");
+	SampleUtilPrint("Reg Ctrl Point\n");
 	rc = UpnpRegisterClient(TvCtrlPointCallbackEventHandler,
 		&ctrlpt_handle,
 		&ctrlpt_handle);
@@ -1306,7 +1314,7 @@ int TvCtrlPointStart(print_string printFunctionPtr,
 		return TV_ERROR;
 	}
 
-	SampleUtil_Print("Control Point Registered\n");
+	SampleUtil_Print("Ctrl Point Registered\n");
 
 	TvCtrlPointRefresh();
 
@@ -1330,25 +1338,7 @@ int TvCtrlPointStop(void)
 
 void TvCtrlPointPrintShortHelp(void)
 {
-	SampleUtil_Print("Commands:\n"
-			 "  Help\n"
-			 "  HelpFull\n"
-			 "  ListDev\n"
-			 "  Refresh\n"
-			 "  PrintDev      <devnum>\n"
-			 "  PowerOn       <devnum>\n"
-			 "  PowerOff      <devnum>\n"
-			 "  SetChannel    <devnum> <channel>\n"
-			 "  SetVolume     <devnum> <volume>\n"
-			 "  SetColor      <devnum> <color>\n"
-			 "  SetTint       <devnum> <tint>\n"
-			 "  SetContrast   <devnum> <contrast>\n"
-			 "  SetBrightness <devnum> <brightness>\n"
-			 "  CtrlAction    <devnum> <action>\n"
-			 "  PictAction    <devnum> <action>\n"
-			 "  CtrlGetVar    <devnum> <varname>\n"
-			 "  PictGetVar    <devnum> <action>\n"
-			 "  Exit\n");
+    TvCtrlPointPrintCommands();
 }
 
 void TvCtrlPointPrintLongHelp(void)
@@ -1463,6 +1453,7 @@ enum cmdloop_tvcmds
 	SETTINT,
 	SETCONT,
 	SETBRT,
+	SETLOG,
 	CTRLACTION,
 	PICTACTION,
 	CTRLGETVAR,
@@ -1489,19 +1480,21 @@ struct cmdloop_commands
 /*! Mappings between command text names, command tag,
  * and required command arguments for command line
  * commands */
-static struct cmdloop_commands cmdloop_cmdlist[] = {{"Help", PRTHELP, 1, ""},
+static struct cmdloop_commands cmdloop_cmdlist[] = {
+    {"Help", PRTHELP, 1, ""},
 	{"HelpFull", PRTFULLHELP, 1, ""},
 	{"ListDev", LSTDEV, 1, ""},
 	{"Refresh", REFRESH, 1, ""},
 	{"PrintDev", PRTDEV, 2, "<devnum>"},
-	{"PowerOn", POWON, 2, "<devnum>"},
-	{"PowerOff", POWOFF, 2, "<devnum>"},
-	{"SetChannel", SETCHAN, 3, "<devnum> <channel (int)>"},
-	{"SetVolume", SETVOL, 3, "<devnum> <volume (int)>"},
-	{"SetColor", SETCOL, 3, "<devnum> <color (int)>"},
-	{"SetTint", SETTINT, 3, "<devnum> <tint (int)>"},
-	{"SetContrast", SETCONT, 3, "<devnum> <contrast (int)>"},
-	{"SetBrightness", SETBRT, 3, "<devnum> <brightness (int)>"},
+	{SET_POWER_ON, POWON, 2, "<devnum>"},
+	{SET_POWER_OFF, POWOFF, 2, "<devnum>"},
+	{SET_CHANNEL, SETCHAN, 3, "<devnum> <channel (int)>"},
+	{SET_VOLUME, SETVOL, 3, "<devnum> <volume (int)>"},
+	{SET_COLOR, SETCOL, 3, "<devnum> <color (int)>"},
+	{SET_TINT, SETTINT, 3, "<devnum> <tint (int)>"},
+	{SET_CONTRAST, SETCONT, 3, "<devnum> <contrast (int)>"},
+	{SET_BRIGHTNESS, SETBRT, 3, "<devnum> <brightness (int)>"},
+	{SET_LOG, SETLOG, 3, "<devnum> <level (int)> <module (int)>"},
 	{"CtrlAction", CTRLACTION, 2, "<devnum> <action (string)>"},
 	{"PictAction", PICTACTION, 2, "<devnum> <action (string)>"},
 	{"CtrlGetVar", CTRLGETVAR, 2, "<devnum> <varname (string)>"},
@@ -1544,7 +1537,8 @@ int TvCtrlPointProcessCommand(char *cmdline)
 	char cmd[100];
 	char strarg[100];
 	int arg_val_err = -99999;
-	int arg1 = arg_val_err;
+    int devnum = arg_val_err;
+    int arg1 = arg_val_err;
 	int arg2 = arg_val_err;
 	int cmdnum = -1;
 	int numofcmds = (sizeof cmdloop_cmdlist) / sizeof(cmdloop_commands);
@@ -1591,6 +1585,15 @@ int TvCtrlPointProcessCommand(char *cmdline)
 	case SETVOL:
 		TvCtrlPointSendSetVolume(arg1, arg2);
 		break;
+	case SETLOG:
+		/* re-parse commandline since second arg is string. */
+		validargs = sscanf(cmdline, "%s %d %d %d",
+		    cmd, &devnum, &arg1, &arg2);
+		if (validargs == 4)
+			TvCtrlPointSendSetLog(devnum, arg1, arg2);
+		else
+			invalidargs++;
+		break;                
 	case SETCOL:
 		TvCtrlPointSendSetColor(arg1, arg2);
 		break;

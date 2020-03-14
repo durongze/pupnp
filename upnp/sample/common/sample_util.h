@@ -49,7 +49,7 @@ extern "C" {
 #include "ixml.h" /* for IXML_Document, IXML_Element */
 #include "upnp.h" /* for Upnp_EventType */
 #include "upnptools.h"
-
+#include "upnpdebug.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -224,7 +224,7 @@ int SampleUtil_Print(
 	__attribute__((format (__printf__, 1, 2)))
 #endif
 ;
-
+#define SampleUtilPrint(fmt, ...) UpnpPrintf(UPNP_INFO, APP, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 /*!
  * \brief
  */

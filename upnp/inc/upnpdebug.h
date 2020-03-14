@@ -67,16 +67,17 @@ extern "C" {
  *    \li \c UPNP_INFO [2]
  *    \li \c UPNP_ALL [3]
  */
-typedef enum Upnp_Module {
-	SSDP,
-	SOAP,
-	GENA,
-	TPOOL,
-	MSERV,
-	DOM,
-	API,
-	HTTP,
-	APP,
+typedef enum Upnp_Module_e {
+	SSDP = 1,
+	SOAP = (1 << 1),
+	GENA = (1 << 2),
+	TPOOL = (1 << 3),
+	MSERV = (1 << 4),
+	DOM = (1 << 5),
+	API = (1 << 6),
+	HTTP = (1 << 7),
+	APP = (1 << 8),
+	ALLMOD = (~0)
 } Dbg_Module;
 
 /*@{*/
@@ -127,6 +128,19 @@ static UPNP_INLINE void UpnpSetLogLevel(Upnp_LogLevel log_level)
 	return;
 }
 #endif
+
+#ifdef DEBUG
+void UpnpSetLogModule(Dbg_Module log_mod);
+
+#else
+static UPNP_INLINE void UpnpSetLogModule(Dbg_Module log_mod)
+{
+	(void)log_mod;
+	return;
+}
+#endif
+
+
 
 /*!
  * \brief Closes the log files.
@@ -221,7 +235,7 @@ static UPNP_INLINE void UpnpPrintf(Upnp_LogLevel DLevel, Dbg_Module Module,
 }
 #endif /* DEBUG */
 
-#define UpnpDebug(fmt, ...)  UpnpPrintf(UPNP_INFO, APP, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define UpnpDebug(l, m, fmt, ...)  UpnpPrintf(l, m, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 
 #ifdef __cplusplus
 }

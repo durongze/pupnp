@@ -51,14 +51,14 @@
 
 /*! Global arrays for storing Tv Control Service variable names, values,
  * and defaults. */
-const char *tvc_varname[] = {"Power", "Channel", "Volume"};
+const char *tvc_varname[] = {CTRL_POWER, CTRL_CHANNEL, CTRL_VOLUME, CTRL_LOGLVL};
 
 char tvc_varval[TV_CONTROL_VARCOUNT][TV_MAX_VAL_LEN];
-const char *tvc_varval_def[] = {"1", "1", "5"};
+const char *tvc_varval_def[] = {"1", "1", "5", "1"};
 
 /*! Global arrays for storing Tv Picture Service variable names, values,
  * and defaults. */
-const char *tvp_varname[] = {"Color", "Tint", "Contrast", "Brightness"};
+const char *tvp_varname[] = {PIC_COLOR, PIC_TINT, PIC_CONTRAST, PIC_BRIGHTNESS};
 
 char tvp_varval[TV_PICTURE_VARCOUNT][TV_MAX_VAL_LEN];
 const char *tvp_varval_def[] = {"5", "5", "5", "5"};
@@ -166,46 +166,48 @@ static int SetServiceTable(
 int SetActionTable(int serviceType, struct TvService *out)
 {
 	if (serviceType == TV_SERVICE_CONTROL) {
-		out->ActionNames[0] = "PowerOn";
+		out->ActionNames[0] = SET_POWER_ON;
 		out->actions[0] = TvDevicePowerOn;
-		out->ActionNames[1] = "PowerOff";
+		out->ActionNames[1] = SET_POWER_OFF;
 		out->actions[1] = TvDevicePowerOff;
-		out->ActionNames[2] = "SetChannel";
+		out->ActionNames[2] = SET_CHANNEL;
 		out->actions[2] = TvDeviceSetChannel;
 		out->ActionNames[3] = "IncreaseChannel";
 		out->actions[3] = TvDeviceIncreaseChannel;
 		out->ActionNames[4] = "DecreaseChannel";
 		out->actions[4] = TvDeviceDecreaseChannel;
-		out->ActionNames[5] = "SetVolume";
+		out->ActionNames[5] = SET_VOLUME;
 		out->actions[5] = TvDeviceSetVolume;
 		out->ActionNames[6] = "IncreaseVolume";
 		out->actions[6] = TvDeviceIncreaseVolume;
 		out->ActionNames[7] = "DecreaseVolume";
 		out->actions[7] = TvDeviceDecreaseVolume;
-		out->ActionNames[8] = NULL;
+		out->ActionNames[8] = SET_LOG;
+		out->actions[8] = TvDeviceSetLog;
+		out->ActionNames[9] = NULL;
 		return 1;
 	} else if (serviceType == TV_SERVICE_PICTURE) {
-		out->ActionNames[0] = "SetColor";
+		out->ActionNames[0] = SET_COLOR;
 		out->ActionNames[1] = "IncreaseColor";
 		out->ActionNames[2] = "DecreaseColor";
 		out->actions[0] = TvDeviceSetColor;
 		out->actions[1] = TvDeviceIncreaseColor;
 		out->actions[2] = TvDeviceDecreaseColor;
-		out->ActionNames[3] = "SetTint";
+		out->ActionNames[3] = SET_TINT;
 		out->ActionNames[4] = "IncreaseTint";
 		out->ActionNames[5] = "DecreaseTint";
 		out->actions[3] = TvDeviceSetTint;
 		out->actions[4] = TvDeviceIncreaseTint;
 		out->actions[5] = TvDeviceDecreaseTint;
 
-		out->ActionNames[6] = "SetBrightness";
+		out->ActionNames[6] = SET_BRIGHTNESS;
 		out->ActionNames[7] = "IncreaseBrightness";
 		out->ActionNames[8] = "DecreaseBrightness";
 		out->actions[6] = TvDeviceSetBrightness;
 		out->actions[7] = TvDeviceIncreaseBrightness;
 		out->actions[8] = TvDeviceDecreaseBrightness;
 
-		out->ActionNames[9] = "SetContrast";
+		out->ActionNames[9] = SET_CONTRAST;
 		out->ActionNames[10] = "IncreaseContrast";
 		out->ActionNames[11] = "DecreaseContrast";
 
@@ -504,8 +506,11 @@ int TvDeviceSetServiceTableVar(unsigned int service, int variable, char *value)
 	/* IXML_Document  *PropSet= NULL; */
 	if (service >= TV_SERVICE_SERVCOUNT ||
 		variable >= tv_service_table[service].VariableCount ||
-		strlen(value) >= TV_MAX_VAL_LEN)
+		strlen(value) >= TV_MAX_VAL_LEN) {
+		SampleUtilPrint("service:%d,variable:%d,value:%s,cnt:%d",
+			service, variable, value, tv_service_table[service].VariableCount);
 		return (0);
+    }
 
 	ithread_mutex_lock(&TVDevMutex);
 
@@ -571,9 +576,9 @@ int TvDevicePowerOn(
 	if (TvDeviceSetPower(POWER_ON)) {
 		/* create a response */
 		if (UpnpAddToActionResponse(out,
-			    "PowerOn",
+			    SET_POWER_ON,
 			    TvServiceType[TV_SERVICE_CONTROL],
-			    "Power",
+			    CTRL_POWER,
 			    "1") != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
@@ -597,9 +602,9 @@ int TvDevicePowerOff(
 		/*create a response */
 
 		if (UpnpAddToActionResponse(out,
-			    "PowerOff",
+			    SET_POWER_OFF,
 			    TvServiceType[TV_SERVICE_CONTROL],
-			    "Power",
+			    CTRL_POWER,
 			    "0") != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
@@ -619,7 +624,7 @@ int TvDeviceSetChannel(
 
 	(*out) = NULL;
 	(*errorString) = NULL;
-	if (!(value = SampleUtil_GetFirstDocumentItem(in, "Channel"))) {
+	if (!(value = SampleUtil_GetFirstDocumentItem(in, CTRL_CHANNEL))) {
 		(*errorString) = "Invalid Channel";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -635,7 +640,7 @@ int TvDeviceSetChannel(
 	if (TvDeviceSetServiceTableVar(
 		    TV_SERVICE_CONTROL, TV_CONTROL_CHANNEL, value)) {
 		if (UpnpAddToActionResponse(out,
-			    "SetChannel",
+			    SET_CHANNEL,
 			    TvServiceType[TV_SERVICE_CONTROL],
 			    "NewChannel",
 			    value) != UPNP_E_SUCCESS) {
@@ -690,7 +695,7 @@ int IncrementChannel(int incr,
 		if (UpnpAddToActionResponse(out,
 			    actionName,
 			    TvServiceType[TV_SERVICE_CONTROL],
-			    "Channel",
+			    CTRL_CHANNEL,
 			    value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
@@ -723,7 +728,7 @@ int TvDeviceSetVolume(
 
 	(*out) = NULL;
 	(*errorString) = NULL;
-	if (!(value = SampleUtil_GetFirstDocumentItem(in, "Volume"))) {
+	if (!(value = SampleUtil_GetFirstDocumentItem(in, CTRL_VOLUME))) {
 		(*errorString) = "Invalid Volume";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -737,7 +742,7 @@ int TvDeviceSetVolume(
 	if (TvDeviceSetServiceTableVar(
 		    TV_SERVICE_CONTROL, TV_CONTROL_VOLUME, value)) {
 		if (UpnpAddToActionResponse(out,
-			    "SetVolume",
+			    SET_VOLUME,
 			    TvServiceType[TV_SERVICE_CONTROL],
 			    "NewVolume",
 			    value) != UPNP_E_SUCCESS) {
@@ -800,7 +805,7 @@ static int IncrementVolume(
 		if (UpnpAddToActionResponse(out,
 			    actionName,
 			    TvServiceType[TV_SERVICE_CONTROL],
-			    "Volume",
+			    CTRL_VOLUME,
 			    value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
@@ -825,6 +830,48 @@ int TvDeviceDecreaseVolume(
 	return IncrementVolume(-1, in, out, errorString);
 }
 
+int TvDeviceSetLog(
+	IXML_Document *in, IXML_Document **out, const char **errorString)
+{
+    int ret = 0;
+	char *value = NULL;
+	int level = 0;
+    int module = 0;
+	(*out) = NULL;
+    static char errorBuffer[32] = { 0 };
+	(*errorString) = NULL;
+	if (!(value = SampleUtil_GetFirstDocumentItem(in, CTRL_LOGLVL))) {
+        (*errorString) = "Invalid log ctrl";
+        return UPNP_E_INVALID_PARAM;
+	} else {
+	    level = atoi(value) >> 16;
+        UpnpSetLogLevel(level);
+        module = atoi(value) & 0xFFFF;
+        UpnpSetLogModule(module);
+    }
+	/* Vendor-specific code to set the channel goes here. */
+    ret = TvDeviceSetServiceTableVar(
+		    TV_SERVICE_CONTROL, TV_CONTROL_LOGLVL, value);
+	if (ret) {
+        ret = UpnpAddToActionResponse(out, SET_LOG,
+            TvServiceType[TV_SERVICE_CONTROL], "NewLevel", value);
+		if (ret != UPNP_E_SUCCESS) {
+			(*out) = NULL;
+            sprintf(errorBuffer, "Internal Error:%d", ret);
+			(*errorString) =  errorBuffer;
+			free(value);
+			return UPNP_E_INTERNAL_ERROR;
+		}
+		free(value);
+		return UPNP_E_SUCCESS;
+	} else {
+		free(value);
+        sprintf(errorBuffer, "Internal Error:%s", value);
+        (*errorString) =  errorBuffer;
+		return UPNP_E_INTERNAL_ERROR;
+	}
+}
+
 int TvDeviceSetColor(
 	IXML_Document *in, IXML_Document **out, const char **errorString)
 {
@@ -833,7 +880,7 @@ int TvDeviceSetColor(
 
 	(*out) = NULL;
 	(*errorString) = NULL;
-	if (!(value = SampleUtil_GetFirstDocumentItem(in, "Color"))) {
+	if (!(value = SampleUtil_GetFirstDocumentItem(in, PIC_COLOR))) {
 		(*errorString) = "Invalid Color";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -847,7 +894,7 @@ int TvDeviceSetColor(
 	if (TvDeviceSetServiceTableVar(
 		    TV_SERVICE_PICTURE, TV_PICTURE_COLOR, value)) {
 		if (UpnpAddToActionResponse(out,
-			    "SetColor",
+			    SET_COLOR,
 			    TvServiceType[TV_SERVICE_PICTURE],
 			    "NewColor",
 			    value) != UPNP_E_SUCCESS) {
@@ -909,7 +956,7 @@ static int IncrementColor(
 		if (UpnpAddToActionResponse(out,
 			    actionName,
 			    TvServiceType[TV_SERVICE_PICTURE],
-			    "Color",
+			    PIC_COLOR,
 			    value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
@@ -942,7 +989,7 @@ int TvDeviceSetTint(
 
 	(*out) = NULL;
 	(*errorString) = NULL;
-	if (!(value = SampleUtil_GetFirstDocumentItem(in, "Tint"))) {
+	if (!(value = SampleUtil_GetFirstDocumentItem(in, PIC_TINT))) {
 		(*errorString) = "Invalid Tint";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -956,7 +1003,7 @@ int TvDeviceSetTint(
 	if (TvDeviceSetServiceTableVar(
 		    TV_SERVICE_PICTURE, TV_PICTURE_TINT, value)) {
 		if (UpnpAddToActionResponse(out,
-			    "SetTint",
+			    SET_TINT,
 			    TvServiceType[TV_SERVICE_PICTURE],
 			    "NewTint",
 			    value) != UPNP_E_SUCCESS) {
@@ -1023,7 +1070,7 @@ int IncrementTint(int incr,
 		if (UpnpAddToActionResponse(out,
 			    actionName,
 			    TvServiceType[TV_SERVICE_PICTURE],
-			    "Tint",
+			    PIC_TINT,
 			    value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
@@ -1098,7 +1145,7 @@ int TvDeviceSetContrast(
 	(*out) = NULL;
 	(*errorString) = NULL;
 
-	if (!(value = SampleUtil_GetFirstDocumentItem(in, "Contrast"))) {
+	if (!(value = SampleUtil_GetFirstDocumentItem(in, PIC_CONTRAST))) {
 		(*errorString) = "Invalid Contrast";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -1113,7 +1160,7 @@ int TvDeviceSetContrast(
 	if (TvDeviceSetServiceTableVar(
 		    TV_SERVICE_PICTURE, TV_PICTURE_CONTRAST, value)) {
 		if (UpnpAddToActionResponse(out,
-			    "SetContrast",
+			    SET_CONTRAST,
 			    TvServiceType[TV_SERVICE_PICTURE],
 			    "NewContrast",
 			    value) != UPNP_E_SUCCESS) {
@@ -1176,7 +1223,7 @@ static int IncrementContrast(
 		if (UpnpAddToActionResponse(out,
 			    actionName,
 			    TvServiceType[TV_SERVICE_PICTURE],
-			    "Contrast",
+			    PIC_CONTRAST,
 			    value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
@@ -1209,7 +1256,7 @@ int TvDeviceSetBrightness(
 
 	(*out) = NULL;
 	(*errorString) = NULL;
-	if (!(value = SampleUtil_GetFirstDocumentItem(in, "Brightness"))) {
+	if (!(value = SampleUtil_GetFirstDocumentItem(in, PIC_BRIGHTNESS))) {
 		(*errorString) = "Invalid Brightness";
 		return UPNP_E_INVALID_PARAM;
 	}
@@ -1224,7 +1271,7 @@ int TvDeviceSetBrightness(
 	if (TvDeviceSetServiceTableVar(
 		    TV_SERVICE_PICTURE, TV_PICTURE_BRIGHTNESS, value)) {
 		if (UpnpAddToActionResponse(out,
-			    "SetBrightness",
+			    SET_BRIGHTNESS,
 			    TvServiceType[TV_SERVICE_PICTURE],
 			    "NewBrightness",
 			    value) != UPNP_E_SUCCESS) {
@@ -1287,7 +1334,7 @@ static int IncrementBrightness(
 		if (UpnpAddToActionResponse(out,
 			    actionName,
 			    TvServiceType[TV_SERVICE_PICTURE],
-			    "Brightness",
+			    PIC_BRIGHTNESS,
 			    value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";

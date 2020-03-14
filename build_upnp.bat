@@ -3,6 +3,7 @@ rem mkdir lib
 rem tlbimp excel.exe /out:lib\excel.dll 
 mkdir dyzbuild
 pushd dyzbuild
+xcopy ..\upnp\sample\web web /y /e /i /q
 for /f %%i in ('dir /s /b "*.dll"') do (del %%i )
 cmake ..
 MSBuild device.vcxproj

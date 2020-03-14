@@ -35,6 +35,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include "upnpdebug.h"
 
 int main(int argc, char **argv)
 {

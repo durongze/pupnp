@@ -55,7 +55,7 @@ extern "C" {
 
 #include "ithread.h"
 #include "upnp.h"
-
+#include "tv_config.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -86,45 +86,6 @@ extern "C" {
 /*! Channel constants */
 #define MAX_CHANNEL 100
 #define MIN_CHANNEL 1
-
-/*! Number of services. */
-#define TV_SERVICE_SERVCOUNT  2
-
-/*! Index of control service */
-#define TV_SERVICE_CONTROL    0
-
-/*! Index of picture service */
-#define TV_SERVICE_PICTURE    1
-
-/*! Number of control variables */
-#define TV_CONTROL_VARCOUNT   3
-
-/*! Index of power variable */
-#define TV_CONTROL_POWER      0
-
-/*! Index of channel variable */
-#define TV_CONTROL_CHANNEL    1
-
-/*! Index of volume variable */
-#define TV_CONTROL_VOLUME     2
-
-/*! Number of picture variables */
-#define TV_PICTURE_VARCOUNT   4
-
-/*! Index of color variable */
-#define TV_PICTURE_COLOR      0
-
-/*! Index of tint variable */
-#define TV_PICTURE_TINT       1
-
-/*! Index of contrast variable */
-#define TV_PICTURE_CONTRAST   2
-
-/*! Index of brightness variable */
-#define TV_PICTURE_BRIGHTNESS 3
-
-/*! Max value length */
-#define TV_MAX_VAL_LEN 5
 
 /*! Max actions */
 #define TV_MAXACTIONS 12
@@ -366,6 +327,9 @@ int TvDeviceDecreaseVolume(
 	IXML_Document **out,
 	/*! [out] ErrorString in case action was unsuccessful. */
 	const char **errorString);
+
+int TvDeviceSetLog(
+	IXML_Document *in, IXML_Document **out, const char **errorString);
 
 /*Picture Service Actions */
 

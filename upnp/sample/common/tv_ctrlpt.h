@@ -53,27 +53,10 @@ extern "C" {
 #include "upnp.h"
 #include "UpnpString.h"
 #include "upnptools.h"
-
+#include "tv_config.h"
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
-
-#define TV_SERVICE_SERVCOUNT	2
-#define TV_SERVICE_CONTROL	0
-#define TV_SERVICE_PICTURE	1
-
-#define TV_CONTROL_VARCOUNT	3
-#define TV_CONTROL_POWER	0
-#define TV_CONTROL_CHANNEL	1
-#define TV_CONTROL_VOLUME	2
-
-#define TV_PICTURE_VARCOUNT	4
-#define TV_PICTURE_COLOR	0
-#define TV_PICTURE_TINT		1
-#define TV_PICTURE_CONTRAST	2
-#define TV_PICTURE_BRIGHTNESS	3
-
-#define TV_MAX_VAL_LEN		5
 
 #define TV_SUCCESS		0
 #define TV_ERROR		(-1)
@@ -180,11 +163,8 @@ void TvCtrlPointVerifyTimeouts(
 	 * function is called. */
 	int incr);
 
-void	TvCtrlPointPrintCommands(void);
-void*	TvCtrlPointCommandLoop(void *);
 int		TvCtrlPointStart(print_string printFunctionPtr, state_update updateFunctionPtr, int combo);
 int		TvCtrlPointStop(void);
-int		TvCtrlPointProcessCommand(char *cmdline);
 
 /*!
  * \brief Print help info for this application.
