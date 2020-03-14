@@ -85,6 +85,7 @@ typedef enum Upnp_LogLevel_e {
 	UPNP_CRITICAL,
 	UPNP_ERROR,
 	UPNP_INFO,
+	UPNP_DBG,
 	UPNP_ALL
 } Upnp_LogLevel;
 /*@}*/

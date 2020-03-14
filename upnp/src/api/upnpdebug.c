@@ -158,6 +158,7 @@ char *UpnpGetLevelName(Upnp_LogLevel DLevel)
     	case UPNP_CRITICAL: slev="CRI";break;
     	case UPNP_ERROR: slev="ERR";break;
     	case UPNP_INFO: slev="INF";break;
+        case UPNP_DBG: slev="DBG";break;
     	case UPNP_ALL: slev="ALL";break;
     	default: slev="UNK";break;
 	}
@@ -176,6 +177,7 @@ char *UpnpGetModuleName(Dbg_Module Module)
     	case DOM: smod="DOM_";break;
     	case API: smod="API_";break;
     	case HTTP: smod="HTTP";break;
+        case APP: smod="APP_";break;
     	default: smod="UNKN";break;
 	}
     return smod;
