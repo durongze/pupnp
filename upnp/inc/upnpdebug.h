@@ -202,7 +202,7 @@ static UPNP_INLINE FILE *UpnpGetDebugFile(Upnp_LogLevel level, Dbg_Module module
  * along with the information from where this debug statement is coming.
  */
 #ifdef DEBUG
-void UpnpPrintf(
+void Upnp_Printf(
 	/*! [in] The level of the debug logging. It will decide whether debug
 	 * statement will go to standard output, or any of the log files. */
 	Upnp_LogLevel DLevel,
@@ -223,7 +223,7 @@ void UpnpPrintf(
 #endif
 	;
 #else /* DEBUG */
-static UPNP_INLINE void UpnpPrintf(Upnp_LogLevel DLevel, Dbg_Module Module,
+static UPNP_INLINE void Upnp_Printf(Upnp_LogLevel DLevel, Dbg_Module Module,
 	const char *DbgFileName, int DbgLineNo, const char *FmtStr, ...)
 {
 	(void)DLevel;
@@ -235,8 +235,8 @@ static UPNP_INLINE void UpnpPrintf(Upnp_LogLevel DLevel, Dbg_Module Module,
 }
 #endif /* DEBUG */
 
-#define UpnpDebug(l, m, fmt, ...)  UpnpPrintf(l, m, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
-
+#define UpnpPrintf(l, m, fmt, ...)  Upnp_Printf(l, m, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+ 
 #ifdef __cplusplus
 }
 #endif

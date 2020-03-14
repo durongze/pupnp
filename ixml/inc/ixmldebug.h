@@ -20,7 +20,7 @@
  * along with the information from where this debug statement is coming.
  */ 
 #ifdef DEBUG
-void IxmlPrintf(
+void Ixml_Printf(
 	/*! [in] The file name, usually __FUNCTION__. */
 	const char *DbgFileName,
 	/*! [in] The line number, usually __LINE__ or a variable that got the
@@ -67,6 +67,7 @@ static UPNP_INLINE void printNodes(
 }
 #endif
 
+#define IxmlPrintf(fmt, ...)  Ixml_Printf(__FUNCTION__, __LINE__, ":", fmt, ##__VA_ARGS__)
 
 #endif /* IXMLDEBUG_H */
 

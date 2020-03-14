@@ -179,10 +179,7 @@ static IXML_NodeList *SampleUtil_GetNthServiceList(
 			ServiceList = ixmlElement_getElementsByTagName(
 				(IXML_Element *)servlistnode, "service");
 		} else
-			SampleUtilPrint("%s(%d): ixmlNodeList_item(nodeList, "
-					 "n) returned NULL\n",
-				__FUNCTION__,
-				__LINE__);
+			SampleUtilPrint("ixmlNodeList_item(nodeList, n) returned NULL\n");
 	}
 	if (servlistnodelist)
 		ixmlNodeList_free(servlistnodelist);
@@ -205,41 +202,33 @@ char *SampleUtil_GetFirstDocumentItem(IXML_Document *doc, const char *item)
 		if (tmpNode) {
 			textNode = ixmlNode_getFirstChild(tmpNode);
 			if (!textNode) {
-				SampleUtilPrint("%s(%d): (BUG) "
+				SampleUtilPrint("(BUG) "
 						 "ixmlNode_getFirstChild("
-						 "tmpNode) returned NULL\n",
-					__FUNCTION__,
-					__LINE__);
+						 "tmpNode) returned NULL\n");
 				ret = strdup("");
 				goto epilogue;
 			}
 			nodeValue = ixmlNode_getNodeValue(textNode);
 			if (!nodeValue) {
 				SampleUtilPrint(
-					"%s(%d): ixmlNode_getNodeValue "
-					"returned NULL\n",
-					__FUNCTION__,
-					__LINE__);
+					" ixmlNode_getNodeValue "
+					"returned NULL\n");
 				ret = strdup("");
 				goto epilogue;
 			}
 			ret = strdup(nodeValue);
 			if (!ret) {
-				SampleUtilPrint("%s(%d): Error allocating "
-						 "memory for XML Node value\n",
-					__FUNCTION__,
-					__LINE__);
+				SampleUtilPrint("Error allocating "
+						 "memory for XML Node value\n");
 				ret = strdup("");
 			}
 		} else
-			SampleUtilPrint("%s(%d): ixmlNodeList_item(nodeList, "
-					 "0) returned NULL\n",
-				__FUNCTION__,
-				__LINE__);
+			SampleUtilPrint("ixmlNodeList_item(nodeList, "
+					 "0) returned NULL\n");
 	} else
-		SampleUtilPrint("%s(%d): Error finding %s in XML Node\n",
-			__FUNCTION__,
-			__LINE__,
+		SampleUtilPrint("Error finding %s in XML Node\n",
+			
+			
 			item);
 
 epilogue:
@@ -258,17 +247,17 @@ char *SampleUtil_GetFirstElementItem(IXML_Element *element, const char *item)
 
 	nodeList = ixmlElement_getElementsByTagName(element, (char *)item);
 	if (nodeList == NULL) {
-		SampleUtilPrint("%s(%d): Error finding %s in XML Node\n",
-			__FUNCTION__,
-			__LINE__,
+		SampleUtilPrint("Error finding %s in XML Node\n",
+			
+			
 			item);
 		return NULL;
 	}
 	tmpNode = ixmlNodeList_item(nodeList, 0);
 	if (!tmpNode) {
-		SampleUtilPrint("%s(%d): Error finding %s value in XML Node\n",
-			__FUNCTION__,
-			__LINE__,
+		SampleUtilPrint("Error finding %s value in XML Node\n",
+			
+			
 			item);
 		ixmlNodeList_free(nodeList);
 		return NULL;
@@ -277,9 +266,9 @@ char *SampleUtil_GetFirstElementItem(IXML_Element *element, const char *item)
 	ret = strdup(ixmlNode_getNodeValue(textNode));
 	if (!ret) {
 		SampleUtilPrint(
-			"%s(%d): Error allocating memory for %s in XML Node\n",
-			__FUNCTION__,
-			__LINE__,
+			"Error allocating memory for %s in XML Node\n",
+			
+			
 			item);
 		ixmlNodeList_free(nodeList);
 		return NULL;

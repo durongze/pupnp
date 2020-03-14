@@ -306,8 +306,8 @@ SOCKET http_Connect(uri_type *destination_url, uri_type *url)
 #ifdef _WIN32
 		UpnpPrintf(UPNP_CRITICAL,
 			HTTP,
-			__FUNCTION__,
-			__LINE__,
+			
+			
 			"connect error: %d\n",
 			WSAGetLastError());
 #endif
@@ -315,8 +315,8 @@ SOCKET http_Connect(uri_type *destination_url, uri_type *url)
 			strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
 			UpnpPrintf(UPNP_INFO,
 				HTTP,
-				__FUNCTION__,
-				__LINE__,
+				
+				
 				"Error in shutdown: %s\n",
 				errorBuffer);
 		}
@@ -373,8 +373,8 @@ int http_RecvMessage(SOCKINFO *info,
 			case PARSE_SUCCESS:
 				UpnpPrintf(UPNP_INFO,
 					HTTP,
-					__FUNCTION__,
-					__LINE__,
+					
+					
 					"<<< (RECVD) "
 					"<<<\n%s\n-----------------\n",
 					parser->msg.msg.buf);
@@ -414,8 +414,8 @@ int http_RecvMessage(SOCKINFO *info,
 			if (ok_on_close) {
 				UpnpPrintf(UPNP_INFO,
 					HTTP,
-					__FUNCTION__,
-					__LINE__,
+					
+					
 					"<<< (RECVD) "
 					"<<<\n%s\n-----------------\n",
 					parser->msg.msg.buf);
@@ -443,8 +443,8 @@ ExitFunction:
 	if (ret != UPNP_E_SUCCESS) {
 		UpnpPrintf(UPNP_ALL,
 			HTTP,
-			__FUNCTION__,
-			line,
+			
+
 			"(http_RecvMessage): Error %d, http_error_code = %d.\n",
 			ret,
 			*http_error_code);
@@ -627,8 +627,8 @@ int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
 						TimeOut);
 					UpnpPrintf(UPNP_INFO,
 						HTTP,
-						__FUNCTION__,
-						__LINE__,
+						
+						
 						">>> (SENT) "
 						">>>\n%.*s\n------------\n",
 						nw,
@@ -661,8 +661,8 @@ int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
 				num_written = (size_t)nw;
 				UpnpPrintf(UPNP_INFO,
 					HTTP,
-					__FUNCTION__,
-					__LINE__,
+					
+					
 					">>> (SENT) >>>\n"
 					"%.*s\nbuf_length=%" PRIzd
 					", num_written=%" PRIzd "\n"
@@ -805,8 +805,8 @@ int http_Download(const char *url_str,
 	/*ret_code = parse_uri( (char*)url_str, strlen(url_str), &url ); */
 	UpnpPrintf(UPNP_INFO,
 		HTTP,
-		__FUNCTION__,
-		__LINE__,
+		
+		
 		"DOWNLOAD URL : %s\n",
 		url_str);
 	ret_code = http_FixStrUrl((char *)url_str, strlen(url_str), &url);
@@ -830,8 +830,8 @@ int http_Download(const char *url_str,
 	}
 	UpnpPrintf(UPNP_INFO,
 		HTTP,
-		__FUNCTION__,
-		__LINE__,
+		
+		
 		"HOSTNAME : %s Length : %" PRIzu "\n",
 		hoststr,
 		hostlen);
@@ -850,16 +850,16 @@ int http_Download(const char *url_str,
 	if (ret_code != 0) {
 		UpnpPrintf(UPNP_INFO,
 			HTTP,
-			__FUNCTION__,
-			__LINE__,
+			
+			
 			"HTTP Makemessage failed\n");
 		membuffer_destroy(&request);
 		return ret_code;
 	}
 	UpnpPrintf(UPNP_INFO,
 		HTTP,
-		__FUNCTION__,
-		__LINE__,
+		
+		
 		"HTTP Buffer:\n%s\n"
 		"----------END--------\n",
 		request.buf);
@@ -876,7 +876,7 @@ int http_Download(const char *url_str,
 		membuffer_destroy(&request);
 		return ret_code;
 	}
-	UpnpPrintf(UPNP_INFO, HTTP, __FUNCTION__, __LINE__, "Response\n");
+	UpnpPrintf(UPNP_INFO, HTTP,   "Response\n");
 	print_http_headers(&response.msg);
 	/* optional content-type */
 	if (content_type) {
@@ -916,8 +916,8 @@ int http_Download(const char *url_str,
 		if (msg_length <= *doc_length || *document == NULL)
 			UpnpPrintf(UPNP_INFO,
 				HTTP,
-				__FUNCTION__,
-				__LINE__,
+				
+				
 				"msg_length(%" PRIzu ") <= *doc_length(%" PRIzu
 				") or document is NULL",
 				msg_length,
@@ -969,8 +969,8 @@ int MakeGenericMessage(http_method_t method,
 
 	UpnpPrintf(UPNP_INFO,
 		HTTP,
-		__FUNCTION__,
-		__LINE__,
+		
+		
 		"URL: %s method: %d\n",
 		url_str,
 		method);
@@ -1000,8 +1000,8 @@ int MakeGenericMessage(http_method_t method,
 				return ret_code;
 			UpnpPrintf(UPNP_INFO,
 				HTTP,
-				__FUNCTION__,
-				__LINE__,
+				
+				
 				"HOSTNAME : %s Length : %" PRIzu "\n",
 				hoststr,
 				hostlen);
@@ -1035,16 +1035,16 @@ int MakeGenericMessage(http_method_t method,
 	if (ret_code != 0) {
 		UpnpPrintf(UPNP_INFO,
 			HTTP,
-			__FUNCTION__,
-			__LINE__,
+			
+			
 			"HTTP Makemessage failed\n");
 		membuffer_destroy(request);
 		return ret_code;
 	}
 	UpnpPrintf(UPNP_INFO,
 		HTTP,
-		__FUNCTION__,
-		__LINE__,
+		
+		
 		"HTTP Buffer:\n%s\n"
 		"----------END--------\n",
 		request->buf);
@@ -1516,8 +1516,8 @@ int http_ReadHttpResponse(void *Handle, char *buf, size_t *size, int timeout)
 			if (ok_on_close) {
 				UpnpPrintf(UPNP_INFO,
 					HTTP,
-					__FUNCTION__,
-					__LINE__,
+					
+					
 					"<<< (RECVD) "
 					"<<<\n%s\n-----------------\n",
 					handle->response.msg.msg.buf);
@@ -1692,8 +1692,8 @@ int http_MakeMessage(membuffer *buf,
 			assert(s);
 			UpnpPrintf(UPNP_ALL,
 				HTTP,
-				__FUNCTION__,
-				__LINE__,
+				
+				
 				"Adding a string : %s\n",
 				s);
 			if (membuffer_append(buf, s, strlen(s)))
@@ -1720,8 +1720,8 @@ int http_MakeMessage(membuffer *buf,
 			s = (char *)va_arg(argp, char *);
 			UpnpPrintf(UPNP_ALL,
 				HTTP,
-				__FUNCTION__,
-				__LINE__,
+				
+				
 				"Adding a char Buffer starting with: %c\n",
 				(int)s[0]);
 			assert(s);
@@ -2017,8 +2017,8 @@ int MakeGetMessageEx(const char *url_str,
 	do {
 		UpnpPrintf(UPNP_INFO,
 			HTTP,
-			__FUNCTION__,
-			__LINE__,
+			
+			
 			"DOWNLOAD URL : %s\n",
 			url_str);
 		if ((errCode = http_FixStrUrl(
@@ -2051,8 +2051,8 @@ int MakeGetMessageEx(const char *url_str,
 		*temp = '/';
 		UpnpPrintf(UPNP_INFO,
 			HTTP,
-			__FUNCTION__,
-			__LINE__,
+			
+			
 			"HOSTNAME : %s Length : %" PRIzu "\n",
 			hoststr,
 			hostlen);
@@ -2073,8 +2073,8 @@ int MakeGetMessageEx(const char *url_str,
 		if (errCode != 0) {
 			UpnpPrintf(UPNP_INFO,
 				HTTP,
-				__FUNCTION__,
-				__LINE__,
+				
+				
 				"HTTP Makemessage failed\n");
 			membuffer_destroy(request);
 			return errCode;
@@ -2082,8 +2082,8 @@ int MakeGetMessageEx(const char *url_str,
 	} while (0);
 	UpnpPrintf(UPNP_INFO,
 		HTTP,
-		__FUNCTION__,
-		__LINE__,
+		
+		
 		"HTTP Buffer:\n%s\n"
 		"----------END--------\n",
 		request->buf);

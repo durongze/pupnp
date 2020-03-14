@@ -1345,7 +1345,7 @@ void TvCtrlPointPrintShortHelp(void)
 
 void TvCtrlPointPrintLongHelp(void)
 {
-	SampleUtilPrint(
+	SampleUtil_Print(
 		"\n"
 		"******************************\n"
 		"* TV Control Point Help Info *\n"
@@ -1508,13 +1508,13 @@ void TvCtrlPointPrintCommands(void)
 	int i;
 	int numofcmds = (sizeof cmdloop_cmdlist) / sizeof(cmdloop_commands);
 
-	SampleUtilPrint("Valid Commands:\n");
+	SampleUtil_Print("Valid Commands:\n");
 	for (i = 0; i < numofcmds; ++i) {
-		SampleUtilPrint("  %-14s %s\n",
+		SampleUtil_Print("  %-14s %s\n",
 			cmdloop_cmdlist[i].str,
 			cmdloop_cmdlist[i].args);
 	}
-	SampleUtilPrint("\n");
+	SampleUtil_Print("\n");
 }
 
 void *TvCtrlPointCommandLoop(void *args)
@@ -1524,7 +1524,7 @@ void *TvCtrlPointCommandLoop(void *args)
 	(void)args;
 
 	while (1) {
-		SampleUtilPrint("\n>> ");
+		SampleUtil_Print("\n>> ");
 		s = fgets(cmdline, 100, stdin);
 		if (!s)
 			break;
@@ -1561,11 +1561,11 @@ int TvCtrlPointProcessCommand(char *cmdline)
 		}
 	}
 	if (!cmdfound) {
-		SampleUtilPrint("Command not found; try 'Help'\n");
+		SampleUtil_Print("Command not found; try 'Help'\n");
 		return TV_SUCCESS;
 	}
 	if (invalidargs) {
-		SampleUtilPrint("Invalid arguments; try 'Help'\n");
+		SampleUtil_Print("Invalid arguments; try 'Help'\n");
 		return TV_SUCCESS;
 	}
 	switch (cmdnum) {

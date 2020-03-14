@@ -1736,7 +1736,7 @@ parser_parse_chunky_entity( http_parser_t * parser )
     status = match( scanner, "%x%L%c", &parser->chunk_size, &dummy );
     if( status != ( parse_status_t ) PARSE_OK ) {
 	scanner->cursor = save_pos;
-	UpnpPrintf( UPNP_INFO, HTTP, __FUNCTION__, __LINE__,
+	UpnpPrintf( UPNP_INFO, HTTP,  
 	    "CHUNK COULD NOT BE PARSED\n" );
 	return status;
     }
@@ -1865,7 +1865,7 @@ parser_get_entity_read_method( http_parser_t * parser )
 	if( raw_find_str( &hdr_value, "chunked" ) >= 0 ) {
 	    /* read method to use chunked transfer encoding */
 	    parser->ent_position = ENTREAD_USING_CHUNKED;
-	    UpnpPrintf( UPNP_INFO, HTTP, __FUNCTION__, __LINE__,
+	    UpnpPrintf( UPNP_INFO, HTTP,  
 		"Found Chunked Encoding ....\n" );
 
 	    return PARSE_CONTINUE_1;
@@ -2204,12 +2204,12 @@ void print_http_headers(http_message_t *hmsg)
 
 	/* print start line */
 	if( hmsg->is_request ) {
-		UpnpPrintf(UPNP_ALL, HTTP, __FUNCTION__, __LINE__,
+		UpnpPrintf(UPNP_ALL, HTTP,  
 				   "method = %d, version = %d.%d, url = %.*s\n",
 				   hmsg->method, hmsg->major_version, hmsg->minor_version,
 				   (int)hmsg->uri.pathquery.size, hmsg->uri.pathquery.buff);
 	} else {
-		UpnpPrintf(UPNP_ALL, HTTP, __FUNCTION__, __LINE__,
+		UpnpPrintf(UPNP_ALL, HTTP,  
 				   "resp status = %d, version = %d.%d, status msg = %.*s\n",
 				   hmsg->status_code, hmsg->major_version, hmsg->minor_version,
 				   (int)hmsg->status_msg.length, hmsg->status_msg.buf);
@@ -2221,7 +2221,7 @@ void print_http_headers(http_message_t *hmsg)
 	while( node != NULL ) {
 		header = ( http_header_t * ) node->item;
 		/* NNS: header = (http_header_t *)node->data; */
-		UpnpPrintf(UPNP_ALL, HTTP, __FUNCTION__, __LINE__,
+		UpnpPrintf(UPNP_ALL, HTTP,  
 				   "hdr name: %.*s, value: %.*s\n",
 				   (int)header->name.length, header->name.buf,
 				   (int)header->value.length, header->value.buf );

@@ -224,7 +224,7 @@ int SampleUtil_Print(
 	__attribute__((format (__printf__, 1, 2)))
 #endif
 ;
-#define SampleUtilPrint(fmt, ...) UpnpPrintf(UPNP_INFO, APP, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define SampleUtilPrint(fmt, ...) UpnpPrintf(UPNP_INFO, APP, fmt, ##__VA_ARGS__)
 /*!
  * \brief
  */

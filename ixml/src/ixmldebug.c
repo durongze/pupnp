@@ -16,7 +16,7 @@
 
 
 #ifdef DEBUG
-void IxmlPrintf(
+void Ixml_Printf(
 	const char *DbgFileName,
 	int DbgLineNo,
 	const char *FunctionName,
@@ -58,7 +58,7 @@ void printNodes(IXML_Node *tmpRoot, int depth)
         NodeType = ixmlNode_getNodeType(ChildNode1);
         NodeValue = ixmlNode_getNodeValue(ChildNode1);
         NodeName = ixmlNode_getNodeName(ChildNode1);
-	IxmlPrintf(__FUNCTION__, __LINE__, "printNodes",
+		IxmlPrintf(
             "DEPTH-%2d-IXML_Node Type %d, "
             "IXML_Node Name: %s, IXML_Node Value: %s\n",
             depth, NodeType, NodeName, NodeValue);

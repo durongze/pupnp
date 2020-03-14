@@ -130,7 +130,7 @@ int sock_destroy(SOCKINFO *info, int ShutdownMethod)
 #endif
 		if (shutdown(info->socket, ShutdownMethod) == -1) {
 			strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-			UpnpPrintf(UPNP_INFO, HTTP, __FUNCTION__, __LINE__,
+			UpnpPrintf(UPNP_INFO, HTTP,  
 				   "Error in shutdown: %s\n", errorBuffer);
 		}
 		if (sock_close(info->socket) == -1) {

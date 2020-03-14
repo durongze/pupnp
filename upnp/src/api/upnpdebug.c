@@ -206,7 +206,7 @@ static void UpnpDisplayFileAndLine(
 	fflush(fp);
 }
 
-void UpnpPrintf(
+void Upnp_Printf(
 	Upnp_LogLevel DLevel, Dbg_Module Module,
 	const char *DbgFunName, int DbgLineNo, const char *FmtStr, ...)
 {
