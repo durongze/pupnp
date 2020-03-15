@@ -7,6 +7,8 @@ xcopy ..\upnp\sample\web web /y /e /i /q
 for /f %%i in ('dir /s /b "*.dll"') do (del %%i )
 cmake ..
 MSBuild device.vcxproj
+MSBuild ctrlpt.vcxproj
+MSBuild combo.vcxproj
 popd
 
 for /f %%i in ('dir /s /b "*.dll"') do (copy %%i .\)
