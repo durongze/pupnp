@@ -235,7 +235,7 @@ int TvCtrlPointRefresh(void)
 	 * waiting for up to 5 seconds for the response */
 	rc = UpnpSearchAsync(ctrlpt_handle, 5, TvDeviceType, NULL);
 	if (UPNP_E_SUCCESS != rc) {
-		SampleUtilPrint("Error sending search request%d\n", rc);
+		SampleUtil_Print("Error sending search request%d\n", rc);
 
 		return TV_ERROR;
 	}
@@ -532,13 +532,13 @@ int TvCtrlPointPrintList()
 
 	ithread_mutex_lock(&DeviceListMutex);
 
-	SampleUtilPrint("TvCtrlPointPrintList:\n");
+	SampleUtil_Print("TvCtrlPointPrintList:\n");
 	tmpdevnode = GlobalDeviceList;
 	while (tmpdevnode) {
-		SampleUtilPrint(" %3d -- %s\n", ++i, tmpdevnode->device.UDN);
+		SampleUtil_Print(" %3d -- %s\n", ++i, tmpdevnode->device.UDN);
 		tmpdevnode = tmpdevnode->next;
 	}
-	SampleUtilPrint("\n");
+	SampleUtil_Print("\n");
 	ithread_mutex_unlock(&DeviceListMutex);
 
 	return TV_SUCCESS;
@@ -563,7 +563,7 @@ int TvCtrlPointPrintDevice(int devnum)
 	char spacer[15];
 
 	if (devnum <= 0) {
-		SampleUtilPrint("Error in TvCtrlPointPrintDevice: "
+		SampleUtil_Print("Error in TvCtrlPointPrintDevice: "
 				 "invalid devnum = %d\n",
 			devnum);
 		return TV_ERROR;
@@ -571,7 +571,7 @@ int TvCtrlPointPrintDevice(int devnum)
 
 	ithread_mutex_lock(&DeviceListMutex);
 
-	SampleUtilPrint("TvCtrlPointPrintDevice:\n");
+	SampleUtil_Print("TvCtrlPointPrintDevice:\n");
 	tmpdevnode = GlobalDeviceList;
 	while (tmpdevnode) {
 		i++;
@@ -580,13 +580,13 @@ int TvCtrlPointPrintDevice(int devnum)
 		tmpdevnode = tmpdevnode->next;
 	}
 	if (!tmpdevnode) {
-		SampleUtilPrint(
+		SampleUtil_Print(
 			"Error in TvCtrlPointPrintDevice: "
 			"invalid devnum = %d  --  actual device count = %d\n",
 			devnum,
 			i);
 	} else {
-		SampleUtilPrint("  TvDevice -- %d\n"
+		SampleUtil_Print("  TvDevice -- %d\n"
 				 "    |                  \n"
 				 "    +- UDN        = %s\n"
 				 "    +- DescDocURL     = %s\n"
@@ -604,7 +604,7 @@ int TvCtrlPointPrintDevice(int devnum)
 				sprintf(spacer, "    |    ");
 			else
 				sprintf(spacer, "         ");
-			SampleUtilPrint("    |                  \n"
+			SampleUtil_Print("    |                  \n"
 					 "    +- Tv %s Service\n"
 					 "%s+- ServiceId       = %s\n"
 					 "%s+- ServiceType     = %s\n"
@@ -627,7 +627,7 @@ int TvCtrlPointPrintDevice(int devnum)
 				tmpdevnode->device.TvService[service].SID,
 				spacer);
 			for (var = 0; var < TvVarCount[service]; var++) {
-				SampleUtilPrint("%s     +- %-10s = %s\n",
+				SampleUtil_Print("%s     +- %-10s = %s\n",
 					spacer,
 					TvVarName[service][var],
 					tmpdevnode->device.TvService[service]
@@ -635,7 +635,7 @@ int TvCtrlPointPrintDevice(int devnum)
 			}
 		}
 	}
-	SampleUtilPrint("\n");
+	SampleUtil_Print("\n");
 	ithread_mutex_unlock(&DeviceListMutex);
 
 	return TV_SUCCESS;
@@ -1607,11 +1607,11 @@ int TvCtrlPointProcessCommand(char *cmdline)
 		exit(rc);
 		break;
 	default:
-		SampleUtilPrint("Command not implemented; see 'Help'\n");
+		SampleUtil_Print("Command not implemented; see 'Help'\n");
 		break;
 	}
 	if (invalidargs)
-		SampleUtilPrint("Invalid args in command; see 'Help'\n");
+		SampleUtil_Print("Invalid args in command; see 'Help'\n");
 
 	return TV_SUCCESS;
 }

@@ -1552,13 +1552,17 @@ int TvDeviceProcessCommand(char *cmdline)
 	    case PRTHELP:
             TvPrintCommands(sizeof(devCmdList) / sizeof(cmdloop), devCmdList);
             break;
+    	case SETLOG:
+			UpnpSetLogLevel(arg1);
+            UpnpSetLogModule(arg2);
+    		break;
 		case EXITCMD:
 		    SampleUtil_Print("Shutting down...\n");
 			TvDeviceStop();
 			exit(0);
         default:
-		    SampleUtilPrint("\n   Unknown command: %s\n\n", cmd);
-			SampleUtilPrint("   Valid Commands:\n"
+		    SampleUtil_Print("\n   Unknown command: %s\n\n", cmd);
+			SampleUtil_Print("   Valid Commands:\n"
 					 "     Exit\n\n");
             break;
     }
