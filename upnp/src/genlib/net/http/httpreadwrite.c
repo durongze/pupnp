@@ -319,6 +319,46 @@ SOCKET http_Connect(uri_type *destination_url, uri_type *url)
 	return connfd;
 }
 
+int http_RecvMessageDetail(http_parser_t *parser, int num_read,
+	char *buf, int *http_error_code, int *ok_on_close)
+{
+	int ret = UPNP_E_INVALID_HANDLE;
+	parse_status_t status;
+
+    /* got data */
+    status = parser_append(parser, buf, (size_t)num_read);
+    switch (status) {
+    case PARSE_SUCCESS:
+        HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n", parser->msg.msg.buf);
+        HttpPrintf(UPNP_INFO,"-----------------\n");
+        print_http_headers(&parser->msg);
+        if (g_maxContentLength > (size_t)0 &&
+            parser->content_length > (unsigned int)g_maxContentLength) {
+            *http_error_code = HTTP_REQ_ENTITY_TOO_LARGE;
+            ret = UPNP_E_OUTOF_BOUNDS;
+            break;
+        }
+        ret = UPNP_E_SUCCESS;
+        break;
+    case PARSE_FAILURE:
+    case PARSE_NO_MATCH:
+        *http_error_code = parser->http_error_code;
+        ret = UPNP_E_BAD_HTTPMSG;
+        break;
+    case PARSE_INCOMPLETE_ENTITY:
+        /* read until close */
+        *ok_on_close = 1;
+        break;
+    case PARSE_CONTINUE_1:
+        /* Web post request. */
+        ret = UPNP_E_SUCCESS;
+        break;
+    default:
+        break;
+    }
+    return ret;
+}
+
 /*!
  * \brief Get the data on the socket and take actions based on the read data to
  * modify the parser objects buffer.
@@ -358,46 +398,16 @@ int http_RecvMessage(SOCKINFO *info,
 
 	while (1) {
 		num_read = sock_read(info, buf, sizeof buf, timeout_secs);
-		if (num_read > 0) {
-			/* got data */
-			status = parser_append(parser, buf, (size_t)num_read);
-			switch (status) {
-			case PARSE_SUCCESS:
-				HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n-----------------\n",
-					parser->msg.msg.buf);
-				print_http_headers(&parser->msg);
-				if (g_maxContentLength > (size_t)0 &&
-					parser->content_length >
-						(unsigned int)
-							g_maxContentLength) {
-					*http_error_code =
-						HTTP_REQ_ENTITY_TOO_LARGE;
-					line = __LINE__;
-					ret = UPNP_E_OUTOF_BOUNDS;
-					goto ExitFunction;
-				}
-				line = __LINE__;
-				ret = 0;
-				goto ExitFunction;
-			case PARSE_FAILURE:
-			case PARSE_NO_MATCH:
-				*http_error_code = parser->http_error_code;
-				line = __LINE__;
-				ret = UPNP_E_BAD_HTTPMSG;
-				goto ExitFunction;
-			case PARSE_INCOMPLETE_ENTITY:
-				/* read until close */
-				ok_on_close = 1;
-				break;
-			case PARSE_CONTINUE_1:
-				/* Web post request. */
-				line = __LINE__;
-				ret = PARSE_SUCCESS;
-				goto ExitFunction;
-			default:
-				break;
-			}
-		} else if (num_read == 0) {
+		if (num_read > 0) {    
+            line = ret;
+            ret = http_RecvMessageDetail(parser, num_read, buf, http_error_code, &ok_on_close);
+            if (ret != UPNP_E_INVALID_HANDLE) {
+                line = __LINE__;
+                goto ExitFunction;
+            } else {
+                ret = line;
+            }
+        } else if (num_read == 0) {
 			if (ok_on_close) {
 				HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n-----------------\n",
 					parser->msg.msg.buf);
@@ -423,8 +433,8 @@ int http_RecvMessage(SOCKINFO *info,
 
 ExitFunction:
 	if (ret != UPNP_E_SUCCESS) {
-		HttpPrintf(UPNP_ALL, "Error %d, http_error_code = %d.\n",
-			ret, *http_error_code);
+		HttpPrintf(UPNP_ALL, "Error %d,http_error_code:%d,line:%d\n",
+			ret, *http_error_code, line);
 	}
 
 	return ret;
@@ -1384,14 +1394,59 @@ errorHandler:
 	return ret_code;
 }
 
+int http_ReadHttpResponseDetail(void *Handle, size_t *size, int num_read,
+    char *tempbuf, int timeout, int *ok_on_close)
+{
+	http_connection_handle_t *handle = Handle;
+	int ret_code = 0;
+	parse_status_t status;
+
+    if (num_read > 0) {
+        /* append data to buffer */
+        ret_code = membuffer_append(&handle->response.msg.msg, tempbuf, (size_t)num_read);
+        if (ret_code != 0) {
+            /* set failure status */
+            handle->response.http_error_code = HTTP_INTERNAL_SERVER_ERROR;
+            *size = 0;
+            return PARSE_FAILURE;
+        }
+        status = parser_parse_entity(&handle->response);
+        if (status == PARSE_INCOMPLETE_ENTITY) {
+            /* read until close */
+            *ok_on_close = 1;
+        } else if ((status != PARSE_SUCCESS) &&
+               (status != PARSE_CONTINUE_1) &&
+               (status != PARSE_INCOMPLETE)) {
+            /*error */
+            *size = 0;
+            return UPNP_E_BAD_RESPONSE;
+        }
+    } else if (num_read == 0) {
+        if (*ok_on_close) {
+            HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n", handle->response.msg.msg.buf);
+            HttpPrintf(UPNP_INFO,"-----------------\n");
+            handle->response.position = POS_COMPLETE;
+        } else {
+            /* partial msg */
+            *size = 0;
+            handle->response.http_error_code = HTTP_BAD_REQUEST; /* or response */
+            return UPNP_E_BAD_HTTPMSG;
+        }
+    } else {
+        *size = 0;
+        return num_read;
+    }
+    return UPNP_E_SUCCESS;
+}
+
 int http_ReadHttpResponse(void *Handle, char *buf, size_t *size, int timeout)
 {
+    int ret;
 	http_connection_handle_t *handle = Handle;
 	parse_status_t status;
 	int num_read;
 	int ok_on_close = 0;
 	char tempbuf[2 * 1024];
-	int ret_code = 0;
 
 	if (!handle || !size || (*size > 0 && !buf)) {
 		if (size)
@@ -1413,50 +1468,14 @@ int http_ReadHttpResponse(void *Handle, char *buf, size_t *size, int timeout)
 		return UPNP_E_BAD_RESPONSE;
 	}
 	/* read more if necessary entity */
-	while (handle->response.msg.amount_discarded + *size >
-			handle->response.msg.entity.length &&
+	while (handle->response.msg.amount_discarded + *size > handle->response.msg.entity.length &&
 		!handle->cancel && handle->response.position != POS_COMPLETE) {
-		num_read = sock_read(
-			&handle->sock_info, tempbuf, sizeof(tempbuf), &timeout);
-		if (num_read > 0) {
-			/* append data to buffer */
-			ret_code = membuffer_append(&handle->response.msg.msg,
-				tempbuf,
-				(size_t)num_read);
-			if (ret_code != 0) {
-				/* set failure status */
-				handle->response.http_error_code =
-					HTTP_INTERNAL_SERVER_ERROR;
-				*size = 0;
-				return PARSE_FAILURE;
-			}
-			status = parser_parse_entity(&handle->response);
-			if (status == PARSE_INCOMPLETE_ENTITY) {
-				/* read until close */
-				ok_on_close = 1;
-			} else if ((status != PARSE_SUCCESS) &&
-				   (status != PARSE_CONTINUE_1) &&
-				   (status != PARSE_INCOMPLETE)) {
-				/*error */
-				*size = 0;
-				return UPNP_E_BAD_RESPONSE;
-			}
-		} else if (num_read == 0) {
-			if (ok_on_close) {
-				HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n-----------------\n",
-					handle->response.msg.msg.buf);
-				handle->response.position = POS_COMPLETE;
-			} else {
-				/* partial msg */
-				*size = 0;
-				handle->response.http_error_code =
-					HTTP_BAD_REQUEST; /* or response */
-				return UPNP_E_BAD_HTTPMSG;
-			}
-		} else {
-			*size = 0;
-			return num_read;
-		}
+		num_read = sock_read(&handle->sock_info, tempbuf, sizeof(tempbuf), &timeout);
+		ret = http_ReadHttpResponseDetail(Handle, size, num_read,
+            tempbuf, timeout, &ok_on_close);
+        if (ret < 0 || ret == PARSE_FAILURE){
+            return ret;
+        }
 	}
 	if (handle->cancel) {
 		return UPNP_E_CANCELED;
