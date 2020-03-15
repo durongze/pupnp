@@ -217,8 +217,7 @@ static int is_match(memptr hdr_value, SsdpSearchArg *searchArg, SsdpEvent *event
 }
 
 static int ssdp_handle_search(http_message_t *hmsg, UpnpDiscovery *param,
-    memptr hdr_value, int handle_start, int usn_found,	int st_found, 
-    SsdpEvent *event)
+    memptr hdr_value, int handle_start, int usn_found, SsdpEvent *event)
 {
 	int handle;
 	struct Handle_Info *ctrlpt_info = NULL;
@@ -231,7 +230,7 @@ static int ssdp_handle_search(http_message_t *hmsg, UpnpDiscovery *param,
 
     /* reply (to a SEARCH) */
     /* only checking to see if there is a valid ST header */
-    st_found = 0;
+    int st_found = 0;
     if (httpmsg_find_hdr(hmsg, HDR_ST, &hdr_value) != NULL) {
         save_char = hdr_value.buf[hdr_value.length];
         hdr_value.buf[hdr_value.length] = '\0';
@@ -290,7 +289,6 @@ void ssdp_handle_ctrlpt_msg(http_message_t *hmsg,
 	SsdpEvent event;
 	int nt_found;
 	int usn_found;
-	int st_found;
 	char save_char;
 
 	/* we are assuming that there can be only one client supported at a time */
@@ -366,7 +364,7 @@ void ssdp_handle_ctrlpt_msg(http_message_t *hmsg,
 			goto end_ssdp_handle_ctrlpt_msg;
         }
 	} else {
-	    ret = ssdp_handle_search(hmsg, param, hdr_value, hdl_start, usn_found, st_found, &event);
+	    ret = ssdp_handle_search(hmsg, param, hdr_value, hdl_start, usn_found, &event);
         if (ret == -1){
 			goto end_ssdp_handle_ctrlpt_msg;
         }

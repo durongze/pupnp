@@ -606,6 +606,53 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 	return 0;
 }
 
+int SampleUtil_FindAndParseServiceList(IXML_NodeList *srvList, const char *base,
+    const char *serviceType,
+	char **serviceId,
+	char **eventURL,
+	char **controlURL)
+{
+	int ret;
+	int found = 0;    
+	unsigned int i;
+	unsigned long length;
+	IXML_Element *service = NULL;
+	char *SrvType = NULL;
+	char *relctrlURL = NULL;
+	char *releventURL = NULL;
+
+    length = ixmlNodeList_length(srvList);
+    for (i = 0; i < length; i++) {
+        service = (IXML_Element *)ixmlNodeList_item(srvList, i);
+        SrvType = SampleUtil_GetFirstElementItem((IXML_Element *)service, "serviceType");
+        if (SrvType && strcmp(SrvType, serviceType) == 0) {
+            SampleUtilPrint("Found service: %s\n", serviceType);
+            *serviceId = SampleUtil_GetFirstElementItem(service, "serviceId");
+            SampleUtilPrint("serviceId: %s\n", *serviceId);
+            relctrlURL = SampleUtil_GetFirstElementItem(service, "controlURL");
+            releventURL = SampleUtil_GetFirstElementItem(service, "eventSubURL");
+            ret = UpnpResolveURL2(base, relctrlURL, controlURL);
+            if (ret != UPNP_E_SUCCESS)
+                SampleUtilPrint("Error relctrlURL from %s:%s\n", base, relctrlURL);
+            ret = UpnpResolveURL2(base, releventURL, eventURL);
+            if (ret != UPNP_E_SUCCESS)
+                SampleUtilPrint("Error releventURL from %s:%s\n", base, releventURL);
+            free(relctrlURL);
+            free(releventURL);
+            relctrlURL = NULL;
+            releventURL = NULL;
+            found = 1;
+            break;
+        }
+        free(SrvType);
+        SrvType = NULL;
+    }
+    free(SrvType);
+    SrvType = NULL;
+
+    return found;
+}
+
 int SampleUtil_FindAndParseService(IXML_Document *DescDoc,
 	const char *location,
 	const char *serviceType,
@@ -613,84 +660,34 @@ int SampleUtil_FindAndParseService(IXML_Document *DescDoc,
 	char **eventURL,
 	char **controlURL)
 {
-	unsigned int i;
-	unsigned long length;
 	int found = 0;
-	int ret;
-#ifdef OLD_FIND_SERVICE_CODE
-#else  /* OLD_FIND_SERVICE_CODE */
-	unsigned int sindex = 0;
-#endif /* OLD_FIND_SERVICE_CODE */
-	char *tempServiceType = NULL;
 	char *baseURL = NULL;
 	const char *base = NULL;
-	char *relcontrolURL = NULL;
-	char *releventURL = NULL;
-	IXML_NodeList *serviceList = NULL;
-	IXML_Element *service = NULL;
+	IXML_NodeList *srvList = NULL;
+    
+#ifdef OLD_FIND_SERVICE_CODE
+#else  /* OLD_FIND_SERVICE_CODE */
+        unsigned int sindex = 0;
+#endif /* OLD_FIND_SERVICE_CODE */
 
 	baseURL = SampleUtil_GetFirstDocumentItem(DescDoc, "URLBase");
-	if (baseURL)
-		base = baseURL;
-	else
-		base = location;
+	base = baseURL ? baseURL : location;
+    
 #ifdef OLD_FIND_SERVICE_CODE
-	serviceList = SampleUtil_GetFirstServiceList(DescDoc);
-#else  /* OLD_FIND_SERVICE_CODE */
-	for (sindex = 0; (serviceList = SampleUtil_GetNthServiceList(
-				  DescDoc, sindex)) != NULL;
-		sindex++) {
-		tempServiceType = NULL;
-		relcontrolURL = NULL;
-		releventURL = NULL;
-		service = NULL;
+	srvList = SampleUtil_GetFirstServiceList(DescDoc);
+#else
+	for (sindex = 0; (srvList = SampleUtil_GetNthServiceList(DescDoc, sindex));	sindex++) {
 #endif /* OLD_FIND_SERVICE_CODE */
-	length = ixmlNodeList_length(serviceList);
-	for (i = 0; i < length; i++) {
-		service = (IXML_Element *)ixmlNodeList_item(serviceList, i);
-		tempServiceType = SampleUtil_GetFirstElementItem(
-			(IXML_Element *)service, "serviceType");
-		if (tempServiceType &&
-			strcmp(tempServiceType, serviceType) == 0) {
-			SampleUtilPrint("Found service: %s\n", serviceType);
-			*serviceId = SampleUtil_GetFirstElementItem(
-				service, "serviceId");
-			SampleUtilPrint("serviceId: %s\n", *serviceId);
-			relcontrolURL = SampleUtil_GetFirstElementItem(
-				service, "controlURL");
-			releventURL = SampleUtil_GetFirstElementItem(
-				service, "eventSubURL");
-			ret = UpnpResolveURL2(base, relcontrolURL, controlURL);
-			if (ret != UPNP_E_SUCCESS)
-				SampleUtilPrint("Error generating controlURL "
-						 "from %s + %s\n",
-					base,
-					relcontrolURL);
-			ret = UpnpResolveURL2(base, releventURL, eventURL);
-			if (ret != UPNP_E_SUCCESS)
-				SampleUtilPrint("Error generating eventURL "
-						 "from %s + %s\n",
-					base,
-					releventURL);
-			free(relcontrolURL);
-			free(releventURL);
-			relcontrolURL = NULL;
-			releventURL = NULL;
-			found = 1;
-			break;
-		}
-		free(tempServiceType);
-		tempServiceType = NULL;
-	}
-	free(tempServiceType);
-	tempServiceType = NULL;
-	if (serviceList)
-		ixmlNodeList_free(serviceList);
-	serviceList = NULL;
+    	found = SampleUtil_FindAndParseServiceList(srvList, base,
+    	    serviceType, serviceId, eventURL, controlURL);
+        if (srvList)
+            ixmlNodeList_free(srvList);
+        srvList = NULL;
 #ifdef OLD_FIND_SERVICE_CODE
-#else  /* OLD_FIND_SERVICE_CODE */
+#else
 	}
 #endif /* OLD_FIND_SERVICE_CODE */
+
 	free(baseURL);
 
 	return found;
