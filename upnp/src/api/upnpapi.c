@@ -3875,6 +3875,15 @@ int PrintHandleInfo(UpnpClient_Handle Hnd)
 	return UPNP_E_SUCCESS;
 }
 
+int PrintAllHandleInfo()
+{
+    for (int i = 0; i < sizeof(HandleTable) / sizeof(HandleTable[0]); ++i)
+    {
+        PrintHandleInfo(i);
+    }
+    return 0;
+}
+
 int getlocalhostname(char *out, size_t out_len)
 {
 	int ret = UPNP_E_SUCCESS;

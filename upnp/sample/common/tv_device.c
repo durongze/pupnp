@@ -1603,12 +1603,12 @@ int device_main(int argc, char *argv[])
 		} else if (strcmp(argv[i], "-webdir") == 0) {
 			web_dir_path = argv[++i];
 		} else if (strcmp(argv[i], "-help") == 0) {
-			SampleUtilPrint(
+			SampleUtil_Print(
 				"Usage: %s -ip ipaddress -port port"
 				" -desc desc_doc_name -webdir web_dir_path"
 				" -help (this message)\n",
 				argv[0]);
-			SampleUtilPrint(
+			SampleUtil_Print(
 				"\tipaddress:     IP address of the device"
 				" (must match desc. doc)\n"
 				"\t\te.g.: 192.168.0.4\n"

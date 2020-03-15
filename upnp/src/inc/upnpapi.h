@@ -340,6 +340,7 @@ int PrintHandleInfo(
 	/*! [in] Handle index. */
 	UpnpClient_Handle Hnd);
 
+int PrintAllHandleInfo();
 
 extern WebServerState bWebServerState;
 
