@@ -409,8 +409,8 @@ int http_RecvMessage(SOCKINFO *info,
             }
         } else if (num_read == 0) {
 			if (ok_on_close) {
-				HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n-----------------\n",
-					parser->msg.msg.buf);
+				HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n", parser->msg.msg.buf);
+                HttpPrintf(UPNP_INFO,"-----------------\n");
 				print_http_headers(&parser->msg);
 				line = __LINE__;
 				ret = 0;
