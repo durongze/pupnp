@@ -811,8 +811,8 @@ int http_Download(const char *url_str,
 		membuffer_destroy(&request);
 		return ret_code;
 	}
-	HttpPrintf(UPNP_INFO, "HTTP Buffer:\n%s\n----------END--------\n",
-		request.buf);
+	HttpPrintf(UPNP_INFO, "HTTP Buffer:\n%s\n",	request.buf);
+    HttpPrintf(UPNP_INFO, "----------END--------\n");
 	/* get doc msg */
 	ret_code = http_RequestAndResponse(&url,
 		request.buf,
@@ -975,8 +975,8 @@ int MakeGenericMessage(http_method_t method,
 		membuffer_destroy(request);
 		return ret_code;
 	}
-	HttpPrintf(UPNP_INFO, "HTTP Buffer:\n%s\n----------END--------\n",
-		request->buf);
+	HttpPrintf(UPNP_INFO, "HTTP Buffer:\n%s\n", request->buf);
+    HttpPrintf(UPNP_INFO, "----------END--------\n");
 
 	return UPNP_E_SUCCESS;
 }
@@ -1984,8 +1984,8 @@ int MakeGetMessageEx(const char *url_str,
 			return errCode;
 		}
 	} while (0);
-	HttpPrintf(UPNP_INFO, "HTTP Buffer:\n%s\n----------END--------\n",
-		request->buf);
+	HttpPrintf(UPNP_INFO, "HTTP Buffer:\n%s\n",	request->buf);
+    HttpPrintf(UPNP_INFO, "----------END--------\n");
 
 	return errCode;
 }

@@ -1596,8 +1596,8 @@ static int http_RecvPostMessage(
 				}
 			} else if (num_read == 0) {
 				if (ok_on_close) {
-					HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n-----------------\n",
-						parser->msg.msg.buf);
+					HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n", parser->msg.msg.buf);
+                    HttpPrintf(UPNP_INFO,"-----------------\n");
 					print_http_headers(&parser->msg);
 					parser->position = POS_COMPLETE;
 				} else {
