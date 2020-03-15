@@ -653,8 +653,7 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 	TPJobSetPriority(&job, MED_PRIORITY);
 	TPJobSetFreeFunction(&job, (free_routine) free);
 	/* Schedule a timeout event to remove search Arg */
-	TimerThreadSchedule(&gTimerThread, timeTillRead,
-			    REL_SEC, &job, SHORT_TERM, id);
+	TimerThreadSchedule(&gTimerThread, timeTillRead, REL_SEC, &job, SHORT_TERM, id);
 	newArg->timeoutEventId = *id;
 	ListAddTail(&ctrlpt_info->SsdpSearchList, newArg);
 	HandleUnlock();
@@ -693,22 +692,17 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 		while (NumCopy < NUM_SSDP_COPY) {
 			SsdpPrintf(UPNP_INFO, ">>> SSDP SEND M-SEARCH >>>\n%s\n",
 				   ReqBufv6UlaGua);
-			sendto(gSsdpReqSocket6,
-			       ReqBufv6UlaGua, strlen(ReqBufv6UlaGua), 0,
-			       (struct sockaddr *)&__ss_v6,
-			       sizeof(struct sockaddr_in6));
+			sendto(gSsdpReqSocket6, ReqBufv6UlaGua, strlen(ReqBufv6UlaGua), 0,
+			       (struct sockaddr *)&__ss_v6, sizeof(struct sockaddr_in6));
 			NumCopy++;
 			imillisleep(SSDP_PAUSE);
 		}
 		NumCopy = 0;
 		inet_pton(AF_INET6, SSDP_IPV6_LINKLOCAL, &destAddr6->sin6_addr);
 		while (NumCopy < NUM_SSDP_COPY) {
-			SsdpPrintf(UPNP_INFO, ">>> SSDP SEND M-SEARCH >>>\n%s\n",
-				   ReqBufv6);
-			sendto(gSsdpReqSocket6,
-			       ReqBufv6, strlen(ReqBufv6), 0,
-			       (struct sockaddr *)&__ss_v6,
-			       sizeof(struct sockaddr_in6));
+			SsdpPrintf(UPNP_INFO, ">>> SSDP SEND M-SEARCH >>>\n%s\n", ReqBufv6);
+			sendto(gSsdpReqSocket6, ReqBufv6, strlen(ReqBufv6), 0,
+			       (struct sockaddr *)&__ss_v6, sizeof(struct sockaddr_in6));
 			NumCopy++;
 			imillisleep(SSDP_PAUSE);
 		}
@@ -718,12 +712,9 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 	    FD_ISSET(gSsdpReqSocket4, &wrSet)) {
 		int NumCopy = 0;
 		while (NumCopy < NUM_SSDP_COPY) {
-			SsdpPrintf(UPNP_INFO, ">>> SSDP SEND M-SEARCH >>>\n%s\n",
-				   ReqBufv4);
-			sendto(gSsdpReqSocket4,
-			       ReqBufv4, strlen(ReqBufv4), 0,
-			       (struct sockaddr *)&__ss_v4,
-			       sizeof(struct sockaddr_in));
+			SsdpPrintf(UPNP_INFO, ">>> SSDP SEND M-SEARCH >>>\n%s\n", ReqBufv4);
+			sendto(gSsdpReqSocket4, ReqBufv4, strlen(ReqBufv4), 0,
+			       (struct sockaddr *)&__ss_v4, sizeof(struct sockaddr_in));
 			NumCopy++;
 			imillisleep(SSDP_PAUSE);
 		}

@@ -659,8 +659,7 @@ static void ssdp_event_handler_thread(
 		ssdp_handle_ctrlpt_msg(hmsg, &data->dest_addr, 0);
 #endif /* INCLUDE_CLIENT_APIS */
 	} else {
-		ssdp_handle_device_request(hmsg,
-					   &data->dest_addr);
+		ssdp_handle_device_request(hmsg, &data->dest_addr);
 	}
 
 	/* free data */
@@ -713,8 +712,7 @@ void readFromSSDPSocket(SOCKET socket)
 		requestBuf[byteReceived] = '\0';
 		switch (__ss.ss_family) {
 		case AF_INET:
-			inet_ntop(AF_INET,
-				  &((struct sockaddr_in *)&__ss)->sin_addr,
+			inet_ntop(AF_INET, &((struct sockaddr_in *)&__ss)->sin_addr,
 				  ntop_buf, sizeof(ntop_buf));
 			break;
 #ifdef UPNP_ENABLE_IPV6
@@ -726,23 +724,18 @@ void readFromSSDPSocket(SOCKET socket)
 #endif /* UPNP_ENABLE_IPV6 */
 		default:
 			memset(ntop_buf, 0, sizeof(ntop_buf));
-			strncpy(ntop_buf, "<Invalid address family>",
-				sizeof(ntop_buf) - 1);
+			strncpy(ntop_buf, "<Invalid address family>", sizeof(ntop_buf) - 1);
 		}
-		SsdpPrintf(UPNP_INFO, "\nStart of received response\n"
-			   "%s\n"
-			   "End of received response From host %s\n",
-			   requestBuf, ntop_buf);
+		SsdpPrintf(UPNP_INFO, "\nStart of received response\n%s\n", requestBuf, ntop_buf);
+		SsdpPrintf(UPNP_INFO, "End of received response From host %s\n");
 		/* add thread pool job to handle request */
 		if (data != NULL) {
 			data->parser.msg.msg.length += (size_t) byteReceived;
 			/* null-terminate */
 			data->parser.msg.msg.buf[byteReceived] = 0;
 			memcpy(&data->dest_addr, &__ss, sizeof(__ss));
-			TPJobInit(&job, (start_routine)
-				  ssdp_event_handler_thread, data);
-			TPJobSetFreeFunction(&job,
-					     free_ssdp_event_handler_data);
+			TPJobInit(&job, (start_routine)ssdp_event_handler_thread, data);
+			TPJobSetFreeFunction(&job, free_ssdp_event_handler_data);
 			TPJobSetPriority(&job, MED_PRIORITY);
 			if (ThreadPoolAdd(&gRecvThreadPool, &job, NULL) != 0)
 				free_ssdp_event_handler_data(data);
