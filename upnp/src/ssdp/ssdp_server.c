@@ -726,8 +726,8 @@ void readFromSSDPSocket(SOCKET socket)
 			memset(ntop_buf, 0, sizeof(ntop_buf));
 			strncpy(ntop_buf, "<Invalid address family>", sizeof(ntop_buf) - 1);
 		}
-		SsdpPrintf(UPNP_INFO, "\nStart of received response\n%s\n", requestBuf, ntop_buf);
-		SsdpPrintf(UPNP_INFO, "End of received response From host %s\n");
+		SsdpPrintf(UPNP_INFO, "\nStart of received response\n%s\n", requestBuf);
+		SsdpPrintf(UPNP_INFO, "End of received response From host %s\n", ntop_buf);
 		/* add thread pool job to handle request */
 		if (data != NULL) {
 			data->parser.msg.msg.length += (size_t) byteReceived;
