@@ -3544,67 +3544,34 @@ int UpnpGetIfInfo(const char *IfName)
 	inet6_procfd = fopen("/proc/net/if_inet6", "r");
 	if (inet6_procfd) {
 		while (fscanf(inet6_procfd,
-			       "%4s%4s%4s%4s%4s%4s%4s%4s %02x %*02x %*02x "
-			       "%*02x %*20s\n",
-			       addr6[0],
-			       addr6[1],
-			       addr6[2],
-			       addr6[3],
-			       addr6[4],
-			       addr6[5],
-			       addr6[6],
-			       addr6[7],
+			       "%4s%4s%4s%4s%4s%4s%4s%4s %02x %*02x %*02x ""%*02x %*20s\n",
+			       addr6[0], addr6[1], addr6[2], addr6[3],
+			       addr6[4], addr6[5], addr6[6], addr6[7],
 			       &if_idx) != EOF) {
 			/* Get same interface as IPv4 address retrieved. */
 			if (gIF_INDEX == if_idx) {
-				snprintf(buf,
-					sizeof(buf),
-					"%s:%s:%s:%s:%s:%s:%s:%s",
-					addr6[0],
-					addr6[1],
-					addr6[2],
-					addr6[3],
-					addr6[4],
-					addr6[5],
-					addr6[6],
-					addr6[7]);
+				snprintf(buf, sizeof(buf), "%s:%s:%s:%s:%s:%s:%s:%s",
+					addr6[0], addr6[1], addr6[2], addr6[3],
+					addr6[4], addr6[5], addr6[6], addr6[7]);
 				/* Validate formed address and check for
 				 * link-local. */
 				if (inet_pton(AF_INET6, buf, &v6_addr) > 0) {
 					if (IN6_IS_ADDR_ULA(&v6_addr)) {
 						/* Got valid IPv6 ula. */
-						memset(gIF_IPV6_ULA_GUA,
-							0,
-							sizeof(gIF_IPV6_ULA_GUA));
-						strncpy(gIF_IPV6_ULA_GUA,
-							buf,
-							sizeof(gIF_IPV6_ULA_GUA) -
-								1);
-					} else if (IN6_IS_ADDR_GLOBAL(
-							   &v6_addr) &&
-						   strlen(gIF_IPV6_ULA_GUA) ==
-							   (size_t)0) {
+						memset(gIF_IPV6_ULA_GUA, 0, sizeof(gIF_IPV6_ULA_GUA));
+						strncpy(gIF_IPV6_ULA_GUA, buf, sizeof(gIF_IPV6_ULA_GUA) - 1);
+					} else if (IN6_IS_ADDR_GLOBAL(&v6_addr) &&
+						   strlen(gIF_IPV6_ULA_GUA) == (size_t)0) {
 						/* got a GUA, should store it
 						 * while no ULA is found */
-						memset(gIF_IPV6_ULA_GUA,
-							0,
-							sizeof(gIF_IPV6_ULA_GUA));
-						strncpy(gIF_IPV6_ULA_GUA,
-							buf,
-							sizeof(gIF_IPV6_ULA_GUA) -
-								1);
-					} else if (IN6_IS_ADDR_LINKLOCAL(
-							   &v6_addr) &&
-						   strlen(gIF_IPV6) ==
-							   (size_t)0) {
+						memset(gIF_IPV6_ULA_GUA, 0, sizeof(gIF_IPV6_ULA_GUA));
+						strncpy(gIF_IPV6_ULA_GUA, buf, sizeof(gIF_IPV6_ULA_GUA) - 1);
+					} else if (IN6_IS_ADDR_LINKLOCAL(&v6_addr) &&
+						   strlen(gIF_IPV6) == (size_t)0) {
 						/* got a Link local IPv6
 						 * address. */
-						memset(gIF_IPV6,
-							0,
-							sizeof(gIF_IPV6));
-						strncpy(gIF_IPV6,
-							buf,
-							sizeof(gIF_IPV6) - 1);
+						memset(gIF_IPV6, 0, sizeof(gIF_IPV6));
+						strncpy(gIF_IPV6, buf, sizeof(gIF_IPV6) - 1);
 					}
 				}
 			}
@@ -3613,11 +3580,7 @@ int UpnpGetIfInfo(const char *IfName)
 	}
 #endif /* (defined(BSD) && BSD >= 199306) || defined(__FreeBSD_kernel__) */ /* _WIN32 */
 	ApiPrintf(UPNP_INFO, "Interface name=%s, index=%d, v4=%s, v6=%s, ULA or GUA v6=%s\n",
-		gIF_NAME,
-		gIF_INDEX,
-		gIF_IPV4,
-		gIF_IPV6,
-		gIF_IPV6_ULA_GUA);
+		gIF_NAME, gIF_INDEX, gIF_IPV4, gIF_IPV6, gIF_IPV6_ULA_GUA);
 
 	return UPNP_E_SUCCESS;
 }
@@ -3807,12 +3770,8 @@ Upnp_Handle_Type GetDeviceHandleInfoForPath(const char *path,
 		switch (GetHandleInfo(*device_handle_out, HndInfo)) {
 		case HND_DEVICE:
 			if ((*HndInfo)->DeviceAf == AddressFamily) {
-				if ((*serv_info = FindServiceControlURLPath(
-					     &(*HndInfo)->ServiceTable,
-					     path)) ||
-					(*serv_info = FindServiceEventURLPath(
-						 &(*HndInfo)->ServiceTable,
-						 path))) {
+				if ((*serv_info = FindServiceControlURLPath(&(*HndInfo)->ServiceTable, path)) ||
+					(*serv_info = FindServiceEventURLPath(&(*HndInfo)->ServiceTable, path))) {
 					return HND_DEVICE;
 				}
 			}
@@ -3832,14 +3791,12 @@ Upnp_Handle_Type GetHandleInfo(
 {
 	Upnp_Handle_Type ret = HND_INVALID;
 
-	UpnpPrintf(UPNP_ALL, API, "entering, Handle is %d\n",
-		Hnd);
+	UpnpPrintf(UPNP_ALL, API, "entering, Handle is %d\n", Hnd);
 
 	if (Hnd < 1 || Hnd >= NUM_HANDLE) {
 		UpnpPrintf(UPNP_ALL, API, "Handle out of range\n");
 	} else if (HandleTable[Hnd] == NULL) {
-		UpnpPrintf(UPNP_ALL, API, "HandleTable[%d] is NULL\n",
-			Hnd);
+		UpnpPrintf(UPNP_ALL, API, "HandleTable[%d] is NULL\n", Hnd);
 	} else if (HandleTable[Hnd] != NULL) {
 		*HndInfo = (struct Handle_Info *)HandleTable[Hnd];
 		ret = ((struct Handle_Info *)*HndInfo)->HType;
@@ -3855,17 +3812,14 @@ int PrintHandleInfo(UpnpClient_Handle Hnd)
 	struct Handle_Info *HndInfo;
 	if (HandleTable[Hnd] != NULL) {
 		HndInfo = HandleTable[Hnd];
-		UpnpPrintf(UPNP_ALL, API, "Printing info for Handle_%d\n",
-			Hnd);
-		UpnpPrintf(UPNP_ALL, API, "HType_%d\n",
-			HndInfo->HType);
+		UpnpPrintf(UPNP_ALL, API, "Printing info for Handle_%d\n", Hnd);
+		UpnpPrintf(UPNP_ALL, API, "HType_%d\n", HndInfo->HType);
 #ifdef INCLUDE_DEVICE_APIS
 		switch (HndInfo->HType) {
 		case HND_CLIENT:
 			break;
 		default:
-			UpnpPrintf(UPNP_ALL, API, "DescURL_%s\n",
-				HndInfo->DescURL);
+			UpnpPrintf(UPNP_ALL, API, "DescURL_%s\n", HndInfo->DescURL);
 		}
 #endif /* INCLUDE_DEVICE_APIS */
 	} else {
@@ -3945,12 +3899,10 @@ int getlocalhostname(char *out, size_t out_len)
 			if (p) {
 				strncpy(out, p, out_len);
 			} else {
-				ApiPrintf(UPNP_ALL, "inet_ntop returned "
-					"error\n");
+				ApiPrintf(UPNP_ALL, "inet_ntop returned ""error\n");
 				ret = UPNP_E_INIT;
 			}
-			ApiPrintf(UPNP_ALL, "Inside after strncpy %s\n",
-				out);
+			ApiPrintf(UPNP_ALL, "Inside after strncpy %s\n", out);
 			break;
 		}
 	}
@@ -4004,8 +3956,7 @@ int getlocalhostname(char *out, size_t out_len)
 			pifReq->ifr_name,
 			sizeof(ifReq.ifr_name) - 1);
 		if (ioctl(LocalSock, SIOCGIFFLAGS, &ifReq) < 0) {
-			ApiPrintf(UPNP_ALL, "Can't get interface flags for %s:\n",
-				ifReq.ifr_name);
+			ApiPrintf(UPNP_ALL, "Can't get interface flags for %s:\n", ifReq.ifr_name);
 		}
 		/* Skip loopback, point-to-point and down interfaces,
 		 * except don't skip down interfaces
