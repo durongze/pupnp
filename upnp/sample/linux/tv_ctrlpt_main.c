@@ -50,6 +50,7 @@ int main(int argc, char **argv)
 #endif
 	int code;
 	UpnpSetLogLevel(UPNP_ALL);
+	UpnpSetLogFileNames("tv_ctrlpt.txt", "");
 	rc = TvCtrlPointStart(linux_print, NULL, 0);
 	if (rc != TV_SUCCESS) {
 		SampleUtilPrint("Error starting UPnP TV Control Point\n");

@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 #endif
 	int code;
 	UpnpSetLogLevel(UPNP_ALL);
+	UpnpSetLogFileNames("tv_device.txt", "");
 	rc = device_main(argc, argv);
 	if (rc != UPNP_E_SUCCESS) {
 		return rc;

@@ -156,9 +156,12 @@ char *UpnpGetLevelName(Upnp_LogLevel DLevel)
 	   to display a numeric level */
 	switch (DLevel) {
     	case UPNP_CRITICAL: slev="CRI";break;
+        case UPNP_FATAL: slev="FTL";break;
     	case UPNP_ERROR: slev="ERR";break;
+        case UPNP_WARN: slev="WRN";break;
     	case UPNP_INFO: slev="INF";break;
         case UPNP_DBG: slev="DBG";break;
+        case UPNP_TRACE: slev="TRC";break;
     	case UPNP_ALL: slev="ALL";break;
     	default: slev="UNK";break;
 	}

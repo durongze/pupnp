@@ -141,21 +141,21 @@ Upnp_Handle_Type GetHandleInfo(
 
 
 #define HandleWriteLock()  \
-	UpnpPrintf(UPNP_DBG, API,   "Trying a write lock\n"); \
+	UpnpPrintf(UPNP_ALL, API,   "Trying a write lock\n"); \
 	ithread_rwlock_wrlock(&GlobalHndRWLock); \
-	UpnpPrintf(UPNP_DBG, API,   "Write lock acquired\n");
+	UpnpPrintf(UPNP_ALL, API,   "Write lock acquired\n");
 
 
 #define HandleReadLock()  \
-	UpnpPrintf(UPNP_DBG, API,   "Trying a read lock\n"); \
+	UpnpPrintf(UPNP_ALL, API,   "Trying a read lock\n"); \
 	ithread_rwlock_rdlock(&GlobalHndRWLock); \
-	UpnpPrintf(UPNP_DBG, API,   "Read lock acquired\n");
+	UpnpPrintf(UPNP_ALL, API,   "Read lock acquired\n");
 
 
 #define HandleUnlock() \
-	UpnpPrintf(UPNP_DBG, API,  "Trying Unlock\n"); \
+	UpnpPrintf(UPNP_ALL, API,  "Trying Unlock\n"); \
 	ithread_rwlock_unlock(&GlobalHndRWLock); \
-	UpnpPrintf(UPNP_DBG, API,   "Unlocked rwlock\n");
+	UpnpPrintf(UPNP_ALL, API,   "Unlocked rwlock\n");
 
 
 /*!
