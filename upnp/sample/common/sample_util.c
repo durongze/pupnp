@@ -339,7 +339,7 @@ char *GetEventName(Upnp_EventType S)
 
 void SampleUtil_PrintEventType(Upnp_EventType S)
 {
-	SampleUtilPrint("%s\n", S);
+	SampleUtilPrint("%s\n", GetEventName(S));
 }
 
 int SampleUtil_PrintEventSearchResult(const void *Event)

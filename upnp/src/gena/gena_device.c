@@ -423,7 +423,7 @@ static char *AllocGenaHeaders(
 
 ExitFunction:
 	if (headers == NULL || rc < 0 || (unsigned int)rc >= headers_size) {
-		GenaPrintf(UPNP_ALL, "Error UPNP_E_OUTOF_MEMORY\n");
+		GenaPrintf(UPNP_ERROR, "headersize:%d,line:%d,rc:%d\n", headers_size, line, rc);
 	}
 	return headers;
 }
@@ -473,7 +473,7 @@ static int genaInitNotifyCommon(UpnpDevice_Handle device_handle,
 	struct Handle_Info *handle_info;
 	ThreadPoolJob *job = NULL;
 
-	GenaPrintf(UPNP_INFO, "GENA BEGIN INITIAL NOTIFY COMMON");
+	GenaPrintf(UPNP_INFO, "GENA BEGIN\n");
 
 	job = (ThreadPoolJob *)malloc(sizeof(ThreadPoolJob));
 	if (job == NULL) {
@@ -519,8 +519,7 @@ static int genaInitNotifyCommon(UpnpDevice_Handle device_handle,
 		ret = GENA_E_BAD_SERVICE;
 		goto ExitFunction;
 	}
-	GenaPrintf(UPNP_INFO, "FindServiceId: UDN %s, ServID: %s",
-		UDN, servId);
+	GenaPrintf(UPNP_INFO, "FindServiceId:UDN %s, ServID:%s", UDN, servId);
 
 	sub = GetSubscriptionSID(sid, service);
 	if (sub == NULL || sub->active) {
@@ -528,7 +527,7 @@ static int genaInitNotifyCommon(UpnpDevice_Handle device_handle,
 		ret = GENA_E_BAD_SID;
 		goto ExitFunction;
 	}
-	GenaPrintf(UPNP_INFO, "GetSubscriptionSID: SID %s", sid);
+	GenaPrintf(UPNP_INFO, "GetSubscriptionSID SID %s", sid);
 	sub->active = 1;
 
 	headers = AllocGenaHeaders(propertySet);
@@ -593,8 +592,7 @@ ExitFunction:
 
 	HandleUnlock();
 
-	GenaPrintf(UPNP_INFO, "GENA END , ret = %d",
-		ret);
+	GenaPrintf(UPNP_WARN, "GENA END,line:%d, ret = %d", line, ret);
 
 	return ret;
 }
@@ -611,7 +609,7 @@ int genaInitNotify(UpnpDevice_Handle device_handle,
 	int line = 0;
 	DOMString propertySet = NULL;
 
-	GenaPrintf(UPNP_INFO, "GENA BEGIN INITIAL NOTIFY");
+	GenaPrintf(UPNP_INFO, "GENA BEGIN\n");
 
 	if (var_count <= 0) {
 		line = __LINE__;
@@ -624,15 +622,13 @@ int genaInitNotify(UpnpDevice_Handle device_handle,
 		line = __LINE__;
 		goto ExitFunction;
 	}
-	GenaPrintf(UPNP_INFO, "GeneratePropertySet: %s",
-		propertySet);
+	GenaPrintf(UPNP_INFO, "GeneratePropertySet: %s\n", propertySet);
 
-	ret = genaInitNotifyCommon(
-		device_handle, UDN, servId, propertySet, sid);
+	ret = genaInitNotifyCommon(device_handle, UDN, servId, propertySet, sid);
 
 ExitFunction:
 
-	GenaPrintf(UPNP_INFO, "GENA END, ret = %d", ret);
+	GenaPrintf(UPNP_WARN, "GENA END, line:%d, ret = %d\n", line, ret);
 
 	return ret;
 }
@@ -648,7 +644,7 @@ int genaInitNotifyExt(UpnpDevice_Handle device_handle,
 
 	DOMString propertySet = NULL;
 
-	GenaPrintf(UPNP_INFO, "GENA BEGIN");
+	GenaPrintf(UPNP_INFO, "GENA BEGIN\n");
 
 	if (PropSet == 0) {
 		line = __LINE__;
@@ -662,15 +658,13 @@ int genaInitNotifyExt(UpnpDevice_Handle device_handle,
 		ret = UPNP_E_INVALID_PARAM;
 		goto ExitFunction;
 	}
-	GenaPrintf(UPNP_INFO, "GENERATED PROPERTY SET: %s",
-		propertySet);
+	GenaPrintf(UPNP_INFO, "GENERATED PROPERTY SET: %s\n", propertySet);
 
-	ret = genaInitNotifyCommon(
-		device_handle, UDN, servId, propertySet, sid);
+	ret = genaInitNotifyCommon(device_handle, UDN, servId, propertySet, sid);
 
 ExitFunction:
 
-	GenaPrintf(UPNP_INFO, "GENA END , ret = %d", ret);
+	GenaPrintf(UPNP_WARN, "GENA END line:%d, ret = %d\n", line, ret);
 
 	return ret;
 }
@@ -731,7 +725,7 @@ static int genaNotifyAllCommon(UpnpDevice_Handle device_handle,
 	service_info *service = NULL;
 	struct Handle_Info *handle_info;
 
-	GenaPrintf(UPNP_INFO, "GENA BEGIN");
+	GenaPrintf(UPNP_INFO, "GENA BEGIN\n");
 
 	/* Keep this allocation first */
 	reference_count = (int *)malloc(sizeof(int));
@@ -849,7 +843,7 @@ ExitFunction:
 
 	HandleUnlock();
 
-	GenaPrintf(UPNP_INFO, "GENA END, ret = %d",	ret);
+	GenaPrintf(UPNP_WARN, "GENA END,line:%d, ret = %d", line, ret);
 
 	return ret;
 }
@@ -864,7 +858,7 @@ int genaNotifyAllExt(UpnpDevice_Handle device_handle,
 
 	DOMString propertySet = NULL;
 
-	GenaPrintf(UPNP_INFO, "GENA BEGIN ");
+	GenaPrintf(UPNP_INFO, "GENA BEGIN \n");
 
 	propertySet = ixmlPrintNode((IXML_Node *)PropSet);
 	if (propertySet == NULL) {
@@ -872,13 +866,13 @@ int genaNotifyAllExt(UpnpDevice_Handle device_handle,
 		ret = UPNP_E_INVALID_PARAM;
 		goto ExitFunction;
 	}
-	GenaPrintf(UPNP_INFO, "GENERATED PROPERTY SET: %s",	propertySet);
+	GenaPrintf(UPNP_INFO, "GENERATED PROPERTY SET: %s\n", propertySet);
 
 	ret = genaNotifyAllCommon(device_handle, UDN, servId, propertySet);
 
 ExitFunction:
 
-	GenaPrintf(UPNP_INFO, "GENA END,ret = %d", ret);
+	GenaPrintf(UPNP_WARN, "GENA END,line:%d, ret = %d", line, ret);
 
 	return ret;
 }
@@ -895,20 +889,20 @@ int genaNotifyAll(UpnpDevice_Handle device_handle,
 
 	DOMString propertySet = NULL;
 
-	GenaPrintf(UPNP_INFO, "GENA BEGIN ");
+	GenaPrintf(UPNP_INFO, "GENA BEGIN \n");
 
 	ret = GeneratePropertySet(VarNames, VarValues, var_count, &propertySet);
 	if (ret != XML_SUCCESS) {
 		line = __LINE__;
 		goto ExitFunction;
 	}
-	GenaPrintf(UPNP_INFO, "GENERATED PROPERTY SET: %s",	propertySet);
+	GenaPrintf(UPNP_INFO, "GENERATED PROPERTY SET: %s\n",	propertySet);
 
 	ret = genaNotifyAllCommon(device_handle, UDN, servId, propertySet);
 
 ExitFunction:
 
-	GenaPrintf(UPNP_INFO, "GENA END, ret = %d",	ret);
+	GenaPrintf(UPNP_WARN, "GENA END,line:%d, ret = %d", line, ret);
 
 	return ret;
 }
@@ -940,8 +934,7 @@ static int respond_ok(
 		request->major_version, request->minor_version, &major, &minor);
 
 	if (time_out >= 0) {
-		rc = snprintf(timeout_str, sizeof(timeout_str),
-			"TIMEOUT: Second-%d", time_out);
+		rc = snprintf(timeout_str, sizeof(timeout_str), "TIMEOUT: Second-%d", time_out);
 	} else {
 		memset(timeout_str, 0, sizeof(timeout_str));
 		strncpy(timeout_str, "TIMEOUT: Second-infinite", sizeof(timeout_str) - 1);
@@ -1107,8 +1100,7 @@ void gena_process_subscription_request(SOCKINFO *info, http_message_t *request)
 		goto exit_function;
 	}
 
-	GenaPrintf(UPNP_INFO, " event URL path: %s\n",
-		event_url_path);
+	GenaPrintf(UPNP_INFO, "event URL path: %s\n", event_url_path);
 
 	HandleLock();
 
