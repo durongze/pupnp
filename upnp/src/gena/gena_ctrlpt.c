@@ -525,7 +525,7 @@ int genaSubscribe(
 	memset(temp_sid, 0, sizeof(temp_sid));
 	memset(temp_sid2, 0, sizeof(temp_sid2));
 
-	GenaPrintf(UPNP_INFO, "GENA SUBSCRIBE BEGIN");
+	GenaPrintf(UPNP_INFO, "GENA SUBSCRIBE BEGIN\n");
 
 	UpnpString_clear(out_sid);
 
@@ -543,8 +543,7 @@ int genaSubscribe(
 	return_code = gena_subscribe(PublisherURL, TimeOut, NULL, ActualSID);
 	HandleLock();
 	if (return_code != UPNP_E_SUCCESS) {
-		GenaPrintf(UPNP_CRITICAL, "gena_subscribe error code: %d returned\n",
-			return_code );
+		GenaPrintf(UPNP_CRITICAL, "gena_subscribe error:%d\n", return_code);
 		goto error_handler;
 	}
 
