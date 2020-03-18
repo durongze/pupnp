@@ -1144,7 +1144,7 @@ int TvCtrlPointCallbackEventHandler(
 			TvCtrlPointHandleSubscribeUpdate(
 				UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event)), newSID, TimeOut);
 		} else {
-			SampleUtilPrintf(UPNP_ERROR, "UpnpSubscribe SID=%s, err:%d\n", newSID errCode);
+			SampleUtilPrintf(UPNP_ERROR, "UpnpSubscribe SID=%s, err:%d\n", newSID, errCode);
 		}
 		break;
 	}
