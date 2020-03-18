@@ -119,6 +119,10 @@ char *SampleUtil_GetFirstElementItem(
 	/*! [in] The item to search for. */
 	const char *item); 
 
+char *GetEventName(
+	/*! [in] The callback event. */
+	Upnp_EventType S);
+
 /*!
  * \brief Prints a callback event type as a string.
  */
@@ -225,6 +229,8 @@ int SampleUtil_Print(
 #endif
 ;
 #define SampleUtilPrint(fmt, ...) UpnpPrintf(UPNP_INFO, APP, fmt, ##__VA_ARGS__)
+#define SampleUtilPrintf(l, fmt, ...) UpnpPrintf(l, APP, fmt, ##__VA_ARGS__)
+
 /*!
  * \brief
  */

@@ -1049,24 +1049,16 @@ int TvCtrlPointCallbackEventHandler(
 		IXML_Document *DescDoc = NULL;
 		const char *location = NULL;
 		int errCode = UpnpDiscovery_get_ErrCode(d_event);
-
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtilPrint(
-				"Error in Discovery Callback -- %d\n", errCode);
+			SampleUtilPrintf(UPNP_ERROR, "UpnpDiscovery_get_ErrCode %d\n", errCode);
 		}
 
-		location = UpnpString_get_String(
-			UpnpDiscovery_get_Location(d_event));
+		location = UpnpString_get_String(UpnpDiscovery_get_Location(d_event));
 		errCode = UpnpDownloadXmlDoc(location, &DescDoc);
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtilPrint("Error obtaining device description "
-					 "from %s -- error = %d\n",
-				location,
-				errCode);
+			SampleUtilPrintf(UPNP_ERROR, "UpnpDownloadXmlDoc from %s,error:%d\n", location,	errCode);
 		} else {
-			TvCtrlPointAddDevice(DescDoc,
-				location,
-				UpnpDiscovery_get_Expires(d_event));
+			TvCtrlPointAddDevice(DescDoc, location, UpnpDiscovery_get_Expires(d_event));
 		}
 		if (DescDoc) {
 			ixmlDocument_free(DescDoc);
@@ -1080,15 +1072,12 @@ int TvCtrlPointCallbackEventHandler(
 	case UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE: {
 		UpnpDiscovery *d_event = (UpnpDiscovery *)Event;
 		int errCode = UpnpDiscovery_get_ErrCode(d_event);
-		const char *deviceId = UpnpString_get_String(
-			UpnpDiscovery_get_DeviceID(d_event));
+		const char *deviceId = UpnpString_get_String(UpnpDiscovery_get_DeviceID(d_event));
 
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtilPrint(
-				"Error in Discovery ByeBye Callback -- %d\n",
-				errCode);
+			SampleUtilPrintf(UPNP_ERROR, "UpnpDiscovery_get_DeviceID:%d\n",	errCode);
 		}
-		SampleUtilPrint("Received ByeBye for Device: %s\n", deviceId);
+		SampleUtilPrint("Received ByeBye for Device:%s\n", deviceId);
 		TvCtrlPointRemoveDevice(deviceId);
 		SampleUtilPrint("After byebye:\n");
 		TvCtrlPointPrintList();
@@ -1099,9 +1088,7 @@ int TvCtrlPointCallbackEventHandler(
 		UpnpActionComplete *a_event = (UpnpActionComplete *)Event;
 		int errCode = UpnpActionComplete_get_ErrCode(a_event);
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtilPrint(
-				"Error in  Action Complete Callback -- %d\n",
-				errCode);
+			SampleUtilPrintf(UPNP_ERROR, "UpnpActionComplete_get_ErrCode:%d\n", errCode);
 		}
 		/* No need for any processing here, just print out results.
 		 * Service state table updates are handled by events. */
@@ -1111,17 +1098,11 @@ int TvCtrlPointCallbackEventHandler(
 		UpnpStateVarComplete *sv_event = (UpnpStateVarComplete *)Event;
 		int errCode = UpnpStateVarComplete_get_ErrCode(sv_event);
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtilPrint(
-				"Error in Get Var Complete Callback -- %d\n",
-				errCode);
+			SampleUtilPrintf(UPNP_ERROR, "UpnpStateVarComplete_get_ErrCode:%d\n", errCode);
 		} else {
 			TvCtrlPointHandleGetVar(
-				UpnpString_get_String(
-					UpnpStateVarComplete_get_CtrlUrl(
-						sv_event)),
-				UpnpString_get_String(
-					UpnpStateVarComplete_get_StateVarName(
-						sv_event)),
+				UpnpString_get_String(UpnpStateVarComplete_get_CtrlUrl(sv_event)),
+				UpnpString_get_String(UpnpStateVarComplete_get_StateVarName(sv_event)),
 				UpnpStateVarComplete_get_CurrentVal(sv_event));
 		}
 		break;
@@ -1141,16 +1122,11 @@ int TvCtrlPointCallbackEventHandler(
 
 		errCode = UpnpEventSubscribe_get_ErrCode(es_event);
 		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtilPrint(
-				"Error in Event Subscribe Callback -- %d\n",
-				errCode);
+			SampleUtilPrintf(UPNP_ERROR, "UpnpEventSubscribe_get_ErrCode:%d\n", errCode);
 		} else {
 			TvCtrlPointHandleSubscribeUpdate(
-				UpnpString_get_String(
-					UpnpEventSubscribe_get_PublisherUrl(
-						es_event)),
-				UpnpString_get_String(
-					UpnpEventSubscribe_get_SID(es_event)),
+				UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event)),
+				UpnpString_get_String(UpnpEventSubscribe_get_SID(es_event)),
 				UpnpEventSubscribe_get_TimeOut(es_event));
 		}
 		break;
@@ -1162,23 +1138,13 @@ int TvCtrlPointCallbackEventHandler(
 		Upnp_SID newSID;
 
 		errCode = UpnpSubscribe(ctrlpt_handle,
-			UpnpString_get_String(
-				UpnpEventSubscribe_get_PublisherUrl(es_event)),
-			&TimeOut,
-			newSID);
+			UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event)), &TimeOut, newSID);
 		if (errCode == UPNP_E_SUCCESS) {
-			SampleUtilPrint(
-				"Subscribed to EventURL with SID=%s\n", newSID);
+			SampleUtilPrintf(UPNP_INFO, "UpnpSubscribe SID=%s\n", newSID);
 			TvCtrlPointHandleSubscribeUpdate(
-				UpnpString_get_String(
-					UpnpEventSubscribe_get_PublisherUrl(
-						es_event)),
-				newSID,
-				TimeOut);
+				UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event)), newSID, TimeOut);
 		} else {
-			SampleUtilPrint(
-				"Error Subscribing to EventURL -- %d\n",
-				errCode);
+			SampleUtilPrintf(UPNP_ERROR, "UpnpSubscribe SID=%s, err:%d\n", newSID errCode);
 		}
 		break;
 	}
@@ -1288,7 +1254,7 @@ int TvCtrlPointStart(print_string printFunctionPtr,
 		ip_address ? ip_address : "{NULL}",
 		port);
 	if (rc != UPNP_E_SUCCESS) {
-		SampleUtilPrint("WinCE Start: UpnpInit2() Error: %d\n", rc);
+		SampleUtilPrintf(UPNP_ERROR, "UpnpInit2() Error: %d\n", rc);
 		if (!combo) {
 			UpnpFinish();
 
@@ -1310,7 +1276,7 @@ int TvCtrlPointStart(print_string printFunctionPtr,
 		&ctrlpt_handle,
 		&ctrlpt_handle);
 	if (rc != UPNP_E_SUCCESS) {
-		SampleUtilPrint("Error registering CP: %d\n", rc);
+		SampleUtilPrintf(UPNP_ERROR, "UpnpRegisterClient Error: %d\n", rc);
 		UpnpFinish();
 
 		return TV_ERROR;

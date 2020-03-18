@@ -330,7 +330,7 @@ int http_RecvMessageDetail(http_parser_t *parser, int num_read,
     switch (status) {
     case PARSE_SUCCESS:
         HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n", parser->msg.msg.buf);
-        HttpPrintf(UPNP_INFO,"-----------------\n");
+        HttpPrintf(UPNP_INFO,"<<<<<<<<<<<<<<<\n");
         print_http_headers(&parser->msg);
         if (g_maxContentLength > (size_t)0 &&
             parser->content_length > (unsigned int)g_maxContentLength) {
@@ -410,7 +410,7 @@ int http_RecvMessage(SOCKINFO *info,
         } else if (num_read == 0) {
 			if (ok_on_close) {
 				HttpPrintf(UPNP_INFO,"<<< (RECVD) <<<\n%s\n", parser->msg.msg.buf);
-                HttpPrintf(UPNP_INFO,"-----------------\n");
+                HttpPrintf(UPNP_INFO,"<<<<<<<<<<<<<<<\n");
 				print_http_headers(&parser->msg);
 				line = __LINE__;
 				ret = 0;
@@ -564,7 +564,7 @@ int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
 					/* write data */
 					nw = sock_write(info, file_buf, num_read, TimeOut);
 					HttpPrintf(UPNP_INFO,">>> (SENT) >>>\n%.*s\n", nw, file_buf);
-                    HttpPrintf(UPNP_INFO,"------------\n");
+                    HttpPrintf(UPNP_INFO,">>>>>>>>>>>>>>\n");
 					/* Send error nothing we can do */
 					num_written = (size_t)nw;
 					if (nw <= 0 || num_written != num_read) {
@@ -591,7 +591,7 @@ int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
 				HttpPrintf(UPNP_INFO,">>> (SENT) >>>\n");
 				HttpPrintf(UPNP_INFO,"%.*s\nbuf_length=%" PRIzd ", num_written=%" PRIzd "\n",
 					(int)buf_length, buf, buf_length, num_written);
-                HttpPrintf(UPNP_INFO,"------------\n");
+                HttpPrintf(UPNP_INFO,">>>>>>>>>>>>>>\n");
 				if (num_written != buf_length) {
 					RetVal = 0;
 					goto ExitFunction;

@@ -278,58 +278,68 @@ char *SampleUtil_GetFirstElementItem(IXML_Element *element, const char *item)
 	return ret;
 }
 
-void SampleUtil_PrintEventType(Upnp_EventType S)
+char *GetEventName(Upnp_EventType S)
 {
+    char *event = NULL;
 	switch (S) {
 	/* Discovery */
 	case UPNP_DISCOVERY_ADVERTISEMENT_ALIVE:
-		SampleUtilPrint("UPNP_DISCOVERY_ADVERTISEMENT_ALIVE\n");
+		event = ("UPNP_DISCOVERY_ADVERTISEMENT_ALIVE\n");
 		break;
 	case UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE:
-		SampleUtilPrint("UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE\n");
+		event = ("UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE\n");
 		break;
 	case UPNP_DISCOVERY_SEARCH_RESULT:
-		SampleUtilPrint("UPNP_DISCOVERY_SEARCH_RESULT\n");
+		event = ("UPNP_DISCOVERY_SEARCH_RESULT\n");
 		break;
 	case UPNP_DISCOVERY_SEARCH_TIMEOUT:
-		SampleUtilPrint("UPNP_DISCOVERY_SEARCH_TIMEOUT\n");
+		event = ("UPNP_DISCOVERY_SEARCH_TIMEOUT\n");
 		break;
 	/* SOAP */
 	case UPNP_CONTROL_ACTION_REQUEST:
-		SampleUtilPrint("UPNP_CONTROL_ACTION_REQUEST\n");
+		event = ("UPNP_CONTROL_ACTION_REQUEST\n");
 		break;
 	case UPNP_CONTROL_ACTION_COMPLETE:
-		SampleUtilPrint("UPNP_CONTROL_ACTION_COMPLETE\n");
+		event = ("UPNP_CONTROL_ACTION_COMPLETE\n");
 		break;
 	case UPNP_CONTROL_GET_VAR_REQUEST:
-		SampleUtilPrint("UPNP_CONTROL_GET_VAR_REQUEST\n");
+		event = ("UPNP_CONTROL_GET_VAR_REQUEST\n");
 		break;
 	case UPNP_CONTROL_GET_VAR_COMPLETE:
-		SampleUtilPrint("UPNP_CONTROL_GET_VAR_COMPLETE\n");
+		event = ("UPNP_CONTROL_GET_VAR_COMPLETE\n");
 		break;
 	/* GENA */
 	case UPNP_EVENT_SUBSCRIPTION_REQUEST:
-		SampleUtilPrint("UPNP_EVENT_SUBSCRIPTION_REQUEST\n");
+		event = ("UPNP_EVENT_SUBSCRIPTION_REQUEST\n");
 		break;
 	case UPNP_EVENT_RECEIVED:
-		SampleUtilPrint("UPNP_EVENT_RECEIVED\n");
+		event = ("UPNP_EVENT_RECEIVED\n");
 		break;
 	case UPNP_EVENT_RENEWAL_COMPLETE:
-		SampleUtilPrint("UPNP_EVENT_RENEWAL_COMPLETE\n");
+		event = ("UPNP_EVENT_RENEWAL_COMPLETE\n");
 		break;
 	case UPNP_EVENT_SUBSCRIBE_COMPLETE:
-		SampleUtilPrint("UPNP_EVENT_SUBSCRIBE_COMPLETE\n");
+		event = ("UPNP_EVENT_SUBSCRIBE_COMPLETE\n");
 		break;
 	case UPNP_EVENT_UNSUBSCRIBE_COMPLETE:
-		SampleUtilPrint("UPNP_EVENT_UNSUBSCRIBE_COMPLETE\n");
+		event = ("UPNP_EVENT_UNSUBSCRIBE_COMPLETE\n");
 		break;
 	case UPNP_EVENT_AUTORENEWAL_FAILED:
-		SampleUtilPrint("UPNP_EVENT_AUTORENEWAL_FAILED\n");
+		event = ("UPNP_EVENT_AUTORENEWAL_FAILED\n");
 		break;
 	case UPNP_EVENT_SUBSCRIPTION_EXPIRED:
-		SampleUtilPrint("UPNP_EVENT_SUBSCRIPTION_EXPIRED\n");
+		event = ("UPNP_EVENT_SUBSCRIPTION_EXPIRED\n");
 		break;
+    default:
+        event = ("Unknown Event");
+        break;
 	}
+    return event;
+}
+
+void SampleUtil_PrintEventType(Upnp_EventType S)
+{
+	SampleUtilPrint("%s\n", S);
 }
 
 int SampleUtil_PrintEventSearchResult(const void *Event)
@@ -555,7 +565,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 {
 	ithread_mutex_lock(&display_mutex);
 
-	SampleUtilPrint("=================================================\n");
+	SampleUtilPrint("<<<<<<<<<<<<<<< Event : %d Start <<<<<<<<<<<<<<<\n", EventType);
 	SampleUtil_PrintEventType(EventType);
 	switch (EventType) {
 	/* SSDP */
@@ -599,7 +609,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
         SampleUtil_PrintEventException(Event);
 		break;
 	}
-	SampleUtilPrint("=================================================\n");
+	SampleUtilPrint("<<<<<<<<<<<<<<< Event : %d End <<<<<<<<<<<<<<<\n", EventType);
 
 	ithread_mutex_unlock(&display_mutex);
 
