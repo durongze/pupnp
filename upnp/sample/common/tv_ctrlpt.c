@@ -1002,6 +1002,21 @@ void TvCtrlPointHandleGetVar(
 	ithread_mutex_unlock(&DeviceListMutex);
 }
 
+void TvCtrlPointHandleGetVarRequest(const void *Event)
+{
+    UpnpStateVarComplete *sv_event = (UpnpStateVarComplete *)Event;
+    int errCode = UpnpStateVarComplete_get_ErrCode(sv_event);
+    if (errCode != UPNP_E_SUCCESS) {
+        SampleUtilPrintf(UPNP_ERROR, "UpnpStateVarComplete_get_ErrCode:%d\n", errCode);
+    } else {
+        TvCtrlPointHandleGetVar(
+            UpnpString_get_String(UpnpStateVarComplete_get_CtrlUrl(sv_event)),
+            UpnpString_get_String(UpnpStateVarComplete_get_StateVarName(sv_event)),
+            UpnpStateVarComplete_get_CurrentVal(sv_event));
+    }
+    return ;
+}
+
 void TvCtrlPointHandleDiscovery(const void *Event)
 {
     const UpnpDiscovery *d_event = (UpnpDiscovery *)Event;
@@ -1023,7 +1038,51 @@ void TvCtrlPointHandleDiscovery(const void *Event)
         ixmlDocument_free(DescDoc);
     }
     TvCtrlPointPrintList();
+    return ;
+}
 
+void TvCtrlPointHandleActionRequest(const void *Event)
+{
+    UpnpActionComplete *a_event = (UpnpActionComplete *)Event;
+    int errCode = UpnpActionComplete_get_ErrCode(a_event);
+    if (errCode != UPNP_E_SUCCESS) {
+        SampleUtilPrintf(UPNP_ERROR, "UpnpActionComplete_get_ErrCode:%d\n", errCode);
+    }
+    /* No need for any processing here, just print out results.
+     * Service state table updates are handled by events. */
+    return ;
+}
+
+void TvCtrlPointHandleSubscribeRequest(const void *Event)
+{
+	int errCode = 0;
+    UpnpEventSubscribe *es_event = (UpnpEventSubscribe *)Event;
+    
+    errCode = UpnpEventSubscribe_get_ErrCode(es_event);
+    if (errCode != UPNP_E_SUCCESS) {
+        SampleUtilPrintf(UPNP_ERROR, "UpnpEventSubscribe_get_ErrCode:%d\n", errCode);
+    } else {
+        TvCtrlPointHandleSubscribeUpdate(
+            UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event)),
+            UpnpString_get_String(UpnpEventSubscribe_get_SID(es_event)),
+            UpnpEventSubscribe_get_TimeOut(es_event));
+    }
+    return ;
+}
+
+void TvCtrlPointHandleAdvert(const void *Event)
+{
+    UpnpDiscovery *d_event = (UpnpDiscovery *)Event;
+    int errCode = UpnpDiscovery_get_ErrCode(d_event);
+    const char *deviceId = UpnpString_get_String(UpnpDiscovery_get_DeviceID(d_event));
+    
+    if (errCode != UPNP_E_SUCCESS) {
+        SampleUtilPrintf(UPNP_ERROR, "UpnpDiscovery_get_DeviceID:%d\n", errCode);
+    }
+    SampleUtilPrint("Received ByeBye for Device:%s\n", deviceId);
+    TvCtrlPointRemoveDevice(deviceId);
+    TvCtrlPointPrintList();
+    return ;
 }
 
 /********************************************************************************
@@ -1058,41 +1117,16 @@ int TvCtrlPointCallbackEventHandler(
 		/* Nothing to do here... */
 		break;
 	case UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE: {
-		UpnpDiscovery *d_event = (UpnpDiscovery *)Event;
-		int errCode = UpnpDiscovery_get_ErrCode(d_event);
-		const char *deviceId = UpnpString_get_String(UpnpDiscovery_get_DeviceID(d_event));
-
-		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtilPrintf(UPNP_ERROR, "UpnpDiscovery_get_DeviceID:%d\n",	errCode);
-		}
-		SampleUtilPrint("Received ByeBye for Device:%s\n", deviceId);
-		TvCtrlPointRemoveDevice(deviceId);
-		SampleUtilPrint("After byebye:\n");
-		TvCtrlPointPrintList();
+        TvCtrlPointHandleAdvert(Event);
 		break;
 	}
 	/* SOAP Stuff */
 	case UPNP_CONTROL_ACTION_COMPLETE: {
-		UpnpActionComplete *a_event = (UpnpActionComplete *)Event;
-		int errCode = UpnpActionComplete_get_ErrCode(a_event);
-		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtilPrintf(UPNP_ERROR, "UpnpActionComplete_get_ErrCode:%d\n", errCode);
-		}
-		/* No need for any processing here, just print out results.
-		 * Service state table updates are handled by events. */
+        TvCtrlPointHandleActionRequest(Event);
 		break;
 	}
 	case UPNP_CONTROL_GET_VAR_COMPLETE: {
-		UpnpStateVarComplete *sv_event = (UpnpStateVarComplete *)Event;
-		int errCode = UpnpStateVarComplete_get_ErrCode(sv_event);
-		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtilPrintf(UPNP_ERROR, "UpnpStateVarComplete_get_ErrCode:%d\n", errCode);
-		} else {
-			TvCtrlPointHandleGetVar(
-				UpnpString_get_String(UpnpStateVarComplete_get_CtrlUrl(sv_event)),
-				UpnpString_get_String(UpnpStateVarComplete_get_StateVarName(sv_event)),
-				UpnpStateVarComplete_get_CurrentVal(sv_event));
-		}
+        TvCtrlPointHandleGetVarRequest(Event);
 		break;
 	}
 	/* GENA Stuff */
@@ -1106,17 +1140,7 @@ int TvCtrlPointCallbackEventHandler(
 	case UPNP_EVENT_SUBSCRIBE_COMPLETE:
 	case UPNP_EVENT_UNSUBSCRIBE_COMPLETE:
 	case UPNP_EVENT_RENEWAL_COMPLETE: {
-		UpnpEventSubscribe *es_event = (UpnpEventSubscribe *)Event;
-
-		errCode = UpnpEventSubscribe_get_ErrCode(es_event);
-		if (errCode != UPNP_E_SUCCESS) {
-			SampleUtilPrintf(UPNP_ERROR, "UpnpEventSubscribe_get_ErrCode:%d\n", errCode);
-		} else {
-			TvCtrlPointHandleSubscribeUpdate(
-				UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event)),
-				UpnpString_get_String(UpnpEventSubscribe_get_SID(es_event)),
-				UpnpEventSubscribe_get_TimeOut(es_event));
-		}
+        TvCtrlPointHandleSubscribeRequest(Event);
 		break;
 	}
 	case UPNP_EVENT_AUTORENEWAL_FAILED:
@@ -1124,13 +1148,11 @@ int TvCtrlPointCallbackEventHandler(
 		UpnpEventSubscribe *es_event = (UpnpEventSubscribe *)Event;
 		int TimeOut = default_timeout;
 		Upnp_SID newSID;
-
-		errCode = UpnpSubscribe(ctrlpt_handle,
-			UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event)), &TimeOut, newSID);
+        char *PublisherUrl = UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event));
+		errCode = UpnpSubscribe(ctrlpt_handle, PublisherUrl, &TimeOut, newSID);
 		if (errCode == UPNP_E_SUCCESS) {
 			SampleUtilPrintf(UPNP_INFO, "UpnpSubscribe SID=%s\n", newSID);
-			TvCtrlPointHandleSubscribeUpdate(
-				UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event)), newSID, TimeOut);
+			TvCtrlPointHandleSubscribeUpdate(PublisherUrl, newSID, TimeOut);
 		} else {
 			SampleUtilPrintf(UPNP_ERROR, "UpnpSubscribe SID=%s, err:%d\n", newSID, errCode);
 		}
