@@ -1290,7 +1290,7 @@ int TvDeviceStart(char *ip_address,
 	ithread_mutex_init(&TVDevMutex, NULL);
 
 	SampleUtil_Initialize(pfun);
-	SampleUtilPrintf(UPNP_INFO, "Init UPnP Sdk with ipaddr:%s port:%u\n",
+	SampleUtil_Print("Init UPnP Sdk with ipaddr:%s port:%u\n",
 		ip_address ? ip_address : "{NULL}",	port);
 	ret = UpnpInit2(ip_address, port);
 	if (ret != UPNP_E_SUCCESS) {
