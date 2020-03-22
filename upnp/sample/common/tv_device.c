@@ -234,51 +234,34 @@ int TvDeviceStateTableInit(char *DescDocURL)
 
 	/*Download description document */
 	if (UpnpDownloadXmlDoc(DescDocURL, &DescDoc) != UPNP_E_SUCCESS) {
-		SampleUtilPrint("TvDeviceStateTableInit -- Error Parsing %s\n",
-			DescDocURL);
+		SampleUtilPrintf(UPNP_ERROR, "UpnpDownloadXmlDoc %s\n", DescDocURL);
 		ret = UPNP_E_INVALID_DESC;
 		goto error_handler;
 	}
 	udn = SampleUtil_GetFirstDocumentItem(DescDoc, "UDN");
 	/* Find the Tv Control Service identifiers */
-	if (!SampleUtil_FindAndParseService(DescDoc,
-		    DescDocURL,
-		    TvServiceType[TV_SERVICE_CONTROL],
-		    &servid_ctrl,
-		    &evnturl_ctrl,
-		    &ctrlurl_ctrl)) {
-		SampleUtilPrint("TvDeviceStateTableInit -- Error: Could not "
-				 "find Service: %s\n",
-			TvServiceType[TV_SERVICE_CONTROL]);
+	if (!SampleUtil_FindAndParseService(DescDoc, DescDocURL, TvServiceType[TV_SERVICE_CONTROL],
+		    &servid_ctrl, &evnturl_ctrl, &ctrlurl_ctrl)) {
+		SampleUtilPrintf(UPNP_ERROR, "SampleUtil_FindAndParseService: %s\n",
+            TvServiceType[TV_SERVICE_CONTROL]);
 		ret = UPNP_E_INVALID_DESC;
 		goto error_handler;
 	}
 	/* set control service table */
-	SetServiceTable(TV_SERVICE_CONTROL,
-		udn,
-		servid_ctrl,
-		TvServiceType[TV_SERVICE_CONTROL],
-		&tv_service_table[TV_SERVICE_CONTROL]);
+	SetServiceTable(TV_SERVICE_CONTROL, udn, servid_ctrl,
+		TvServiceType[TV_SERVICE_CONTROL], &tv_service_table[TV_SERVICE_CONTROL]);
 
 	/* Find the Tv Picture Service identifiers */
-	if (!SampleUtil_FindAndParseService(DescDoc,
-		    DescDocURL,
-		    TvServiceType[TV_SERVICE_PICTURE],
-		    &servid_pict,
-		    &evnturl_pict,
-		    &ctrlurl_pict)) {
-		SampleUtilPrint("TvDeviceStateTableInit -- Error: Could not "
-				 "find Service: %s\n",
+	if (!SampleUtil_FindAndParseService(DescDoc, DescDocURL, TvServiceType[TV_SERVICE_PICTURE],
+		    &servid_pict, &evnturl_pict, &ctrlurl_pict)) {
+		SampleUtilPrintf(UPNP_ERROR, "SampleUtil_FindAndParseService: %s\n",
 			TvServiceType[TV_SERVICE_PICTURE]);
 		ret = UPNP_E_INVALID_DESC;
 		goto error_handler;
 	}
 	/* set picture service table */
-	SetServiceTable(TV_SERVICE_PICTURE,
-		udn,
-		servid_pict,
-		TvServiceType[TV_SERVICE_PICTURE],
-		&tv_service_table[TV_SERVICE_PICTURE]);
+	SetServiceTable(TV_SERVICE_PICTURE, udn, servid_pict,
+		TvServiceType[TV_SERVICE_PICTURE], &tv_service_table[TV_SERVICE_PICTURE]);
 
 error_handler:
 	/* clean up */
@@ -328,28 +311,20 @@ int TvDeviceHandleSubscriptionRequest(const UpnpSubscriptionRequest *sr_event)
 			for (j = 0; j < tv_service_table[i].VariableCount; ++j) {
 				/* add each variable to the property set */
 				/* for initial state dump */
-				UpnpAddToPropertySet(&PropSet,
-						     tv_service_table[i].
-						     VariableName[j],
-						     tv_service_table[i].
-						     VariableStrVal[j]);
+				UpnpAddToPropertySet(&PropSet, tv_service_table[i].VariableName[j],
+				    tv_service_table[i].VariableStrVal[j]);
 			}
 
 			/* dump initial state  */
-			UpnpAcceptSubscriptionExt(device_handle,
-						  l_udn,
+			UpnpAcceptSubscriptionExt(device_handle, l_udn,
 						  l_serviceId, PropSet, l_sid);
 			/* free document */
 			Document_free(PropSet);
 #endif
-			UpnpAcceptSubscription(device_handle,
-				l_udn,
-				l_serviceId,
+			UpnpAcceptSubscription(device_handle, l_udn, l_serviceId,
 				(const char **)tv_service_table[i].VariableName,
-				(const char **)tv_service_table[i]
-					.VariableStrVal,
-				tv_service_table[i].VariableCount,
-				l_sid);
+				(const char **)tv_service_table[i].VariableStrVal,
+				tv_service_table[i].VariableCount, l_sid);
 		}
 	}
 
@@ -377,19 +352,13 @@ int TvDeviceHandleGetVarRequest(UpnpStateVarRequest *cgv_event)
 		if (strcmp(devUDN, tv_service_table[i].UDN) == 0 &&
 			strcmp(serviceID, tv_service_table[i].ServiceId) == 0) {
 			/* check variable name */
-			for (j = 0; j < tv_service_table[i].VariableCount;
-				j++) {
+			for (j = 0; j < tv_service_table[i].VariableCount; j++) {
 				const char *stateVarName = UpnpString_get_String(
-					UpnpStateVarRequest_get_StateVarName(
-						cgv_event));
-				if (strcmp(stateVarName,
-					    tv_service_table[i]
-						    .VariableName[j]) == 0) {
+					UpnpStateVarRequest_get_StateVarName(cgv_event));
+				if (strcmp(stateVarName, tv_service_table[i].VariableName[j]) == 0) {
 					getvar_succeeded = 1;
-					UpnpStateVarRequest_set_CurrentVal(
-						cgv_event,
-						tv_service_table[i]
-							.VariableStrVal[j]);
+					UpnpStateVarRequest_set_CurrentVal(cgv_event,
+                        tv_service_table[i].VariableStrVal[j]);
 					break;
 				}
 			}
@@ -398,15 +367,10 @@ int TvDeviceHandleGetVarRequest(UpnpStateVarRequest *cgv_event)
 	if (getvar_succeeded) {
 		UpnpStateVarRequest_set_ErrCode(cgv_event, UPNP_E_SUCCESS);
 	} else {
-		SampleUtilPrint(
-			"Error in UPNP_CONTROL_GET_VAR_REQUEST callback:\n"
-			"   Unknown variable name = %s\n",
-			UpnpString_get_String(
-				UpnpStateVarRequest_get_StateVarName(
-					cgv_event)));
+		SampleUtilPrintf(UPNP_ERROR, "UpnpStateVarRequest_get_StateVarName:%s\n",
+		    UpnpString_get_String(UpnpStateVarRequest_get_StateVarName(cgv_event)));
 		UpnpStateVarRequest_set_ErrCode(cgv_event, 404);
-		UpnpStateVarRequest_strcpy_ErrStr(
-			cgv_event, "Invalid Variable");
+		UpnpStateVarRequest_strcpy_ErrStr(cgv_event, "Invalid Variable");
 	}
 
 	ithread_mutex_unlock(&TVDevMutex);
@@ -431,42 +395,28 @@ int TvDeviceHandleActionRequest(UpnpActionRequest *ca_event)
 	UpnpActionRequest_set_ActionResult(ca_event, NULL);
 
 	devUDN = UpnpString_get_String(UpnpActionRequest_get_DevUDN(ca_event));
-	serviceID = UpnpString_get_String(
-		UpnpActionRequest_get_ServiceID(ca_event));
-	actionName = UpnpString_get_String(
-		UpnpActionRequest_get_ActionName(ca_event));
+	serviceID = UpnpString_get_String(UpnpActionRequest_get_ServiceID(ca_event));
+	actionName = UpnpString_get_String(UpnpActionRequest_get_ActionName(ca_event));
 	if (strcmp(devUDN, tv_service_table[TV_SERVICE_CONTROL].UDN) == 0 &&
-		strcmp(serviceID,
-			tv_service_table[TV_SERVICE_CONTROL].ServiceId) == 0) {
+		strcmp(serviceID, tv_service_table[TV_SERVICE_CONTROL].ServiceId) == 0) {
 		/* Request for action in the TvDevice Control Service. */
 		service = TV_SERVICE_CONTROL;
-	} else if (strcmp(devUDN, tv_service_table[TV_SERVICE_PICTURE].UDN) ==
-			   0 &&
-		   strcmp(serviceID,
-			   tv_service_table[TV_SERVICE_PICTURE].ServiceId) ==
-			   0) {
+	} else if (strcmp(devUDN, tv_service_table[TV_SERVICE_PICTURE].UDN) == 0 &&
+		   strcmp(serviceID, tv_service_table[TV_SERVICE_PICTURE].ServiceId) == 0) {
 		/* Request for action in the TvDevice Picture Service. */
 		service = TV_SERVICE_PICTURE;
 	}
 	/* Find and call appropriate procedure based on action name.
 	 * Each action name has an associated procedure stored in the
 	 * service table. These are set at initialization. */
-	for (i = 0; i < TV_MAXACTIONS &&
-		    tv_service_table[service].ActionNames[i] != NULL;
-		i++) {
-		if (!strcmp(actionName,
-			    tv_service_table[service].ActionNames[i])) {
-			if (!strcmp(tv_service_table[TV_SERVICE_CONTROL]
-					    .VariableStrVal[TV_CONTROL_POWER],
-				    "1") ||
+	for (i = 0; i < TV_MAXACTIONS && tv_service_table[service].ActionNames[i] != NULL; i++) {
+		if (!strcmp(actionName, tv_service_table[service].ActionNames[i])) {
+			if (!strcmp(tv_service_table[TV_SERVICE_CONTROL].VariableStrVal[TV_CONTROL_POWER], "1") ||
 				!strcmp(actionName, "PowerOn")) {
 				retCode = tv_service_table[service].actions[i](
-					UpnpActionRequest_get_ActionRequest(
-						ca_event),
-					&actionResult,
-					&errorString);
-				UpnpActionRequest_set_ActionResult(
-					ca_event, actionResult);
+					UpnpActionRequest_get_ActionRequest(ca_event),
+					&actionResult, &errorString);
+				UpnpActionRequest_set_ActionResult(ca_event, actionResult);
 			} else {
 				errorString = "Power is Off";
 				retCode = UPNP_E_INTERNAL_ERROR;
@@ -507,7 +457,7 @@ int TvDeviceSetServiceTableVar(unsigned int service, int variable, char *value)
 	if (service >= TV_SERVICE_SERVCOUNT ||
 		variable >= tv_service_table[service].VariableCount ||
 		strlen(value) >= TV_MAX_VAL_LEN) {
-		SampleUtilPrint("service:%d,variable:%d,value:%s,cnt:%d",
+		SampleUtilPrintf(UPNP_ERROR, "service:%d,variable:%d,value:%s,cnt:%d",
 			service, variable, value, tv_service_table[service].VariableCount);
 		return (0);
     }
@@ -552,15 +502,14 @@ static int TvDeviceSetPower(
 	int ret = 0;
 
 	if (on != POWER_ON && on != POWER_OFF) {
-		SampleUtilPrint("error: can't set power to value %d\n", on);
+		SampleUtilPrintf(UPNP_ERROR, "can't set power to value %d\n", on);
 		return 0;
 	}
 
 	/* Vendor-specific code to turn the power on/off goes here. */
 
 	sprintf(value, "%d", on);
-	ret = TvDeviceSetServiceTableVar(
-		TV_SERVICE_CONTROL, TV_CONTROL_POWER, value);
+	ret = TvDeviceSetServiceTableVar(TV_SERVICE_CONTROL, TV_CONTROL_POWER, value);
 
 	return ret;
 }
@@ -575,11 +524,8 @@ int TvDevicePowerOn(
 
 	if (TvDeviceSetPower(POWER_ON)) {
 		/* create a response */
-		if (UpnpAddToActionResponse(out,
-			    SET_POWER_ON,
-			    TvServiceType[TV_SERVICE_CONTROL],
-			    CTRL_POWER,
-			    "1") != UPNP_E_SUCCESS) {
+		if (UpnpAddToActionResponse(out, SET_POWER_ON, TvServiceType[TV_SERVICE_CONTROL],
+			    CTRL_POWER, "1") != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			return UPNP_E_INTERNAL_ERROR;
@@ -601,11 +547,8 @@ int TvDevicePowerOff(
 	if (TvDeviceSetPower(POWER_OFF)) {
 		/*create a response */
 
-		if (UpnpAddToActionResponse(out,
-			    SET_POWER_OFF,
-			    TvServiceType[TV_SERVICE_CONTROL],
-			    CTRL_POWER,
-			    "0") != UPNP_E_SUCCESS) {
+		if (UpnpAddToActionResponse(out, SET_POWER_OFF, TvServiceType[TV_SERVICE_CONTROL],
+			    CTRL_POWER, "0") != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			return UPNP_E_INTERNAL_ERROR;
@@ -631,19 +574,14 @@ int TvDeviceSetChannel(
 	channel = atoi(value);
 	if (channel < MIN_CHANNEL || channel > MAX_CHANNEL) {
 		free(value);
-		SampleUtilPrint(
-			"error: can't change to channel %d\n", channel);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to channel %d\n", channel);
 		(*errorString) = "Invalid Channel";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the channel goes here. */
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_CONTROL, TV_CONTROL_CHANNEL, value)) {
-		if (UpnpAddToActionResponse(out,
-			    SET_CHANNEL,
-			    TvServiceType[TV_SERVICE_CONTROL],
-			    "NewChannel",
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_CONTROL, TV_CONTROL_CHANNEL, value)) {
+		if (UpnpAddToActionResponse(out, SET_CHANNEL, TvServiceType[TV_SERVICE_CONTROL],
+			    "NewChannel", value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			free(value);
@@ -676,27 +614,21 @@ int IncrementChannel(int incr,
 	}
 
 	ithread_mutex_lock(&TVDevMutex);
-	curchannel = atoi(tv_service_table[TV_SERVICE_CONTROL]
-				  .VariableStrVal[TV_CONTROL_CHANNEL]);
+	curchannel = atoi(tv_service_table[TV_SERVICE_CONTROL].VariableStrVal[TV_CONTROL_CHANNEL]);
 	ithread_mutex_unlock(&TVDevMutex);
 
 	newchannel = curchannel + incr;
 
 	if (newchannel < MIN_CHANNEL || newchannel > MAX_CHANNEL) {
-		SampleUtilPrint(
-			"error: can't change to channel %d\n", newchannel);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to channel %d\n", newchannel);
 		(*errorString) = "Invalid Channel";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the channel goes here. */
 	sprintf(value, "%d", newchannel);
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_CONTROL, TV_CONTROL_CHANNEL, value)) {
-		if (UpnpAddToActionResponse(out,
-			    actionName,
-			    TvServiceType[TV_SERVICE_CONTROL],
-			    CTRL_CHANNEL,
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_CONTROL, TV_CONTROL_CHANNEL, value)) {
+		if (UpnpAddToActionResponse(out, actionName, TvServiceType[TV_SERVICE_CONTROL],
+			    CTRL_CHANNEL, value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			return UPNP_E_INTERNAL_ERROR;
@@ -734,18 +666,14 @@ int TvDeviceSetVolume(
 	}
 	volume = atoi(value);
 	if (volume < MIN_VOLUME || volume > MAX_VOLUME) {
-		SampleUtilPrint("error: can't change to volume %d\n", volume);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to volume %d\n", volume);
 		(*errorString) = "Invalid Volume";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the volume goes here. */
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_CONTROL, TV_CONTROL_VOLUME, value)) {
-		if (UpnpAddToActionResponse(out,
-			    SET_VOLUME,
-			    TvServiceType[TV_SERVICE_CONTROL],
-			    "NewVolume",
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_CONTROL, TV_CONTROL_VOLUME, value)) {
+		if (UpnpAddToActionResponse(out, SET_VOLUME, TvServiceType[TV_SERVICE_CONTROL],
+			    "NewVolume", value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			free(value);
@@ -787,26 +715,20 @@ static int IncrementVolume(
 	}
 
 	ithread_mutex_lock(&TVDevMutex);
-	curvolume = atoi(tv_service_table[TV_SERVICE_CONTROL]
-				 .VariableStrVal[TV_CONTROL_VOLUME]);
+	curvolume = atoi(tv_service_table[TV_SERVICE_CONTROL].VariableStrVal[TV_CONTROL_VOLUME]);
 	ithread_mutex_unlock(&TVDevMutex);
 
 	newvolume = curvolume + incr;
 	if (newvolume < MIN_VOLUME || newvolume > MAX_VOLUME) {
-		SampleUtilPrint(
-			"error: can't change to volume %d\n", newvolume);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to volume %d\n", newvolume);
 		(*errorString) = "Invalid Volume";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the volume goes here. */
 	sprintf(value, "%d", newvolume);
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_CONTROL, TV_CONTROL_VOLUME, value)) {
-		if (UpnpAddToActionResponse(out,
-			    actionName,
-			    TvServiceType[TV_SERVICE_CONTROL],
-			    CTRL_VOLUME,
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_CONTROL, TV_CONTROL_VOLUME, value)) {
+		if (UpnpAddToActionResponse(out, actionName, TvServiceType[TV_SERVICE_CONTROL],
+			    CTRL_VOLUME, value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			return UPNP_E_INTERNAL_ERROR;
@@ -850,8 +772,7 @@ int TvDeviceSetLog(
         UpnpSetLogModule(module);
     }
 	/* Vendor-specific code to set the channel goes here. */
-    ret = TvDeviceSetServiceTableVar(
-		    TV_SERVICE_CONTROL, TV_CONTROL_LOGLVL, value);
+    ret = TvDeviceSetServiceTableVar(TV_SERVICE_CONTROL, TV_CONTROL_LOGLVL, value);
 	if (ret) {
         ret = UpnpAddToActionResponse(out, SET_LOG,
             TvServiceType[TV_SERVICE_CONTROL], "NewLevel", value);
@@ -886,18 +807,14 @@ int TvDeviceSetColor(
 	}
 	color = atoi(value);
 	if (color < MIN_COLOR || color > MAX_COLOR) {
-		SampleUtilPrint("error: can't change to color %d\n", color);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to color %d\n", color);
 		(*errorString) = "Invalid Color";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the volume goes here. */
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_PICTURE, TV_PICTURE_COLOR, value)) {
-		if (UpnpAddToActionResponse(out,
-			    SET_COLOR,
-			    TvServiceType[TV_SERVICE_PICTURE],
-			    "NewColor",
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_PICTURE, TV_PICTURE_COLOR, value)) {
+		if (UpnpAddToActionResponse(out, SET_COLOR, TvServiceType[TV_SERVICE_PICTURE],
+			    "NewColor", value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			free(value);
@@ -945,19 +862,15 @@ static int IncrementColor(
 
 	newcolor = curcolor + incr;
 	if (newcolor < MIN_COLOR || newcolor > MAX_COLOR) {
-		SampleUtilPrint("error: can't change to color %d\n", newcolor);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to color %d\n", newcolor);
 		(*errorString) = "Invalid Color";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the volume goes here. */
 	sprintf(value, "%d", newcolor);
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_PICTURE, TV_PICTURE_COLOR, value)) {
-		if (UpnpAddToActionResponse(out,
-			    actionName,
-			    TvServiceType[TV_SERVICE_PICTURE],
-			    PIC_COLOR,
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_PICTURE, TV_PICTURE_COLOR, value)) {
+		if (UpnpAddToActionResponse(out, actionName, TvServiceType[TV_SERVICE_PICTURE],
+			    PIC_COLOR, value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			return UPNP_E_INTERNAL_ERROR;
@@ -995,18 +908,14 @@ int TvDeviceSetTint(
 	}
 	tint = atoi(value);
 	if (tint < MIN_TINT || tint > MAX_TINT) {
-		SampleUtilPrint("error: can't change to tint %d\n", tint);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to tint %d\n", tint);
 		(*errorString) = "Invalid Tint";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the volume goes here. */
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_PICTURE, TV_PICTURE_TINT, value)) {
-		if (UpnpAddToActionResponse(out,
-			    SET_TINT,
-			    TvServiceType[TV_SERVICE_PICTURE],
-			    "NewTint",
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_PICTURE, TV_PICTURE_TINT, value)) {
+		if (UpnpAddToActionResponse(out, SET_TINT, TvServiceType[TV_SERVICE_PICTURE],
+			    "NewTint", value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			free(value);
@@ -1053,25 +962,20 @@ int IncrementTint(int incr,
 	}
 
 	ithread_mutex_lock(&TVDevMutex);
-	curtint = atoi(tv_service_table[TV_SERVICE_PICTURE]
-			       .VariableStrVal[TV_PICTURE_TINT]);
+	curtint = atoi(tv_service_table[TV_SERVICE_PICTURE].VariableStrVal[TV_PICTURE_TINT]);
 	ithread_mutex_unlock(&TVDevMutex);
 
 	newtint = curtint + incr;
 	if (newtint < MIN_TINT || newtint > MAX_TINT) {
-		SampleUtilPrint("error: can't change to tint %d\n", newtint);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to tint %d\n", newtint);
 		(*errorString) = "Invalid Tint";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the volume goes here. */
 	sprintf(value, "%d", newtint);
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_PICTURE, TV_PICTURE_TINT, value)) {
-		if (UpnpAddToActionResponse(out,
-			    actionName,
-			    TvServiceType[TV_SERVICE_PICTURE],
-			    PIC_TINT,
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_PICTURE, TV_PICTURE_TINT, value)) {
+		if (UpnpAddToActionResponse(out, actionName, TvServiceType[TV_SERVICE_PICTURE],
+			    PIC_TINT, value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			return UPNP_E_INTERNAL_ERROR;
@@ -1151,19 +1055,14 @@ int TvDeviceSetContrast(
 	}
 	contrast = atoi(value);
 	if (contrast < MIN_CONTRAST || contrast > MAX_CONTRAST) {
-		SampleUtilPrint(
-			"error: can't change to contrast %d\n", contrast);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to contrast %d\n", contrast);
 		(*errorString) = "Invalid Contrast";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the volume goes here. */
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_PICTURE, TV_PICTURE_CONTRAST, value)) {
-		if (UpnpAddToActionResponse(out,
-			    SET_CONTRAST,
-			    TvServiceType[TV_SERVICE_PICTURE],
-			    "NewContrast",
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_PICTURE, TV_PICTURE_CONTRAST, value)) {
+		if (UpnpAddToActionResponse(out, SET_CONTRAST, TvServiceType[TV_SERVICE_PICTURE],
+			    "NewContrast", value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			free(value);
@@ -1205,26 +1104,20 @@ static int IncrementContrast(
 	}
 
 	ithread_mutex_lock(&TVDevMutex);
-	curcontrast = atoi(tv_service_table[TV_SERVICE_PICTURE]
-				   .VariableStrVal[TV_PICTURE_CONTRAST]);
+	curcontrast = atoi(tv_service_table[TV_SERVICE_PICTURE].VariableStrVal[TV_PICTURE_CONTRAST]);
 	ithread_mutex_unlock(&TVDevMutex);
 
 	newcontrast = curcontrast + incr;
 	if (newcontrast < MIN_CONTRAST || newcontrast > MAX_CONTRAST) {
-		SampleUtilPrint(
-			"error: can't change to contrast %d\n", newcontrast);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to contrast %d\n", newcontrast);
 		(*errorString) = "Invalid Contrast";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the channel goes here. */
 	sprintf(value, "%d", newcontrast);
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_PICTURE, TV_PICTURE_CONTRAST, value)) {
-		if (UpnpAddToActionResponse(out,
-			    actionName,
-			    TvServiceType[TV_SERVICE_PICTURE],
-			    PIC_CONTRAST,
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_PICTURE, TV_PICTURE_CONTRAST, value)) {
+		if (UpnpAddToActionResponse(out, actionName, TvServiceType[TV_SERVICE_PICTURE],
+			    PIC_CONTRAST, value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			return UPNP_E_INTERNAL_ERROR;
@@ -1262,19 +1155,14 @@ int TvDeviceSetBrightness(
 	}
 	brightness = atoi(value);
 	if (brightness < MIN_BRIGHTNESS || brightness > MAX_BRIGHTNESS) {
-		SampleUtilPrint(
-			"error: can't change to brightness %d\n", brightness);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to brightness %d\n", brightness);
 		(*errorString) = "Invalid Brightness";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the volume goes here. */
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_PICTURE, TV_PICTURE_BRIGHTNESS, value)) {
-		if (UpnpAddToActionResponse(out,
-			    SET_BRIGHTNESS,
-			    TvServiceType[TV_SERVICE_PICTURE],
-			    "NewBrightness",
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_PICTURE, TV_PICTURE_BRIGHTNESS, value)) {
+		if (UpnpAddToActionResponse(out, SET_BRIGHTNESS, TvServiceType[TV_SERVICE_PICTURE],
+			    "NewBrightness", value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			free(value);
@@ -1316,26 +1204,20 @@ static int IncrementBrightness(
 	}
 
 	ithread_mutex_lock(&TVDevMutex);
-	curbrightness = atoi(tv_service_table[TV_SERVICE_PICTURE]
-				     .VariableStrVal[TV_PICTURE_BRIGHTNESS]);
+	curbrightness = atoi(tv_service_table[TV_SERVICE_PICTURE].VariableStrVal[TV_PICTURE_BRIGHTNESS]);
 	ithread_mutex_unlock(&TVDevMutex);
 
 	newbrightness = curbrightness + incr;
 	if (newbrightness < MIN_BRIGHTNESS || newbrightness > MAX_BRIGHTNESS) {
-		SampleUtilPrint("error: can't change to brightness %d\n",
-			newbrightness);
+		SampleUtilPrintf(UPNP_ERROR, "can't change to brightness %d\n",	newbrightness);
 		(*errorString) = "Invalid Brightness";
 		return UPNP_E_INVALID_PARAM;
 	}
 	/* Vendor-specific code to set the channel goes here. */
 	sprintf(value, "%d", newbrightness);
-	if (TvDeviceSetServiceTableVar(
-		    TV_SERVICE_PICTURE, TV_PICTURE_BRIGHTNESS, value)) {
-		if (UpnpAddToActionResponse(out,
-			    actionName,
-			    TvServiceType[TV_SERVICE_PICTURE],
-			    PIC_BRIGHTNESS,
-			    value) != UPNP_E_SUCCESS) {
+	if (TvDeviceSetServiceTableVar(TV_SERVICE_PICTURE, TV_PICTURE_BRIGHTNESS, value)) {
+		if (UpnpAddToActionResponse(out, actionName, TvServiceType[TV_SERVICE_PICTURE],
+			    PIC_BRIGHTNESS, value) != UPNP_E_SUCCESS) {
 			(*out) = NULL;
 			(*errorString) = "Internal Error";
 			return UPNP_E_INTERNAL_ERROR;
@@ -1365,8 +1247,7 @@ int TvDeviceCallbackEventHandler(
 	(void)Cookie;
 	switch (EventType) {
 	case UPNP_EVENT_SUBSCRIPTION_REQUEST:
-		TvDeviceHandleSubscriptionRequest(
-			(UpnpSubscriptionRequest *)Event);
+		TvDeviceHandleSubscriptionRequest((UpnpSubscriptionRequest *)Event);
 		break;
 	case UPNP_CONTROL_GET_VAR_REQUEST:
 		TvDeviceHandleGetVarRequest((UpnpStateVarRequest *)Event);
@@ -1387,8 +1268,7 @@ int TvDeviceCallbackEventHandler(
 	case UPNP_EVENT_UNSUBSCRIBE_COMPLETE:
 		break;
 	default:
-		SampleUtilPrint("Error in TvDeviceCallbackEventHandler: "
-				 "unknown event type %d\n",
+		SampleUtilPrintf(UPNP_ERROR, "unknown event type %d\n",
 			EventType);
 	}
 	/* Print a summary of the event received */
@@ -1410,23 +1290,19 @@ int TvDeviceStart(char *ip_address,
 	ithread_mutex_init(&TVDevMutex, NULL);
 
 	SampleUtil_Initialize(pfun);
-	SampleUtil_Print("Initializing UPnP Sdk with\n"
-			 "\tipaddress = %s port = %u\n",
-		ip_address ? ip_address : "{NULL}",
-		port);
+	SampleUtilPrintf(UPNP_INFO, "Init UPnP Sdk with ipaddr:%s port:%u\n",
+		ip_address ? ip_address : "{NULL}",	port);
 	ret = UpnpInit2(ip_address, port);
 	if (ret != UPNP_E_SUCCESS) {
-		SampleUtilPrint("Error with UpnpInit2 -- %d\n", ret);
+		SampleUtilPrintf(UPNP_ERROR, "UpnpInit2 %d\n", ret);
 		UpnpFinish();
 
 		return ret;
 	}
 	ip_address = UpnpGetServerIpAddress();
 	port = UpnpGetServerPort();
-	SampleUtilPrint("UPnP Initialized\n"
-			 "\tipaddress = %s port = %u\n",
-		ip_address ? ip_address : "{NULL}",
-		port);
+	SampleUtilPrintf(UPNP_INFO, "UPnP Initialized ipaddr:%s port:%u\n",
+		ip_address ? ip_address : "{NULL}",	port);
 	if (!desc_doc_name) {
 		if (combo) {
 			desc_doc_name = "tvcombodesc.xml";
@@ -1437,51 +1313,35 @@ int TvDeviceStart(char *ip_address,
 	if (!web_dir_path) {
 		web_dir_path = DEFAULT_WEB_DIR;
 	}
-	snprintf(desc_doc_url,
-		DESC_URL_SIZE,
-		"http://%s:%d/%s",
-		ip_address,
-		port,
-		desc_doc_name);
-	SampleUtilPrint("Specifying the webserver root directory -- %s\n",
-		web_dir_path);
+	snprintf(desc_doc_url, DESC_URL_SIZE, "http://%s:%d/%s",
+		ip_address, port, desc_doc_name);
+	SampleUtilPrintf(UPNP_INFO, "Specifying webserver root dir:%s\n", web_dir_path);
 	ret = UpnpSetWebServerRootDir(web_dir_path);
 	if (ret != UPNP_E_SUCCESS) {
-		SampleUtilPrint(
-			"Error specifying webserver root directory -- %s: %d\n",
-			web_dir_path,
-			ret);
+		SampleUtilPrintf(UPNP_ERROR, "UpnpSetWebServerRootDir dir:%s:%d\n", web_dir_path, ret);
 		UpnpFinish();
 
 		return ret;
 	}
-	SampleUtilPrint("Registering the RootDevice\n"
-			 "\t with desc_doc_url: %s\n",
-		desc_doc_url);
-	ret = UpnpRegisterRootDevice(desc_doc_url,
-		TvDeviceCallbackEventHandler,
-		&device_handle,
-		&device_handle);
+	SampleUtilPrintf(UPNP_INFO, "UpnpRegisterRootDevice desc_doc_url: %s\n", desc_doc_url);
+	ret = UpnpRegisterRootDevice(desc_doc_url, TvDeviceCallbackEventHandler,
+		&device_handle,	&device_handle);
 	if (ret != UPNP_E_SUCCESS) {
-		SampleUtilPrint(
-			"Error registering the rootdevice : %d\n", ret);
+		SampleUtilPrintf(UPNP_ERROR, "UpnpRegisterRootDevice : %d\n", ret);
 		UpnpFinish();
 
 		return ret;
 	} else {
-		SampleUtilPrint("RootDevice Registered\n"
-				 "Initializing State Table\n");
+		SampleUtilPrintf(UPNP_INFO, "TvDeviceStateTableInit:%s\n", desc_doc_url);
 		TvDeviceStateTableInit(desc_doc_url);
-		SampleUtilPrint("State Table Initialized\n");
+		SampleUtilPrintf(UPNP_INFO, "UpnpSendAdvertisement ...\n");
 		ret = UpnpSendAdvertisement(device_handle, default_advr_expire);
 		if (ret != UPNP_E_SUCCESS) {
-			SampleUtilPrint(
-				"Error sending advertisements : %d\n", ret);
+			SampleUtilPrintf(UPNP_ERROR, "UpnpSendAdvertisement : %d\n", ret);
 			UpnpFinish();
 
 			return ret;
 		}
-		SampleUtilPrint("Advertisements Sent\n");
 	}
 
 	return UPNP_E_SUCCESS;
