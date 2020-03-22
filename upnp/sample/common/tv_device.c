@@ -130,30 +130,18 @@ static int SetServiceTable(
 	switch (serviceType) {
 	case TV_SERVICE_CONTROL:
 		out->VariableCount = TV_CONTROL_VARCOUNT;
-		for (i = 0;
-			i < tv_service_table[TV_SERVICE_CONTROL].VariableCount;
-			i++) {
-			tv_service_table[TV_SERVICE_CONTROL].VariableName[i] =
-				tvc_varname[i];
-			tv_service_table[TV_SERVICE_CONTROL].VariableStrVal[i] =
-				tvc_varval[i];
-			strcpy(tv_service_table[TV_SERVICE_CONTROL]
-					.VariableStrVal[i],
-				tvc_varval_def[i]);
+		for (i = 0; i < tv_service_table[TV_SERVICE_CONTROL].VariableCount;	i++) {
+			tv_service_table[TV_SERVICE_CONTROL].VariableName[i] = tvc_varname[i];
+			tv_service_table[TV_SERVICE_CONTROL].VariableStrVal[i] = tvc_varval[i];
+			strcpy(tv_service_table[TV_SERVICE_CONTROL].VariableStrVal[i], tvc_varval_def[i]);
 		}
 		break;
 	case TV_SERVICE_PICTURE:
 		out->VariableCount = TV_PICTURE_VARCOUNT;
-		for (i = 0;
-			i < tv_service_table[TV_SERVICE_PICTURE].VariableCount;
-			i++) {
-			tv_service_table[TV_SERVICE_PICTURE].VariableName[i] =
-				tvp_varname[i];
-			tv_service_table[TV_SERVICE_PICTURE].VariableStrVal[i] =
-				tvp_varval[i];
-			strcpy(tv_service_table[TV_SERVICE_PICTURE]
-					.VariableStrVal[i],
-				tvp_varval_def[i]);
+		for (i = 0; i < tv_service_table[TV_SERVICE_PICTURE].VariableCount;	i++) {
+			tv_service_table[TV_SERVICE_PICTURE].VariableName[i] = tvp_varname[i];
+			tv_service_table[TV_SERVICE_PICTURE].VariableStrVal[i] = tvp_varval[i];
+			strcpy(tv_service_table[TV_SERVICE_PICTURE].VariableStrVal[i], tvp_varval_def[i]);
 		}
 		break;
 	default:
@@ -297,8 +285,7 @@ int TvDeviceHandleSubscriptionRequest(const UpnpSubscriptionRequest *sr_event)
 	/* lock state mutex */
 	ithread_mutex_lock(&TVDevMutex);
 
-	l_serviceId = UpnpString_get_String(
-		UpnpSubscriptionRequest_get_ServiceId(sr_event));
+	l_serviceId = UpnpString_get_String(UpnpSubscriptionRequest_get_ServiceId(sr_event));
 	l_udn = UpnpSubscriptionRequest_get_UDN_cstr(sr_event);
 	l_sid = UpnpSubscriptionRequest_get_SID_cstr(sr_event);
 	for (i = 0; i < TV_SERVICE_SERVCOUNT; ++i) {
@@ -316,8 +303,7 @@ int TvDeviceHandleSubscriptionRequest(const UpnpSubscriptionRequest *sr_event)
 			}
 
 			/* dump initial state  */
-			UpnpAcceptSubscriptionExt(device_handle, l_udn,
-						  l_serviceId, PropSet, l_sid);
+			UpnpAcceptSubscriptionExt(device_handle, l_udn, l_serviceId, PropSet, l_sid);
 			/* free document */
 			Document_free(PropSet);
 #endif
@@ -345,10 +331,8 @@ int TvDeviceHandleGetVarRequest(UpnpStateVarRequest *cgv_event)
 
 	for (i = 0; i < TV_SERVICE_SERVCOUNT; i++) {
 		/* check udn and service id */
-		const char *devUDN = UpnpString_get_String(
-			UpnpStateVarRequest_get_DevUDN(cgv_event));
-		const char *serviceID = UpnpString_get_String(
-			UpnpStateVarRequest_get_ServiceID(cgv_event));
+		const char *devUDN = UpnpString_get_String(UpnpStateVarRequest_get_DevUDN(cgv_event));
+		const char *serviceID = UpnpString_get_String(UpnpStateVarRequest_get_ServiceID(cgv_event));
 		if (strcmp(devUDN, tv_service_table[i].UDN) == 0 &&
 			strcmp(serviceID, tv_service_table[i].ServiceId) == 0) {
 			/* check variable name */
@@ -478,10 +462,8 @@ int TvDeviceSetServiceTableVar(unsigned int service, int variable, char *value)
 	UpnpNotify(device_handle,
 		tv_service_table[service].UDN,
 		tv_service_table[service].ServiceId,
-		(const char **)&tv_service_table[service]
-			.VariableName[variable],
-		(const char **)&tv_service_table[service]
-			.VariableStrVal[variable],
+		(const char **)&tv_service_table[service].VariableName[variable],
+		(const char **)&tv_service_table[service].VariableStrVal[variable],
 		1);
 
 	ithread_mutex_unlock(&TVDevMutex);
@@ -1268,8 +1250,7 @@ int TvDeviceCallbackEventHandler(
 	case UPNP_EVENT_UNSUBSCRIBE_COMPLETE:
 		break;
 	default:
-		SampleUtilPrintf(UPNP_ERROR, "unknown event type %d\n",
-			EventType);
+		SampleUtilPrintf(UPNP_ERROR, "unknown event type %d\n",	EventType);
 	}
 	/* Print a summary of the event received */
 	SampleUtil_PrintEvent(EventType, Event);

@@ -202,17 +202,13 @@ char *SampleUtil_GetFirstDocumentItem(IXML_Document *doc, const char *item)
 		if (tmpNode) {
 			textNode = ixmlNode_getFirstChild(tmpNode);
 			if (!textNode) {
-				SampleUtilPrint("(BUG) "
-						 "ixmlNode_getFirstChild("
-						 "tmpNode) returned NULL\n");
+				SampleUtilPrint("(BUG) ixmlNode_getFirstChild(tmpNode) returned NULL\n");
 				ret = strdup("");
 				goto epilogue;
 			}
 			nodeValue = ixmlNode_getNodeValue(textNode);
 			if (!nodeValue) {
-				SampleUtilPrint(
-					" ixmlNode_getNodeValue "
-					"returned NULL\n");
+				SampleUtilPrint(" ixmlNode_getNodeValue returned NULL\n");
 				ret = strdup("");
 				goto epilogue;
 			}
@@ -223,13 +219,9 @@ char *SampleUtil_GetFirstDocumentItem(IXML_Document *doc, const char *item)
 				ret = strdup("");
 			}
 		} else
-			SampleUtilPrint("ixmlNodeList_item(nodeList, "
-					 "0) returned NULL\n");
+			SampleUtilPrint("ixmlNodeList_item(nodeList,0) returned NULL\n");
 	} else
-		SampleUtilPrint("Error finding %s in XML Node\n",
-			
-			
-			item);
+		SampleUtilPrint("Error finding %s in XML Node\n", item);
 
 epilogue:
 	if (nodeList)
@@ -247,29 +239,19 @@ char *SampleUtil_GetFirstElementItem(IXML_Element *element, const char *item)
 
 	nodeList = ixmlElement_getElementsByTagName(element, (char *)item);
 	if (nodeList == NULL) {
-		SampleUtilPrint("Error finding %s in XML Node\n",
-			
-			
-			item);
+		SampleUtilPrint("Error finding %s in XML Node\n", item);
 		return NULL;
 	}
 	tmpNode = ixmlNodeList_item(nodeList, 0);
 	if (!tmpNode) {
-		SampleUtilPrint("Error finding %s value in XML Node\n",
-			
-			
-			item);
+		SampleUtilPrint("Error finding %s value in XML Node\n", item);
 		ixmlNodeList_free(nodeList);
 		return NULL;
 	}
 	textNode = ixmlNode_getFirstChild(tmpNode);
 	ret = strdup(ixmlNode_getNodeValue(textNode));
 	if (!ret) {
-		SampleUtilPrint(
-			"Error allocating memory for %s in XML Node\n",
-			
-			
-			item);
+		SampleUtilPrint("Error allocating memory for %s in XML Node\n",	item);
 		ixmlNodeList_free(nodeList);
 		return NULL;
 	}
@@ -419,8 +401,7 @@ int SampleUtil_PrintEventActionComplete(const void *Event)
     IXML_Document *actionResult = NULL;    
     char *xmlbuff = NULL;
 
-    SampleUtilPrint("ErrCode     =  %d\n"
-             "CtrlUrl     =  %s\n",
+    SampleUtilPrint("ErrCode     =  %d\n""CtrlUrl     =  %s\n",
         UpnpActionComplete_get_ErrCode(a_event),
         UpnpString_get_String(UpnpActionComplete_get_CtrlUrl(a_event)));
     
@@ -454,12 +435,9 @@ int SampleUtil_PrintEventVarRequest(const void *Event)
 {
     UpnpStateVarRequest *sv_event = (UpnpStateVarRequest *)Event;
     
-    SampleUtilPrint("ErrCode     =  %d\n"
-             "ErrStr      =  %s\n"
-             "UDN         =  %s\n"
-             "ServiceID   =  %s\n"
-             "StateVarName=  %s\n"
-             "CurrentVal  =  %s\n",
+    SampleUtilPrint("ErrCode     =  %d\n""ErrStr      =  %s\n"
+             "UDN         =  %s\n""ServiceID   =  %s\n"
+             "StateVarName=  %s\n""CurrentVal  =  %s\n",
         UpnpStateVarRequest_get_ErrCode(sv_event),
         UpnpString_get_String(UpnpStateVarRequest_get_ErrStr(sv_event)),
         UpnpString_get_String(UpnpStateVarRequest_get_DevUDN(sv_event)),
@@ -473,10 +451,7 @@ int SampleUtil_PrintEventVarComplete(const void *Event)
 {
     UpnpStateVarComplete *sv_event = (UpnpStateVarComplete *)Event;
     
-    SampleUtilPrint("ErrCode     =  %d\n"
-             "CtrlUrl     =  %s\n"
-             "StateVarName=  %s\n"
-             "CurrentVal  =  %s\n",
+    SampleUtilPrint("ErrCode     =  %d\n""CtrlUrl     =  %s\n""StateVarName=  %s\n""CurrentVal  =  %s\n",
         UpnpStateVarComplete_get_ErrCode(sv_event),
         UpnpString_get_String(UpnpStateVarComplete_get_CtrlUrl(sv_event)),
         UpnpString_get_String(UpnpStateVarComplete_get_StateVarName(sv_event)),
@@ -489,9 +464,7 @@ int SampleUtil_PrintEventSubscriptionRequest(const void *Event)
     UpnpSubscriptionRequest *sr_event =
         (UpnpSubscriptionRequest *)Event;
     
-    SampleUtilPrint("ServiceID   =  %s\n"
-             "UDN         =  %s\n"
-             "SID         =  %s\n",
+    SampleUtilPrint("ServiceID   =  %s\n""UDN         =  %s\n""SID         =  %s\n",
         UpnpString_get_String(UpnpSubscriptionRequest_get_ServiceId(sr_event)),
         UpnpString_get_String(UpnpSubscriptionRequest_get_UDN(sr_event)),
         UpnpString_get_String(UpnpSubscriptionRequest_get_SID(sr_event)));
@@ -505,9 +478,7 @@ int SampleUtil_PrintEventReceived(const void *Event)
     
     xmlbuff = ixmlPrintNode(
         (IXML_Node *)UpnpEvent_get_ChangedVariables(e_event));
-    SampleUtilPrint("SID         =  %s\n"
-             "EventKey    =  %d\n"
-             "ChangedVars =  %s\n",
+    SampleUtilPrint("SID         =  %s\n""EventKey    =  %d\n""ChangedVars =  %s\n",
         UpnpString_get_String(UpnpEvent_get_SID(e_event)),
         UpnpEvent_get_EventKey(e_event),
         xmlbuff);
@@ -519,11 +490,8 @@ int SampleUtil_PrintEventRenewComplete(const void *Event)
 {
     UpnpEventSubscribe *es_event = (UpnpEventSubscribe *)Event;
     
-    SampleUtilPrint("SID         =  %s\n"
-             "ErrCode     =  %d\n"
-             "TimeOut     =  %d\n",
-        UpnpString_get_String(
-            UpnpEventSubscribe_get_SID(es_event)),
+    SampleUtilPrint("SID         =  %s\n""ErrCode     =  %d\n""TimeOut     =  %d\n",
+        UpnpString_get_String(UpnpEventSubscribe_get_SID(es_event)),
         UpnpEventSubscribe_get_ErrCode(es_event),
         UpnpEventSubscribe_get_TimeOut(es_event));
     return 0;
@@ -533,10 +501,7 @@ int SampleUtil_PrintEventSubscribeComplete(const void *Event)
 {
     UpnpEventSubscribe *es_event = (UpnpEventSubscribe *)Event;
     
-    SampleUtilPrint("SID         =  %s\n"
-             "ErrCode     =  %d\n"
-             "PublisherURL=  %s\n"
-             "TimeOut     =  %d\n",
+    SampleUtilPrint("SID         =  %s\n""ErrCode     =  %d\n""PublisherURL=  %s\n""TimeOut     =  %d\n",
         UpnpString_get_String(UpnpEventSubscribe_get_SID(es_event)),
         UpnpEventSubscribe_get_ErrCode(es_event),
         UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event)),
@@ -548,15 +513,10 @@ int SampleUtil_PrintEventException(const void *Event)
 {
     UpnpEventSubscribe *es_event = (UpnpEventSubscribe *)Event;
     
-    SampleUtilPrint("SID         =  %s\n"
-             "ErrCode     =  %d\n"
-             "PublisherURL=  %s\n"
-             "TimeOut     =  %d\n",
-        UpnpString_get_String(
-            UpnpEventSubscribe_get_SID(es_event)),
+    SampleUtilPrint("SID         =  %s\n""ErrCode     =  %d\n""PublisherURL=  %s\n""TimeOut     =  %d\n",
+        UpnpString_get_String(UpnpEventSubscribe_get_SID(es_event)),
         UpnpEventSubscribe_get_ErrCode(es_event),
-        UpnpString_get_String(
-            UpnpEventSubscribe_get_PublisherUrl(es_event)),
+        UpnpString_get_String(UpnpEventSubscribe_get_PublisherUrl(es_event)),
         UpnpEventSubscribe_get_TimeOut(es_event));
     return 0;
 }
@@ -565,8 +525,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
 {
 	ithread_mutex_lock(&display_mutex);
 
-	SampleUtilPrint("<<<<<<<<<<<<<<< Event : %d Start <<<<<<<<<<<<<<<\n", EventType);
-	SampleUtil_PrintEventType(EventType);
+	SampleUtilPrint("<<<<<<<<< Event : %s Start <<<<<<<<<\n", GetEventName(EventType));
 	switch (EventType) {
 	/* SSDP */
 	case UPNP_DISCOVERY_ADVERTISEMENT_ALIVE:
@@ -609,7 +568,7 @@ int SampleUtil_PrintEvent(Upnp_EventType EventType, const void *Event)
         SampleUtil_PrintEventException(Event);
 		break;
 	}
-	SampleUtilPrint("<<<<<<<<<<<<<<< Event : %d End <<<<<<<<<<<<<<<\n", EventType);
+	SampleUtilPrint("<<<<<<<<< Event : %s End <<<<<<<<<\n", GetEventName(EventType));
 
 	ithread_mutex_unlock(&display_mutex);
 
@@ -643,10 +602,10 @@ int SampleUtil_FindAndParseServiceList(IXML_NodeList *srvList, const char *base,
             releventURL = SampleUtil_GetFirstElementItem(service, "eventSubURL");
             ret = UpnpResolveURL2(base, relctrlURL, controlURL);
             if (ret != UPNP_E_SUCCESS)
-                SampleUtilPrint("Error relctrlURL from %s:%s\n", base, relctrlURL);
+                SampleUtilPrintf(UPNP_ERROR,"relctrlURL from %s:%s\n", base, relctrlURL);
             ret = UpnpResolveURL2(base, releventURL, eventURL);
             if (ret != UPNP_E_SUCCESS)
-                SampleUtilPrint("Error releventURL from %s:%s\n", base, releventURL);
+                SampleUtilPrintf(UPNP_ERROR,"releventURL from %s:%s\n", base, releventURL);
             free(relctrlURL);
             free(releventURL);
             relctrlURL = NULL;

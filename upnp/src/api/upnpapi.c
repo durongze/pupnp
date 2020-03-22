@@ -2637,7 +2637,7 @@ int UpnpSendActionAsync(UpnpClient_Handle Hnd,
 		return UPNP_E_FINISH;
 	}
 
-	UpnpPrintf(UPNP_ALL, API, "Inside\n");
+	ApiPrintf(UPNP_INFO, "Inside\n");
 
 	HandleReadLock();
 	switch (GetHandleInfo(Hnd, &SInfo)) {
@@ -2652,8 +2652,7 @@ int UpnpSendActionAsync(UpnpClient_Handle Hnd,
 	if (ActionURL == NULL) {
 		return UPNP_E_INVALID_PARAM;
 	}
-	if (ServiceType == NULL || Act == NULL || Fun == NULL ||
-		DevUDN_const != NULL) {
+	if (ServiceType == NULL || Act == NULL || Fun == NULL || DevUDN_const != NULL) {
 		return UPNP_E_INVALID_PARAM;
 	}
 	tmpStr = ixmlPrintNode((IXML_Node *)Act);
@@ -2661,8 +2660,7 @@ int UpnpSendActionAsync(UpnpClient_Handle Hnd,
 		return UPNP_E_INVALID_ACTION;
 	}
 
-	Param = (struct UpnpNonblockParam *)malloc(
-		sizeof(struct UpnpNonblockParam));
+	Param = (struct UpnpNonblockParam *)malloc(sizeof(struct UpnpNonblockParam));
 
 	if (Param == NULL) {
 		ixmlFreeDOMString(tmpStr);
