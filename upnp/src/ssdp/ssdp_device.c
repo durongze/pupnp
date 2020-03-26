@@ -68,10 +68,8 @@ void advertiseAndReplyThread(void *data)
 {
 	SsdpSearchReply *arg = (SsdpSearchReply *) data;
 
-	AdvertiseAndReply(0, arg->handle,
-			  arg->event.RequestType,
-			  (struct sockaddr *)&arg->dest_addr,
-			  arg->event.DeviceType,
+	AdvertiseAndReply(0, arg->handle, arg->event.RequestType,
+			  (struct sockaddr *)&arg->dest_addr, arg->event.DeviceType,
 			  arg->event.UDN, arg->event.ServiceType, arg->MaxAge);
 	free(arg);
 }
@@ -192,7 +190,7 @@ static int NewRequestHandler(
 	ReplySock = socket((int)DestAddr->sa_family, SOCK_DGRAM, 0);
 	if (ReplySock == INVALID_SOCKET) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		SsdpPrintf(UPNP_INFO, "Error in socket(): %s\n", errorBuffer);
+		SsdpPrintf(UPNP_ERROR, "socket(): %s\n", errorBuffer);
 
 		return UPNP_E_OUTOF_SOCKET;
 	}
@@ -232,7 +230,7 @@ static int NewRequestHandler(
 			    strlen(*(RqPacket + Index)), 0, DestAddr, socklen);
 		if (rc == -1) {
 			strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-			SsdpPrintf(UPNP_INFO, "Error in sendto(): %s\n", errorBuffer);
+			SsdpPrintf(UPNP_ERROR, "sendto(): %s\n", errorBuffer);
 			ret = UPNP_E_SOCKET_WRITE;
 			goto end_NewRequestHandler;
 		}
@@ -300,6 +298,132 @@ static int isUrlV6UlaGua(char *descdocUrl)
 	return 0;
 }
 
+static char *GetHostAddr(char *location, int AddressFamily)
+{
+    char *host = NULL;
+    switch (AddressFamily) {
+    case AF_INET:
+        host = SSDP_IP;
+        break;
+    default:
+        if (isUrlV6UlaGua(location))
+            host = "[" SSDP_IPV6_SITELOCAL "]";
+        else
+            host = "[" SSDP_IPV6_LINKLOCAL "]";
+    }
+    return host;
+}
+
+int http_MakeMessageReply(membuffer *buf, const char *nt, char *usn, char *location,
+	int duration, int PowerState, int SleepPeriod, int RegistrationState)
+{
+    int ret_code;
+    if (PowerState > 0) {
+#ifdef UPNP_HAVE_OPTSSDP
+        ret_code = http_MakeMessage(buf, 1, 1,
+                    "R" "sdc" "D" "sc" "ssc" "ssc" "ssc"
+                    "S" "Xc" "ssc" "ssc"
+                    "sdc" "sdc" "sdcc", HTTP_OK,
+                    "CACHE-CONTROL: max-age=", duration,
+                    "EXT:", "LOCATION: ", location,
+                    "OPT: ",
+                    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
+                    "01-NLS: ", gUpnpSdkNLSuuid, X_USER_AGENT,
+                    "ST: ", nt, "USN: ", usn, "Powerstate: ", PowerState,
+                    "SleepPeriod: ", SleepPeriod, "RegistrationState: ", RegistrationState);
+#else
+        ret_code = http_MakeMessage(buf, 1, 1,
+                    "R" "sdc" "D" "sc" "ssc"
+                    "S" "ssc" "ssc"
+                    "sdc" "sdc" "sdcc", HTTP_OK,
+                    "CACHE-CONTROL: max-age=", duration,
+                    "EXT:", "LOCATION: ", location,
+                    "ST: ", nt, "USN: ", usn, "Powerstate: ", PowerState,
+                    "SleepPeriod: ", SleepPeriod, "RegistrationState: ", RegistrationState);
+#endif /* UPNP_HAVE_OPTSSDP */
+    } else {
+#ifdef UPNP_HAVE_OPTSSDP
+        ret_code = http_MakeMessage(buf, 1, 1,
+                    "R" "sdc" "D" "sc" "ssc" "ssc" "ssc"
+                    "S" "Xc" "ssc" "sscc", HTTP_OK,
+                    "CACHE-CONTROL: max-age=", duration,
+                    "EXT:", "LOCATION: ", location,
+                    "OPT: ",
+                    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
+                    "01-NLS: ", gUpnpSdkNLSuuid, X_USER_AGENT,
+                    "ST: ", nt, "USN: ", usn);
+#else
+        ret_code = http_MakeMessage(buf, 1, 1,
+                    "R" "sdc" "D" "sc" "ssc"
+                    "S" "ssc" "sscc", HTTP_OK,
+                    "CACHE-CONTROL: max-age=", duration,
+                    "EXT:", "LOCATION: ", location,
+                    "ST: ", nt, "USN: ", usn);
+#endif /* UPNP_HAVE_OPTSSDP */
+    }
+    return ret_code;
+}
+
+int http_MakeMessageNotify(membuffer *buf, const char *nt, char *usn, char *location,
+	int duration, int PowerState, int SleepPeriod, int RegistrationState, char *host, char *nts)
+{
+    int ret_code;
+    if (PowerState > 0) 
+    {
+#ifdef UPNP_HAVE_OPTSSDP
+        ret_code = http_MakeMessage(buf, 1, 1,
+                    "Q" "sssdc" "sdc" "ssc" "ssc" "ssc"
+                    "ssc" "ssc" "S" "Xc" "ssc"
+                    "sdc" "sdc" "sdcc",
+                    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
+                    "HOST: ", host, ":", SSDP_PORT,
+                    "CACHE-CONTROL: max-age=", duration,
+                    "LOCATION: ", location,
+                    "OPT: ",
+                    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
+                    "01-NLS: ", gUpnpSdkNLSuuid,
+                    "NT: ", nt, "NTS: ", nts, X_USER_AGENT,
+                    "USN: ", usn, "Powerstate: ", PowerState,
+                    "SleepPeriod: ", SleepPeriod, "RegistrationState: ", RegistrationState);
+#else
+        ret_code = http_MakeMessage(buf, 1, 1,
+                    "Q" "sssdc" "sdc" "ssc"
+                    "ssc" "ssc" "S" "ssc"
+                    "sdc" "sdc" "sdcc",
+                    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
+                    "HOST: ", host, ":", SSDP_PORT,
+                    "CACHE-CONTROL: max-age=", duration,
+                    "LOCATION: ", location,
+                    "NT: ", nt, "NTS: ", nts, "USN: ", usn, "Powerstate: ", PowerState,
+                    "SleepPeriod: ", SleepPeriod, "RegistrationState: ", RegistrationState);
+#endif /* UPNP_HAVE_OPTSSDP */
+    } else {
+#ifdef UPNP_HAVE_OPTSSDP
+        ret_code = http_MakeMessage(buf, 1, 1,
+                    "Q" "sssdc" "sdc" "ssc" "ssc" "ssc"
+                    "ssc" "ssc" "S" "Xc" "sscc",
+                    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
+                    "HOST: ", host, ":", SSDP_PORT,
+                    "CACHE-CONTROL: max-age=", duration,
+                    "LOCATION: ", location,
+                    "OPT: ",
+                    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
+                    "01-NLS: ", gUpnpSdkNLSuuid,
+                    "NT: ", nt, "NTS: ", nts, X_USER_AGENT,
+                    "USN: ", usn);
+#else
+        ret_code = http_MakeMessage(buf, 1, 1,
+                    "Q" "sssdc" "sdc" "ssc"
+                    "ssc" "ssc" "S" "sscc",
+                    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
+                    "HOST: ", host, ":", SSDP_PORT,
+                    "CACHE-CONTROL: max-age=", duration,
+                    "LOCATION: ", location, "NT: ", nt, "NTS: ", nts, "USN: ", usn);
+#endif /* UPNP_HAVE_OPTSSDP */
+    }
+    return ret_code;
+}
+
 /*!
  * \brief Creates a HTTP request packet. Depending on the input parameter,
  * it either creates a service advertisement request or service shutdown
@@ -329,7 +453,6 @@ static void CreateServicePacket(
 	int RegistrationState)
 {
 	int ret_code;
-	const char *nts;
 	membuffer buf;
 
 	/* Notf == 0 means service shutdown,
@@ -339,63 +462,10 @@ static void CreateServicePacket(
 	buf.size_inc = (size_t)30;
 	*packet = NULL;
 	if (msg_type == MSGTYPE_REPLY) {
-		if (PowerState > 0) {
-#ifdef UPNP_HAVE_OPTSSDP
-			ret_code = http_MakeMessage(&buf, 1, 1,
-					    "R" "sdc" "D" "sc" "ssc" "ssc" "ssc"
-					    "S" "Xc" "ssc" "ssc"
-					    "sdc" "sdc" "sdcc", HTTP_OK,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "EXT:", "LOCATION: ", location,
-					    "OPT: ",
-					    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
-					    "01-NLS: ", gUpnpSdkNLSuuid,
-					    X_USER_AGENT, "ST: ", nt, "USN: ",
-					    usn, "Powerstate: ", PowerState,
-					    "SleepPeriod: ", SleepPeriod,
-					    "RegistrationState: ",
-					    RegistrationState);
-#else
-			ret_code = http_MakeMessage(&buf, 1, 1,
-					    "R" "sdc" "D" "sc" "ssc"
-					    "S" "ssc" "ssc"
-					    "sdc" "sdc" "sdcc", HTTP_OK,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "EXT:", "LOCATION: ", location,
-					    "ST: ", nt, "USN: ",
-					    usn, "Powerstate: ", PowerState,
-					    "SleepPeriod: ", SleepPeriod,
-					    "RegistrationState: ",
-					    RegistrationState);
-#endif /* UPNP_HAVE_OPTSSDP */
-		} else {
-#ifdef UPNP_HAVE_OPTSSDP
-			ret_code = http_MakeMessage(&buf, 1, 1,
-					    "R" "sdc" "D" "sc" "ssc" "ssc" "ssc"
-					    "S" "Xc" "ssc" "sscc", HTTP_OK,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "EXT:", "LOCATION: ", location,
-					    "OPT: ",
-					    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
-					    "01-NLS: ", gUpnpSdkNLSuuid,
-					    X_USER_AGENT, "ST: ", nt, "USN: ",
-					    usn);
-#else
-			ret_code = http_MakeMessage(&buf, 1, 1,
-					    "R" "sdc" "D" "sc" "ssc"
-					    "S" "ssc" "sscc", HTTP_OK,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "EXT:", "LOCATION: ", location,
-					    "ST: ", nt, "USN: ", usn);
-#endif /* UPNP_HAVE_OPTSSDP */
-		}
-		if (ret_code != 0) {
-			return;
-		}
-	} else if (msg_type == MSGTYPE_ADVERTISEMENT ||
-		   msg_type == MSGTYPE_SHUTDOWN) {
-		const char *host = NULL;
-
+        ret_code = http_MakeMessageReply(&buf, nt, usn, location,
+	        duration, PowerState, SleepPeriod, RegistrationState);
+    } else if (msg_type == MSGTYPE_ADVERTISEMENT || msg_type == MSGTYPE_SHUTDOWN) {
+    	const char *nts = NULL;
 		if (msg_type == MSGTYPE_ADVERTISEMENT)
 			nts = "ssdp:alive";
 		else
@@ -403,77 +473,14 @@ static void CreateServicePacket(
 			nts = "ssdp:byebye";
 		/* NOTE: The CACHE-CONTROL and LOCATION headers are not present in
 		 * a shutdown msg, but are present here for MS WinMe interop. */
-		switch (AddressFamily) {
-		case AF_INET:
-			host = SSDP_IP;
-			break;
-		default:
-			if (isUrlV6UlaGua(location))
-				host = "[" SSDP_IPV6_SITELOCAL "]";
-			else
-				host = "[" SSDP_IPV6_LINKLOCAL "]";
-		}
-		if (PowerState > 0) {
-#ifdef UPNP_HAVE_OPTSSDP
-			ret_code = http_MakeMessage(&buf, 1, 1,
-					    "Q" "sssdc" "sdc" "ssc" "ssc" "ssc"
-					    "ssc" "ssc" "S" "Xc" "ssc"
-					    "sdc" "sdc" "sdcc",
-					    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
-					    "HOST: ", host, ":", SSDP_PORT,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "LOCATION: ", location, "OPT: ",
-					    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
-					    "01-NLS: ", gUpnpSdkNLSuuid, "NT: ",
-					    nt, "NTS: ", nts, X_USER_AGENT,
-					    "USN: ", usn, "Powerstate: ",
-					    PowerState, "SleepPeriod: ",
-					    SleepPeriod, "RegistrationState: ",
-					    RegistrationState);
-#else
-			ret_code = http_MakeMessage(&buf, 1, 1,
-					    "Q" "sssdc" "sdc" "ssc"
-					    "ssc" "ssc" "S" "ssc"
-					    "sdc" "sdc" "sdcc",
-					    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
-					    "HOST: ", host, ":", SSDP_PORT,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "LOCATION: ", location, "NT: ", nt,
-					    "NTS: ", nts,
-					    "USN: ", usn, "Powerstate: ",
-					    PowerState, "SleepPeriod: ",
-					    SleepPeriod, "RegistrationState: ",
-					    RegistrationState);
-#endif /* UPNP_HAVE_OPTSSDP */
-		} else {
-#ifdef UPNP_HAVE_OPTSSDP
-			ret_code = http_MakeMessage(&buf, 1, 1,
-					    "Q" "sssdc" "sdc" "ssc" "ssc" "ssc"
-					    "ssc" "ssc" "S" "Xc" "sscc",
-					    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
-					    "HOST: ", host, ":", SSDP_PORT,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "LOCATION: ", location, "OPT: ",
-					    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
-					    "01-NLS: ", gUpnpSdkNLSuuid, "NT: ",
-					    nt, "NTS: ", nts, X_USER_AGENT,
-					    "USN: ", usn);
-#else
-			ret_code = http_MakeMessage(&buf, 1, 1,
-					    "Q" "sssdc" "sdc" "ssc"
-					    "ssc" "ssc" "S" "sscc",
-					    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
-					    "HOST: ", host, ":", SSDP_PORT,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "LOCATION: ", location, "NT: ", nt,
-					    "NTS: ", nts, "USN: ", usn);
-#endif /* UPNP_HAVE_OPTSSDP */
-		}
-		if (ret_code)
-			return;
+        char *host = GetHostAddr(location, AddressFamily);
+		ret_code = http_MakeMessageNotify(&buf, nt, usn, location,
+	        duration, PowerState, SleepPeriod, RegistrationState, host, nts);
 	} else
 		/* unknown msg */
 		assert(0);
+	if (ret_code)
+    	return;
 	/* return msg */
 	*packet = membuffer_detach(&buf);
 	membuffer_destroy(&buf);
@@ -481,21 +488,13 @@ static void CreateServicePacket(
 	return;
 }
 
-int DeviceAdvertisement(char *DevType, int RootDev, char *Udn, char *Location,
-			int Duration, int AddressFamily, int PowerState,
-			int SleepPeriod, int RegistrationState)
+static int DeviceAdvertisementDestAddr(char *Location, int AddressFamily,
+    struct sockaddr_storage *ss)
 {
-	struct sockaddr_storage __ss;
-	struct sockaddr_in *DestAddr4 = (struct sockaddr_in *)&__ss;
-	struct sockaddr_in6 *DestAddr6 = (struct sockaddr_in6 *)&__ss;
-	/* char Mil_Nt[LINE_SIZE] */
-	char Mil_Usn[LINE_SIZE];
-	char *msgs[3];
-	int ret_code = UPNP_E_OUTOF_MEMORY;
-	int rc = 0;
+	struct sockaddr_in *DestAddr4 = (struct sockaddr_in *)ss;
+	struct sockaddr_in6 *DestAddr6 = (struct sockaddr_in6 *)ss;
+	memset(ss, 0, sizeof(*ss));
 
-	SsdpPrintf(UPNP_INFO, "In\n");
-	memset(&__ss, 0, sizeof(__ss));
 	switch (AddressFamily) {
 	case AF_INET:
 		DestAddr4->sin_family = (sa_family_t)AF_INET;
@@ -505,22 +504,39 @@ int DeviceAdvertisement(char *DevType, int RootDev, char *Udn, char *Location,
 	case AF_INET6:
 		DestAddr6->sin6_family = (sa_family_t)AF_INET6;
 		inet_pton(AF_INET6,
-			  (isUrlV6UlaGua(Location)) ? SSDP_IPV6_SITELOCAL :
-			  SSDP_IPV6_LINKLOCAL, &DestAddr6->sin6_addr);
+			  (isUrlV6UlaGua(Location)) ? SSDP_IPV6_SITELOCAL : SSDP_IPV6_LINKLOCAL,
+			  &DestAddr6->sin6_addr);
 		DestAddr6->sin6_port = htons(SSDP_PORT);
 		DestAddr6->sin6_scope_id = gIF_INDEX;
 		break;
 	default:
 		SsdpPrintf(UPNP_CRITICAL, "Invalid device address family.\n");
 	}
+    return 0;
+}
+
+int DeviceAdvertisement(char *DevType, int RootDev, char *Udn, char *Location,
+			int Duration, int AddressFamily, int PowerState,
+			int SleepPeriod, int RegistrationState)
+{
+	struct sockaddr_storage __ss;
+
+	/* char Mil_Nt[LINE_SIZE] */
+	char Mil_Usn[LINE_SIZE];
+	char *msgs[3];
+	int ret_code = UPNP_E_OUTOF_MEMORY;
+	int rc = 0;
+
+	SsdpPrintf(UPNP_INFO, "In\n");
+
+    DeviceAdvertisementDestAddr(Location, AddressFamily, &__ss);
 	msgs[0] = NULL;
 	msgs[1] = NULL;
 	msgs[2] = NULL;
 	/* If deviceis a root device , here we need to send 3 advertisement
 	 * or reply */
 	if (RootDev) {
-		rc = snprintf(Mil_Usn, sizeof(Mil_Usn), "%s::upnp:rootdevice",
-			Udn);
+		rc = snprintf(Mil_Usn, sizeof(Mil_Usn), "%s::upnp:rootdevice", Udn);
 		if (rc < 0 || (unsigned int) rc >= sizeof(Mil_Usn))
 			goto error_handler;
 		CreateServicePacket(MSGTYPE_ADVERTISEMENT, "upnp:rootdevice",
@@ -545,13 +561,11 @@ int DeviceAdvertisement(char *DevType, int RootDev, char *Udn, char *Location,
 	/* send packets */
 	if (RootDev) {
 		/* send 3 msg types */
-		ret_code =
-		    NewRequestHandler((struct sockaddr *)&__ss, 3, &msgs[0]);
+		ret_code = NewRequestHandler((struct sockaddr *)&__ss, 3, &msgs[0]);
 	} else {		/* sub-device */
 
 		/* send 2 msg types */
-		ret_code =
-		    NewRequestHandler((struct sockaddr *)&__ss, 2, &msgs[1]);
+		ret_code = NewRequestHandler((struct sockaddr *)&__ss, 2, &msgs[1]);
 	}
 
 error_handler:
@@ -580,8 +594,7 @@ int SendReply(struct sockaddr *DestAddr, char *DevType, int RootDev,
 		/* one msg for root device */
 		num_msgs = 1;
 
-		rc = snprintf(Mil_Usn, sizeof(Mil_Usn), "%s::upnp:rootdevice",
-			Udn);
+		rc = snprintf(Mil_Usn, sizeof(Mil_Usn), "%s::upnp:rootdevice", Udn);
 		if (rc < 0 || (unsigned int) rc >= sizeof(Mil_Usn))
 			goto error_handler;
 		CreateServicePacket(MSGTYPE_REPLY, "upnp:rootdevice",
@@ -599,8 +612,7 @@ int SendReply(struct sockaddr *DestAddr, char *DevType, int RootDev,
 					    (int)DestAddr->sa_family, PowerState,
 					    SleepPeriod, RegistrationState);
 		} else {
-			rc = snprintf(Mil_Usn, sizeof(Mil_Usn), "%s::%s", Udn,
-				DevType);
+			rc = snprintf(Mil_Usn, sizeof(Mil_Usn), "%s::%s", Udn, DevType);
 			if (rc < 0 || (unsigned int) rc >= sizeof(Mil_Usn))
 				goto error_handler;
 			CreateServicePacket(MSGTYPE_REPLY, DevType, Mil_Usn,
