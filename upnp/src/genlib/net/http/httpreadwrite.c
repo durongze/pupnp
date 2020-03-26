@@ -432,11 +432,88 @@ int http_RecvMessage(SOCKINFO *info,
 
 ExitFunction:
 	if (ret != UPNP_E_SUCCESS) {
-		HttpPrintf(UPNP_ALL, "Error %d,http_error_code:%d,line:%d\n",
+		HttpPrintf(UPNP_ERROR, "ret %d,http_error_code:%d,line:%d\n",
 			ret, *http_error_code, line);
 	}
 
 	return ret;
+}
+
+int http_SendMessageDetail(SOCKINFO *info, int *TimeOut, off_t *amount_to_be_read,
+    struct SendInstruction *Instr, size_t Data_Buf_Size, FILE *Fp, char *file_buf)
+{
+	size_t num_read;
+	int nw;
+	int RetVal = 0;
+	/* 10 byte allocated for chunk header. */
+	char Chunk_Header[CHUNK_HEADER_SIZE];
+
+    if (Instr) {
+        int nr;
+        size_t n = (*amount_to_be_read) >= (off_t)Data_Buf_Size ? Data_Buf_Size : (size_t)(*amount_to_be_read);
+        if (Instr->IsVirtualFile) {
+            nr = virtualDirCallback.read(Fp, file_buf, n, Instr->Cookie, Instr->RequestCookie);
+            num_read = (size_t)nr;
+        } else {
+            num_read = fread(file_buf, (size_t)1, n, Fp);
+        }
+        (*amount_to_be_read) -= (off_t)num_read;
+        if (Instr->ReadSendSize < 0) {
+            /* read until close */
+            (*amount_to_be_read) = (off_t)Data_Buf_Size;
+        }
+    } else {
+        num_read = fread(file_buf, (size_t)1, Data_Buf_Size, Fp);
+    }
+    if (num_read == (size_t)0) {
+        /* EOF so no more to send. */
+        if (Instr && Instr->IsChunkActive) {
+            const char *str = "0\r\n\r\n";
+            nw = sock_write(info, str, strlen(str), TimeOut);
+            RetVal = -1;
+        } else {
+            RetVal = UPNP_E_FILE_READ_ERROR;
+        }
+        return RetVal;
+    }
+    /* Create chunk for the current buffer. */
+    if (Instr && Instr->IsChunkActive) {
+        int rc;
+        /* Copy CRLF at the end of the chunk */
+        memcpy(file_buf + num_read, "\r\n", (size_t)2);
+        /* Hex length for the chunk size. */
+        memset(Chunk_Header, 0, sizeof(Chunk_Header));
+        rc = snprintf(Chunk_Header, sizeof(Chunk_Header), "%" PRIzx "\r\n", num_read);
+        if (rc < 0 || (unsigned int)rc >= sizeof(Chunk_Header)) {
+            RetVal = UPNP_E_INTERNAL_ERROR;
+            return RetVal;
+        }
+        /* Copy the chunk size header  */
+        memcpy(file_buf - strlen(Chunk_Header), Chunk_Header, strlen(Chunk_Header));
+        /* on the top of the buffer. */
+        /*file_buf[num_read+strlen(Chunk_Header)]
+         * = NULL; */
+        /*upnpprintf("Sending
+         * %s\n",file_buf-strlen(Chunk_Header));*/
+        nw = sock_write(info, file_buf - strlen(Chunk_Header),
+            num_read + strlen(Chunk_Header) + (size_t)2, TimeOut);
+        if (nw <= 0 || (size_t)nw != num_read + strlen(Chunk_Header) + (size_t)2) {
+            /* Send error nothing we can do. */
+            RetVal = -1;
+            return RetVal;
+        }
+    } else {
+        /* write data */
+        nw = sock_write(info, file_buf, num_read, TimeOut);
+        HttpPrintf(UPNP_INFO,">>> (SENT) >>>\n%.*s\n", nw, file_buf);
+        HttpPrintf(UPNP_INFO,">>>>>>>>>>>>>>\n");
+        /* Send error nothing we can do */
+        if (nw <= 0 || (size_t)nw != num_read) {
+            RetVal = -1;
+            return RetVal;
+        }
+    }
+    return RetVal;
 }
 
 int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
@@ -447,9 +524,6 @@ int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
 	char *filename = NULL;
 	char *file_buf = NULL;
 	char *ChunkBuf = NULL;
-	/* 10 byte allocated for chunk header. */
-	char Chunk_Header[CHUNK_HEADER_SIZE];
-	size_t num_read;
 	off_t amount_to_be_read = 0;
 	size_t Data_Buf_Size = WEB_SERVER_BUF_SIZE;
 #endif /* EXCLUDE_WEB_SERVER */
@@ -459,11 +533,7 @@ int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
 	int nw;
 	int RetVal = 0;
 	size_t buf_length;
-	size_t num_written;
 
-#if EXCLUDE_WEB_SERVER == 0
-	memset(Chunk_Header, 0, sizeof(Chunk_Header));
-#endif /* EXCLUDE_WEB_SERVER */
 	va_start(argp, fmt);
 	while ((c = *fmt++)) {
 #if EXCLUDE_WEB_SERVER == 0
@@ -506,72 +576,13 @@ int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
 				}
 			}
 			while (amount_to_be_read) {
-				if (Instr) {
-					int nr;
-					size_t n = amount_to_be_read >= (off_t)Data_Buf_Size ?
-                        Data_Buf_Size : (size_t)amount_to_be_read;
-					if (Instr->IsVirtualFile) {
-						nr = virtualDirCallback.read(Fp, file_buf, n,
-							Instr->Cookie, Instr->RequestCookie);
-						num_read = (size_t)nr;
-					} else {
-						num_read = fread(file_buf, (size_t)1, n, Fp);
-					}
-					amount_to_be_read -= (off_t)num_read;
-					if (Instr->ReadSendSize < 0) {
-						/* read until close */
-						amount_to_be_read = (off_t)Data_Buf_Size;
-					}
-				} else {
-					num_read = fread(file_buf, (size_t)1, Data_Buf_Size, Fp);
-				}
-				if (num_read == (size_t)0) {
-					/* EOF so no more to send. */
-					if (Instr && Instr->IsChunkActive) {
-						const char *str = "0\r\n\r\n";
-						nw = sock_write(info, str, strlen(str), TimeOut);
-					} else {
-						RetVal = UPNP_E_FILE_READ_ERROR;
-					}
-					goto Cleanup_File;
-				}
-				/* Create chunk for the current buffer. */
-				if (Instr && Instr->IsChunkActive) {
-					int rc;
-					/* Copy CRLF at the end of the chunk */
-					memcpy(file_buf + num_read, "\r\n", (size_t)2);
-					/* Hex length for the chunk size. */
-					memset(Chunk_Header, 0, sizeof(Chunk_Header));
-					rc = snprintf(Chunk_Header, sizeof(Chunk_Header), "%" PRIzx "\r\n", num_read);
-					if (rc < 0 || (unsigned int)rc >= sizeof(Chunk_Header)) {
-						RetVal = UPNP_E_INTERNAL_ERROR;
-						goto Cleanup_File;
-					}
-					/* Copy the chunk size header  */
-					memcpy(file_buf - strlen(Chunk_Header), Chunk_Header, strlen(Chunk_Header));
-					/* on the top of the buffer. */
-					/*file_buf[num_read+strlen(Chunk_Header)]
-					 * = NULL; */
-					/*upnpprintf("Sending
-					 * %s\n",file_buf-strlen(Chunk_Header));*/
-					nw = sock_write(info, file_buf - strlen(Chunk_Header),
-					    num_read + strlen(Chunk_Header) + (size_t)2, TimeOut);
-					num_written = (size_t)nw;
-					if (nw <= 0 || num_written != num_read + strlen(Chunk_Header) + (size_t)2)
-						/* Send error nothing we can do. */
-						goto Cleanup_File;
-				} else {
-					/* write data */
-					nw = sock_write(info, file_buf, num_read, TimeOut);
-					HttpPrintf(UPNP_INFO,">>> (SENT) >>>\n%.*s\n", nw, file_buf);
-                    HttpPrintf(UPNP_INFO,">>>>>>>>>>>>>>\n");
-					/* Send error nothing we can do */
-					num_written = (size_t)nw;
-					if (nw <= 0 || num_written != num_read) {
-						goto Cleanup_File;
-					}
-				}
-			} /* while */
+                int ret = http_SendMessageDetail(info, TimeOut, &amount_to_be_read,
+                    Instr, Data_Buf_Size, Fp, file_buf);
+                RetVal = ret < -1 ? ret : RetVal;
+                if (ret < 0) {
+                    goto Cleanup_File;
+                }
+            } /* while */
 		Cleanup_File:
 			if (Instr && Instr->IsVirtualFile) {
 				virtualDirCallback.close(Fp, Instr->Cookie, Instr->RequestCookie);
@@ -587,12 +598,11 @@ int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
 			buf_length = va_arg(argp, size_t);
 			if (buf_length > (size_t)0) {
 				nw = sock_write(info, buf, buf_length, TimeOut);
-				num_written = (size_t)nw;
 				HttpPrintf(UPNP_INFO,">>> (SENT) >>>\n");
 				HttpPrintf(UPNP_INFO,"%.*s\nbuf_length=%" PRIzd ", num_written=%" PRIzd "\n",
-					(int)buf_length, buf, buf_length, num_written);
+					(int)buf_length, buf, buf_length, (size_t)nw);
                 HttpPrintf(UPNP_INFO,">>>>>>>>>>>>>>\n");
-				if (num_written != buf_length) {
+				if ((size_t)nw != buf_length) {
 					RetVal = 0;
 					goto ExitFunction;
 				}
