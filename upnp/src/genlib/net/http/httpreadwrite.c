@@ -447,70 +447,68 @@ int http_SendMessageDetail(SOCKINFO *info, int *TimeOut, off_t *amount_to_be_rea
 	int RetVal = 0;
 	/* 10 byte allocated for chunk header. */
 	char Chunk_Header[CHUNK_HEADER_SIZE];
-
-    if (Instr) {
-        int nr;
-        size_t n = (*amount_to_be_read) >= (off_t)Data_Buf_Size ? Data_Buf_Size : (size_t)(*amount_to_be_read);
-        if (Instr->IsVirtualFile) {
-            nr = virtualDirCallback.read(Fp, file_buf, n, Instr->Cookie, Instr->RequestCookie);
-            num_read = (size_t)nr;
+    while (*amount_to_be_read) {
+        if (Instr) {
+            int nr;
+            size_t n = (*amount_to_be_read) >= (off_t)Data_Buf_Size ? Data_Buf_Size : (size_t)(*amount_to_be_read);
+            if (Instr->IsVirtualFile) {
+                nr = virtualDirCallback.read(Fp, file_buf, n, Instr->Cookie, Instr->RequestCookie);
+                num_read = (size_t)nr;
+            } else {
+                num_read = fread(file_buf, (size_t)1, n, Fp);
+            }
+            (*amount_to_be_read) -= (off_t)num_read;
+            if (Instr->ReadSendSize < 0) {
+                /* read until close */
+                (*amount_to_be_read) = (off_t)Data_Buf_Size;
+            }
         } else {
-            num_read = fread(file_buf, (size_t)1, n, Fp);
+            num_read = fread(file_buf, (size_t)1, Data_Buf_Size, Fp);
         }
-        (*amount_to_be_read) -= (off_t)num_read;
-        if (Instr->ReadSendSize < 0) {
-            /* read until close */
-            (*amount_to_be_read) = (off_t)Data_Buf_Size;
+        if (num_read == (size_t)0) {
+            /* EOF so no more to send. */
+            if (Instr && Instr->IsChunkActive) {
+                const char *str = "0\r\n\r\n";
+                nw = sock_write(info, str, strlen(str), TimeOut);
+              } else {
+                RetVal = UPNP_E_FILE_READ_ERROR;
+            }
+            break;
         }
-    } else {
-        num_read = fread(file_buf, (size_t)1, Data_Buf_Size, Fp);
-    }
-    if (num_read == (size_t)0) {
-        /* EOF so no more to send. */
+        /* Create chunk for the current buffer. */
         if (Instr && Instr->IsChunkActive) {
-            const char *str = "0\r\n\r\n";
-            nw = sock_write(info, str, strlen(str), TimeOut);
-            RetVal = -1;
+            int rc;
+            /* Copy CRLF at the end of the chunk */
+            memcpy(file_buf + num_read, "\r\n", (size_t)2);
+            /* Hex length for the chunk size. */
+            memset(Chunk_Header, 0, sizeof(Chunk_Header));
+            rc = snprintf(Chunk_Header, sizeof(Chunk_Header), "%" PRIzx "\r\n", num_read);
+            if (rc < 0 || (unsigned int)rc >= sizeof(Chunk_Header)) {
+                RetVal = UPNP_E_INTERNAL_ERROR;
+                break;
+            }
+            /* Copy the chunk size header  */
+            memcpy(file_buf - strlen(Chunk_Header), Chunk_Header, strlen(Chunk_Header));
+            /* on the top of the buffer. */
+            /*file_buf[num_read+strlen(Chunk_Header)]
+             * = NULL; */
+            /*upnpprintf("Sending
+             * %s\n",file_buf-strlen(Chunk_Header));*/
+            nw = sock_write(info, file_buf - strlen(Chunk_Header),
+                num_read + strlen(Chunk_Header) + (size_t)2, TimeOut);
+            if (nw <= 0 || (size_t)nw != num_read + strlen(Chunk_Header) + (size_t)2) {
+                /* Send error nothing we can do. */
+                break;
+            }
         } else {
-            RetVal = UPNP_E_FILE_READ_ERROR;
-        }
-        return RetVal;
-    }
-    /* Create chunk for the current buffer. */
-    if (Instr && Instr->IsChunkActive) {
-        int rc;
-        /* Copy CRLF at the end of the chunk */
-        memcpy(file_buf + num_read, "\r\n", (size_t)2);
-        /* Hex length for the chunk size. */
-        memset(Chunk_Header, 0, sizeof(Chunk_Header));
-        rc = snprintf(Chunk_Header, sizeof(Chunk_Header), "%" PRIzx "\r\n", num_read);
-        if (rc < 0 || (unsigned int)rc >= sizeof(Chunk_Header)) {
-            RetVal = UPNP_E_INTERNAL_ERROR;
-            return RetVal;
-        }
-        /* Copy the chunk size header  */
-        memcpy(file_buf - strlen(Chunk_Header), Chunk_Header, strlen(Chunk_Header));
-        /* on the top of the buffer. */
-        /*file_buf[num_read+strlen(Chunk_Header)]
-         * = NULL; */
-        /*upnpprintf("Sending
-         * %s\n",file_buf-strlen(Chunk_Header));*/
-        nw = sock_write(info, file_buf - strlen(Chunk_Header),
-            num_read + strlen(Chunk_Header) + (size_t)2, TimeOut);
-        if (nw <= 0 || (size_t)nw != num_read + strlen(Chunk_Header) + (size_t)2) {
-            /* Send error nothing we can do. */
-            RetVal = -1;
-            return RetVal;
-        }
-    } else {
-        /* write data */
-        nw = sock_write(info, file_buf, num_read, TimeOut);
-        HttpPrintf(UPNP_INFO,">>> (SENT) >>>\n%.*s\n", nw, file_buf);
-        HttpPrintf(UPNP_INFO,">>>>>>>>>>>>>>\n");
-        /* Send error nothing we can do */
-        if (nw <= 0 || (size_t)nw != num_read) {
-            RetVal = -1;
-            return RetVal;
+            /* write data */
+            nw = sock_write(info, file_buf, num_read, TimeOut);
+            HttpPrintf(UPNP_INFO,">>> (SENT) >>>\n%.*s\n", nw, file_buf);
+            HttpPrintf(UPNP_INFO,">>>>>>>>>>>>>>\n");
+            /* Send error nothing we can do */
+            if (nw <= 0 || (size_t)nw != num_read) {
+                break;
+            }
         }
     }
     return RetVal;
@@ -575,14 +573,12 @@ int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
 					goto Cleanup_File;
 				}
 			}
-			while (amount_to_be_read) {
-                int ret = http_SendMessageDetail(info, TimeOut, &amount_to_be_read,
-                    Instr, Data_Buf_Size, Fp, file_buf);
-                RetVal = ret < -1 ? ret : RetVal;
-                if (ret < 0) {
-                    goto Cleanup_File;
-                }
-            } /* while */
+			
+            int ret = http_SendMessageDetail(info, TimeOut, &amount_to_be_read,
+                Instr, Data_Buf_Size, Fp, file_buf);
+            if (ret < 0) {
+                RetVal = ret;
+            }
 		Cleanup_File:
 			if (Instr && Instr->IsVirtualFile) {
 				virtualDirCallback.close(Fp, Instr->Cookie, Instr->RequestCookie);
