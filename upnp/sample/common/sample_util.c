@@ -118,15 +118,13 @@ IXML_NodeList *SampleUtil_GetFirstServiceList(IXML_Document *doc)
 	IXML_NodeList *servlistnodelist = NULL;
 	IXML_Node *servlistnode = NULL;
 
-	servlistnodelist =
-		ixmlDocument_getElementsByTagName(doc, "serviceList");
+	servlistnodelist = ixmlDocument_getElementsByTagName(doc, "serviceList");
 	if (servlistnodelist && ixmlNodeList_length(servlistnodelist)) {
 		/* we only care about the first service list, from the root
 		 * device */
 		servlistnode = ixmlNodeList_item(servlistnodelist, 0);
 		/* create as list of DOM nodes */
-		ServiceList = ixmlElement_getElementsByTagName(
-			(IXML_Element *)servlistnode, "service");
+		ServiceList = ixmlElement_getElementsByTagName((IXML_Element *)servlistnode, "service");
 	}
 	if (servlistnodelist)
 		ixmlNodeList_free(servlistnodelist);
@@ -159,9 +157,8 @@ static IXML_NodeList *SampleUtil_GetNthServiceList(
 	 *
 	 *  return (NodeList*) A pointer to a NodeList containing the
 	 *                      matching items or NULL on an error. 	 */
-	SampleUtilPrint("SampleUtil_GetNthServiceList called : n = %d\n", n);
-	servlistnodelist =
-		ixmlDocument_getElementsByTagName(doc, "serviceList");
+	SampleUtilPrintf(UPNP_INFO, "called : n = %d\n", n);
+	servlistnodelist = ixmlDocument_getElementsByTagName(doc, "serviceList");
 	if (servlistnodelist && ixmlNodeList_length(servlistnodelist) &&
 		n < ixmlNodeList_length(servlistnodelist)) {
 		/* For the first service list (from the root device),
@@ -179,7 +176,7 @@ static IXML_NodeList *SampleUtil_GetNthServiceList(
 			ServiceList = ixmlElement_getElementsByTagName(
 				(IXML_Element *)servlistnode, "service");
 		} else
-			SampleUtilPrint("ixmlNodeList_item(nodeList, n) returned NULL\n");
+			SampleUtilPrintf(UPNP_WARN, "serviceList is NULL\n");
 	}
 	if (servlistnodelist)
 		ixmlNodeList_free(servlistnodelist);
@@ -202,26 +199,25 @@ char *SampleUtil_GetFirstDocumentItem(IXML_Document *doc, const char *item)
 		if (tmpNode) {
 			textNode = ixmlNode_getFirstChild(tmpNode);
 			if (!textNode) {
-				SampleUtilPrint("(BUG) ixmlNode_getFirstChild(tmpNode) returned NULL\n");
+				SampleUtilPrintf(UPNP_DBG, "tmpNode is NULL\n");
 				ret = strdup("");
 				goto epilogue;
 			}
 			nodeValue = ixmlNode_getNodeValue(textNode);
 			if (!nodeValue) {
-				SampleUtilPrint(" ixmlNode_getNodeValue returned NULL\n");
+				SampleUtilPrintf(UPNP_DBG, "textNode is NULL\n");
 				ret = strdup("");
 				goto epilogue;
 			}
 			ret = strdup(nodeValue);
 			if (!ret) {
-				SampleUtilPrint("Error allocating "
-						 "memory for XML Node value\n");
+				SampleUtilPrintf(UPNP_ERROR, "alloc memory for nodeValue\n");
 				ret = strdup("");
 			}
 		} else
-			SampleUtilPrint("ixmlNodeList_item(nodeList,0) returned NULL\n");
+			SampleUtilPrintf(UPNP_INFO, "nodeList is NULL\n");
 	} else
-		SampleUtilPrint("Error finding %s in XML Node\n", item);
+		SampleUtilPrintf(UPNP_ERROR, "finding %s in XML Node\n", item);
 
 epilogue:
 	if (nodeList)
@@ -239,19 +235,19 @@ char *SampleUtil_GetFirstElementItem(IXML_Element *element, const char *item)
 
 	nodeList = ixmlElement_getElementsByTagName(element, (char *)item);
 	if (nodeList == NULL) {
-		SampleUtilPrint("Error finding %s in XML Node\n", item);
+		SampleUtilPrintf(UPNP_ERROR, "finding %s in XML Node\n", item);
 		return NULL;
 	}
 	tmpNode = ixmlNodeList_item(nodeList, 0);
 	if (!tmpNode) {
-		SampleUtilPrint("Error finding %s value in XML Node\n", item);
+		SampleUtilPrintf(UPNP_ERROR, "finding %s value\n", item);
 		ixmlNodeList_free(nodeList);
 		return NULL;
 	}
 	textNode = ixmlNode_getFirstChild(tmpNode);
 	ret = strdup(ixmlNode_getNodeValue(textNode));
 	if (!ret) {
-		SampleUtilPrint("Error allocating memory for %s in XML Node\n",	item);
+		SampleUtilPrintf(UPNP_ERROR, "alloc memory for %s\n", item);
 		ixmlNodeList_free(nodeList);
 		return NULL;
 	}
@@ -372,24 +368,24 @@ int SampleUtil_PrintEventActionRequest(const void *Event)
     if (actionRequestDoc) {
         xmlbuff = ixmlPrintNode((IXML_Node *)actionRequestDoc);
         if (xmlbuff) {
-            SampleUtilPrint("ActRequest  =  %s\n", xmlbuff);
+            SampleUtilPrintf(UPNP_WARN, "ActRequest  =  %s\n", xmlbuff);
             ixmlFreeDOMString(xmlbuff);
         }
         xmlbuff = NULL;
     } else {
-        SampleUtilPrint("ActRequest  =  (null)\n");
+        SampleUtilPrintf(UPNP_WARN, "ActRequest  =  (null)\n");
     }
     
     actionResultDoc = UpnpActionRequest_get_ActionResult(a_event);
     if (actionResultDoc) {
         xmlbuff = ixmlPrintNode((IXML_Node *)actionResultDoc);
         if (xmlbuff) {
-            SampleUtilPrint("ActResult   =  %s\n", xmlbuff);
+            SampleUtilPrintf(UPNP_WARN, "ActResult   =  %s\n", xmlbuff);
             ixmlFreeDOMString(xmlbuff);
         }
         xmlbuff = NULL;
     } else {
-        SampleUtilPrint("ActResult   =  (null)\n");
+        SampleUtilPrintf(UPNP_WARN, "ActResult   =  (null)\n");
     }
     return 0;
 }
@@ -401,7 +397,7 @@ int SampleUtil_PrintEventActionComplete(const void *Event)
     IXML_Document *actionResult = NULL;    
     char *xmlbuff = NULL;
 
-    SampleUtilPrint("ErrCode     =  %d\n""CtrlUrl     =  %s\n",
+    SampleUtilPrintf(UPNP_INFO, "ErrCode     =  %d\n""CtrlUrl     =  %s\n",
         UpnpActionComplete_get_ErrCode(a_event),
         UpnpString_get_String(UpnpActionComplete_get_CtrlUrl(a_event)));
     
@@ -409,24 +405,24 @@ int SampleUtil_PrintEventActionComplete(const void *Event)
     if (actionRequest) {
         xmlbuff = ixmlPrintNode((IXML_Node *)actionRequest);
         if (xmlbuff) {
-            SampleUtilPrint("ActRequest  =  %s\n", xmlbuff);
+            SampleUtilPrintf(UPNP_WARN, "ActRequest  =  %s\n", xmlbuff);
             ixmlFreeDOMString(xmlbuff);
         }
         xmlbuff = NULL;
     } else {
-        SampleUtilPrint("ActRequest  =  (null)\n");
+        SampleUtilPrintf(UPNP_WARN, "ActRequest  =  (null)\n");
     }
     
     actionResult = UpnpActionComplete_get_ActionResult(a_event);
     if (actionResult) {
         xmlbuff = ixmlPrintNode((IXML_Node *)actionResult);
         if (xmlbuff) {
-            SampleUtilPrint("ActResult   =  %s\n", xmlbuff);
+            SampleUtilPrintf(UPNP_WARN, "ActResult   =  %s\n", xmlbuff);
             ixmlFreeDOMString(xmlbuff);
         }
         xmlbuff = NULL;
     } else {
-        SampleUtilPrint("ActResult   =  (null)\n");
+        SampleUtilPrintf(UPNP_WARN, "ActResult   =  (null)\n");
     }
     return 0;
 }

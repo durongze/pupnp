@@ -1268,14 +1268,8 @@ int UpnpUnRegisterRootDeviceLowPower(UpnpDevice_Handle Hnd,
 	HandleUnlock();
 
 	#if EXCLUDE_SSDP == 0
-	retVal = AdvertiseAndReply(-1,
-		Hnd,
-		(enum SsdpSearchType)0,
-		(struct sockaddr *)NULL,
-		(char *)NULL,
-		(char *)NULL,
-		(char *)NULL,
-		HInfo->MaxAge);
+	retVal = AdvertiseAndReply(-1, Hnd, (enum SsdpSearchType)0,
+		(struct sockaddr *)NULL, (char *)NULL, (char *)NULL, (char *)NULL, HInfo->MaxAge);
 	#endif
 
 	HandleLock();
@@ -1686,14 +1680,8 @@ int UpnpSendAdvertisementLowPower(UpnpDevice_Handle Hnd,
 	SInfo->SleepPeriod = SleepPeriod;
 	SInfo->RegistrationState = RegistrationState;
 	HandleUnlock();
-	retVal = AdvertiseAndReply(1,
-		Hnd,
-		(enum SsdpSearchType)0,
-		(struct sockaddr *)NULL,
-		(char *)NULL,
-		(char *)NULL,
-		(char *)NULL,
-		Exp);
+	retVal = AdvertiseAndReply(1, Hnd, (enum SsdpSearchType)0,
+		(struct sockaddr *)NULL, (char *)NULL, (char *)NULL, (char *)NULL, Exp);
 
 	if (retVal != UPNP_E_SUCCESS)
 		return retVal;
