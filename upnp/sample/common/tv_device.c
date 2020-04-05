@@ -1282,7 +1282,7 @@ int TvDeviceStart(char *ip_address,
 	}
 	ip_address = UpnpGetServerIpAddress();
 	port = UpnpGetServerPort();
-	SampleUtilPrintf(UPNP_INFO, "UPnP Initialized ipaddr:%s port:%u\n",
+	SampleUtil_Print("UPnP Initialized ipaddr:%s port:%u\n",
 		ip_address ? ip_address : "{NULL}",	port);
 	if (!desc_doc_name) {
 		if (combo) {

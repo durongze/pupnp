@@ -1253,13 +1253,12 @@ int TvCtrlPointStart(print_string printFunctionPtr,
 	ithread_mutex_init(&DeviceListMutex, 0);
 
 	rc = UpnpInit2(ip_address, port);
-	SampleUtilPrint("Init UPnP Sdk with ip:%s,port:%u\n",
+	SampleUtil_Print("Init UPnP Sdk with ip:%s,port:%u\n",
 		ip_address ? ip_address : "{NULL}",	port);
 	if (rc != UPNP_E_SUCCESS) {
 		SampleUtilPrintf(UPNP_ERROR, "UpnpInit2() Error: %d\n", rc);
 		if (!combo) {
 			UpnpFinish();
-
 			return TV_ERROR;
 		}
 	}
@@ -1270,9 +1269,8 @@ int TvCtrlPointStart(print_string printFunctionPtr,
 		port = UpnpGetServerPort();
 	}
 
-	SampleUtilPrint("UPnP Init ip:%s,port:%u\n",
+	SampleUtil_Print("UPnP Init ip:%s,port:%u\n",
 		ip_address ? ip_address : "{NULL}",	port);
-	SampleUtilPrint("Reg Ctrl Point\n");
 	rc = UpnpRegisterClient(TvCtrlPointCallbackEventHandler,
 		&ctrlpt_handle,
 		&ctrlpt_handle);
