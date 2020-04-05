@@ -91,6 +91,8 @@
 /*! Max value length */
 #define TV_MAX_VAL_LEN 7
 
+#define DU_SERVICE_SERVCOUNT  2
+
 /*! Tags for valid commands issued at the command prompt. */
 enum cmdloop_tvcmds
 {

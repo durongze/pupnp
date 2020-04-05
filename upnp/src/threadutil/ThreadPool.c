@@ -487,26 +487,21 @@ static void *WorkerThread(
 		}
 
 		/* Check for a job or shutdown */
-		while (tp->lowJobQ.size  == 0 &&
-		       tp->medJobQ.size  == 0 &&
-		       tp->highJobQ.size == 0 &&
+		while (tp->lowJobQ.size  == 0 && tp->medJobQ.size  == 0 && tp->highJobQ.size == 0 &&
 		       !tp->persistentJob && !tp->shutdown) {
 			/* If wait timed out and we currently have more than the
 			 * min threads, or if we have more than the max threads
 			 * (only possible if the attributes have been reset)
 			 * let this thread die. */
-			if ((retCode == ETIMEDOUT &&
-			    tp->totalThreads > tp->attr.minThreads) ||
-			    (tp->attr.maxThreads != -1 &&
-			     tp->totalThreads > tp->attr.maxThreads)) {
+			if ((retCode == ETIMEDOUT && tp->totalThreads > tp->attr.minThreads) ||
+			    (tp->attr.maxThreads != -1 && tp->totalThreads > tp->attr.maxThreads)) {
 				tp->stats.idleThreads--;
 				goto exit_function;
 			}
 			SetRelTimeout(&timeout, tp->attr.maxIdleTime);
 
 			/* wait for a job up to the specified max time */
-			retCode = ithread_cond_timedwait(
-				&tp->condition, &tp->mutex, &timeout);
+			retCode = ithread_cond_timedwait(&tp->condition, &tp->mutex, &timeout);
 		}
 		tp->stats.idleThreads--;
 		/* idle time */

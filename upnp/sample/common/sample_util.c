@@ -602,17 +602,17 @@ int SampleUtil_FindAndParseServiceList(IXML_NodeList *srvList, const char *base,
             ret = UpnpResolveURL2(base, releventURL, eventURL);
             if (ret != UPNP_E_SUCCESS)
                 SampleUtilPrintf(UPNP_ERROR,"releventURL from %s:%s\n", base, releventURL);
-            free(relctrlURL);
-            free(releventURL);
+			if (relctrlURL) free(relctrlURL);
+			if (releventURL) free(releventURL);
             relctrlURL = NULL;
             releventURL = NULL;
             found = 1;
             break;
         }
-        free(SrvType);
+		if (SrvType) free(SrvType);
         SrvType = NULL;
     }
-    free(SrvType);
+    if (SrvType) free(SrvType);
     SrvType = NULL;
 
     return found;

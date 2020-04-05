@@ -1432,6 +1432,7 @@ int device_main(int argc, char *argv[])
 {
 	unsigned int portTemp = 0;
 	char *ip_address = NULL;
+    char *if_name = NULL;
 	char *desc_doc_name = NULL;
 	char *web_dir_path = NULL;
 	unsigned short port = 0;
@@ -1474,7 +1475,7 @@ int device_main(int argc, char *argv[])
 	}
 	port = (unsigned short)portTemp;
 	return TvDeviceStart(
-		ip_address, port, desc_doc_name, web_dir_path, linux_print, 0);
+		if_name, port, desc_doc_name, web_dir_path, linux_print, 0);
 }
 
 /*! @} Device Sample Module */
