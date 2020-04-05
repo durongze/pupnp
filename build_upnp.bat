@@ -5,7 +5,7 @@ mkdir dyzbuild
 pushd dyzbuild
 xcopy ..\upnp\sample\web web /y /e /i /q
 for /f %%i in ('dir /s /b "*.dll"') do (del %%i )
-cmake ..
+cmake -G "Visual Studio 14 2015" ..
 MSBuild device.vcxproj
 MSBuild ctrlpt.vcxproj
 MSBuild combo.vcxproj

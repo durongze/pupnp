@@ -3176,6 +3176,38 @@ int UpnpDownloadXmlDoc(const char *url, IXML_Document **xmlDoc)
 	}
 }
 
+#ifdef _WIN32
+int GetIpAddrForAdapter(PIP_ADAPTER_UNICAST_ADDRESS uni_addr,
+    struct in_addr *v4_addr,
+	struct in6_addr *v6_addr)
+{
+	SOCKADDR *ip_addr;
+	int valid_addr_found = 0;
+
+    while (uni_addr) {
+        ip_addr = uni_addr->Address.lpSockaddr;
+        switch (ip_addr->sa_family) {
+        case AF_INET:
+            memcpy(v4_addr, &((struct sockaddr_in *)ip_addr)->sin_addr, sizeof(*v4_addr));
+            valid_addr_found = 1;
+            break;
+        case AF_INET6:
+            /* Only keep IPv6 link-local addresses. */
+            if (IN6_IS_ADDR_LINKLOCAL(&((struct sockaddr_in6 *)ip_addr)->sin6_addr)) {
+                memcpy(v6_addr, &((struct sockaddr_in6 *)ip_addr)->sin6_addr, sizeof(*v6_addr));
+                valid_addr_found = 1;
+            }
+            break;
+        default:
+            break;
+        }
+        /* Next address. */
+        uni_addr = uni_addr->Next;
+    }
+    return valid_addr_found;
+}
+#endif
+
 int UpnpGetIfInfoWin32(const char * IfName)
 {
 #ifdef _WIN32
@@ -3183,9 +3215,9 @@ int UpnpGetIfInfoWin32(const char * IfName)
 	/* WIN32 implementation will use the IpHlpAPI library.  */
 	/* ---------------------------------------------------- */
 	PIP_ADAPTER_ADDRESSES adapts = NULL;
-	PIP_ADAPTER_ADDRESSES adapts_item;
+	PIP_ADAPTER_ADDRESSES item;
 	PIP_ADAPTER_UNICAST_ADDRESS uni_addr;
-	SOCKADDR *ip_addr;
+
 	struct in_addr v4_addr;
 	struct in6_addr v6_addr;
 	ULONG adapts_sz = 0;
@@ -3222,10 +3254,9 @@ int UpnpGetIfInfoWin32(const char * IfName)
 		strncpy(gIF_NAME, IfName, sizeof(gIF_NAME) - 1);
 		ifname_found = 1;
 	}
-	for (adapts_item = adapts; adapts_item != NULL;
-		adapts_item = adapts_item->Next) {
-		if (adapts_item->Flags & IP_ADAPTER_NO_MULTICAST ||
-			adapts_item->OperStatus != IfOperStatusUp) {
+	for (item = adapts; item != NULL; item = item->Next) {
+		ApiPrintf(UPNP_INFO, "item->FriendlyName:%s\n", item->FriendlyName);
+		if (item->Flags & IP_ADAPTER_NO_MULTICAST || item->OperStatus != IfOperStatusUp) {
 			continue;
 		}
 		if (ifname_found == 0) {
@@ -3237,9 +3268,7 @@ int UpnpGetIfInfoWin32(const char * IfName)
 			 * not all) adapters. A full fix would require a lot of
 			 * big changes (gIF_NAME to wchar string?).
 			 */
-			wcstombs(gIF_NAME,
-				adapts_item->FriendlyName,
-				sizeof(gIF_NAME));
+			wcstombs(gIF_NAME, item->FriendlyName, sizeof(gIF_NAME));
 			ifname_found = 1;
 		} else {
 			/*
@@ -3250,56 +3279,18 @@ int UpnpGetIfInfoWin32(const char * IfName)
 			 * big changes (gIF_NAME to wchar string?).
 			 */
 			char tmpIfName[LINE_SIZE] = {0};
-			wcstombs(tmpIfName,
-				adapts_item->FriendlyName,
-				sizeof(tmpIfName));
-			if (strncmp(gIF_NAME, tmpIfName, sizeof(gIF_NAME)) !=
-				0) {
-				/* This is not the interface we're looking for.
-				 */
+			wcstombs(tmpIfName,	item->FriendlyName, sizeof(tmpIfName));
+			if (strncmp(gIF_NAME, tmpIfName, sizeof(gIF_NAME)) != 0) {
+				/* This is not the interface we're looking for. */
 				continue;
 			}
 		}
 		/* Loop thru this adapter's unicast IP addresses. */
-		uni_addr = adapts_item->FirstUnicastAddress;
-		while (uni_addr) {
-			ip_addr = uni_addr->Address.lpSockaddr;
-			switch (ip_addr->sa_family) {
-			case AF_INET:
-				memcpy(&v4_addr,
-					&((struct sockaddr_in *)ip_addr)
-						 ->sin_addr,
-					sizeof(v4_addr));
-				valid_addr_found = 1;
-				break;
-			case AF_INET6:
-				/* Only keep IPv6 link-local addresses. */
-				if (IN6_IS_ADDR_LINKLOCAL(
-					    &((struct sockaddr_in6 *)ip_addr)
-						     ->sin6_addr)) {
-					memcpy(&v6_addr,
-						&((struct sockaddr_in6 *)
-								ip_addr)
-							 ->sin6_addr,
-						sizeof(v6_addr));
-					valid_addr_found = 1;
-				}
-				break;
-			default:
-				if (valid_addr_found == 0) {
-					/* Address is not IPv4 or IPv6 and no
-					 * valid address has  */
-					/* yet been found for this interface.
-					 * Discard interface name. */
-					ifname_found = 0;
-				}
-				break;
-			}
-			/* Next address. */
-			uni_addr = uni_addr->Next;
-		}
+		uni_addr = item->FirstUnicastAddress;
+        valid_addr_found = GetIpAddrForAdapter(uni_addr, &v4_addr, &v6_addr);
+        ifname_found = valid_addr_found ? ifname_found : 0;
 		if (valid_addr_found == 1) {
-			gIF_INDEX = adapts_item->IfIndex;
+			gIF_INDEX = item->IfIndex;
 			break;
 		}
 	}

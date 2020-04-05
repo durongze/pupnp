@@ -514,10 +514,8 @@ void printServiceTable(
     Upnp_LogLevel level,
     Dbg_Module module )
 {
-    UpnpPrintf( level, module,  
-        "URL_BASE: %s\n", table->URLBase );
-    UpnpPrintf( level, module,  
-        "Services: \n" );
+    UpnpPrintf( level, module, "URL_BASE: %s\n", table->URLBase );
+    UpnpPrintf( level, module, "Services: \n" );
     printServiceList( table->serviceList, level, module );}
 #endif
 
