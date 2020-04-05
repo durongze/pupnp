@@ -88,10 +88,14 @@
 /*! Index of brightness variable */
 #define TV_PICTURE_BRIGHTNESS 3
 
+/* This should be the maximum VARCOUNT from above */
+#define TV_MAXVARS		TV_PICTURE_VARCOUNT
+
 /*! Max value length */
 #define TV_MAX_VAL_LEN 7
 
-#define DU_SERVICE_SERVCOUNT  2
+#define DU_SERVICE_SERVCOUNT  3
+#define DU_MAXVARS		TV_PICTURE_VARCOUNT
 
 /*! Tags for valid commands issued at the command prompt. */
 enum cmdloop_tvcmds

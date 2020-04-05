@@ -90,9 +90,6 @@ extern "C" {
 /*! Max actions */
 #define TV_MAXACTIONS 12
 
-/*! This should be the maximum VARCOUNT from above */
-#define TV_MAXVARS TV_PICTURE_VARCOUNT
-
 /*!
  * \brief Prototype for all actions. For each action that a service 
  * implements, there is a corresponding function with this prototype.

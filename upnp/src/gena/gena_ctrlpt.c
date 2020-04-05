@@ -543,7 +543,6 @@ int genaSubscribe(
 	return_code = gena_subscribe(PublisherURL, TimeOut, NULL, ActualSID);
 	HandleLock();
 	if (return_code != UPNP_E_SUCCESS) {
-		GenaPrintf(UPNP_CRITICAL, "gena_subscribe error:%d\n", return_code);
 		goto error_handler;
 	}
 
@@ -581,6 +580,9 @@ int genaSubscribe(
 	return_code = ScheduleGenaAutoRenew(client_handle, *TimeOut, newSubscription);
 
 error_handler:
+	if (return_code != UPNP_E_SUCCESS) {    
+    	GenaPrintf(UPNP_ERROR, "gena_subscribe error:%d\n", return_code);
+    }
 	UpnpString_delete(ActualSID);
 	UpnpString_delete(EventURL);
 	if (return_code != UPNP_E_SUCCESS)

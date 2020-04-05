@@ -1986,9 +1986,9 @@ int UpnpSubscribe(UpnpClient_Handle Hnd,
 	strncpy(SubsId, UpnpString_get_String(SubsIdTmp), sizeof(Upnp_SID) - 1);
 
 exit_function:
-	UpnpPrintf(UPNP_ALL, API, "Exiting retVal=%d\n",
-		retVal);
-
+	if (retVal != UPNP_E_SUCCESS) {
+    	UpnpPrintf(UPNP_ERROR, API, "EvtUrl %s, Exiting retVal=%d\n", EvtUrl, retVal);
+    }
 	UpnpString_delete(SubsIdTmp);
 	UpnpString_delete(EvtUrl);
 

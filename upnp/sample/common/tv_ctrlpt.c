@@ -60,6 +60,7 @@ const char TvDeviceType[] = "urn:schemas-upnp-org:device:tvdevice:1";
 const char DuDeviceType[] = "urn:schemas-upnp-org:device:MediaRenderer:1";
 /*! Service names.*/
 const char *TvServiceName[] = {"Control", "Picture"};
+const char *DuServiceName[] = {"AVTransport", "ConnectionManager", "RenderingControl"};
 
 /*!
    Global arrays for storing variable names and counts for
@@ -69,6 +70,13 @@ const char *TvVarName[TV_SERVICE_SERVCOUNT][TV_MAXVARS] = {
 	{CTRL_POWER, CTRL_CHANNEL, CTRL_VOLUME, CTRL_LOGLVL},
 	{PIC_COLOR, PIC_TINT, PIC_CONTRAST, PIC_BRIGHTNESS}};
 char TvVarCount[TV_SERVICE_SERVCOUNT] = {
+	TV_CONTROL_VARCOUNT, TV_PICTURE_VARCOUNT};
+
+const char *DuVarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = {
+	{CTRL_POWER, CTRL_CHANNEL, CTRL_VOLUME, CTRL_LOGLVL},
+	{PIC_COLOR, PIC_TINT, PIC_CONTRAST, PIC_BRIGHTNESS},
+	{PIC_COLOR, PIC_TINT, PIC_CONTRAST, PIC_BRIGHTNESS},};
+char DuVarCount[DU_SERVICE_SERVCOUNT] = {
 	TV_CONTROL_VARCOUNT, TV_PICTURE_VARCOUNT};
 
 /*!
@@ -693,7 +701,7 @@ int TvCtrlPointAddDeviceTvSrv(IXML_Document * DescDoc,
 	char *serviceId[TV_SERVICE_SERVCOUNT] = { NULL, NULL };
 	char *eventURL[TV_SERVICE_SERVCOUNT] = { NULL, NULL };
 	char *controlURL[TV_SERVICE_SERVCOUNT] = { NULL, NULL };
-	Upnp_SID eventSID[TV_SERVICE_SERVCOUNT];
+	Upnp_SID eventSID[TV_SERVICE_SERVCOUNT] = { 0 };
 	int TimeOut[TV_SERVICE_SERVCOUNT] = { default_timeout, default_timeout };
 	int service;
 	int ret = 1;
@@ -702,7 +710,7 @@ int TvCtrlPointAddDeviceTvSrv(IXML_Document * DescDoc,
 	for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
 		if (SampleUtil_FindAndParseService(DescDoc, location, TvServiceType[service],
 				&serviceId[service], &eventURL[service], &controlURL[service])) {
-			SampleUtilPrint("Subscribing to EventURL %s...\n", eventURL[service]);
+			SampleUtilPrint("Subscribing to EventURL[%d] %s\n", service, eventURL[service]);
 			ret = UpnpSubscribe(ctrlpt_handle, eventURL[service], &TimeOut[service],eventSID[service]);
 			if (ret == UPNP_E_SUCCESS) {
 				SampleUtilPrint("Subscribed to EventURL with SID=%s\n",	eventSID[service]);
@@ -785,13 +793,13 @@ int TvCtrlPointAddDeviceDu(IXML_Document * DescDoc, const char *UDN,
 int TvCtrlPointAddDeviceDuSrv(IXML_Document * DescDoc,
     struct TvDeviceNode *deviceNode, const char * location)
 {
-	SampleUtilPrint("Found Tv device\n");
+	SampleUtilPrint("Found Du device\n");
 	struct TvDeviceNode *tmpdevnode;
 	char *serviceId[DU_SERVICE_SERVCOUNT] = { 0 };
 	char *eventURL[DU_SERVICE_SERVCOUNT] = { 0 };
 	char *controlURL[DU_SERVICE_SERVCOUNT] = { 0 };
 	Upnp_SID eventSID[DU_SERVICE_SERVCOUNT] = { 0 };
-	int TimeOut[DU_SERVICE_SERVCOUNT] = { default_timeout, default_timeout };
+	int TimeOut[DU_SERVICE_SERVCOUNT] = { default_timeout, default_timeout , default_timeout};
 	int service;
 	int ret = 1;
 	int var;
@@ -799,12 +807,12 @@ int TvCtrlPointAddDeviceDuSrv(IXML_Document * DescDoc,
 	for (service = 0; service < DU_SERVICE_SERVCOUNT; service++) {
 		if (SampleUtil_FindAndParseService(DescDoc, location, DuServiceType[service],
 				&serviceId[service], &eventURL[service], &controlURL[service])) {
-			SampleUtilPrint("Subscribing to EventURL %s...\n", eventURL[service]);
+			SampleUtilPrint("Subscribing to EventURL[%d] %s\n", service, eventURL[service]);
 			ret = UpnpSubscribe(ctrlpt_handle, eventURL[service], &TimeOut[service],eventSID[service]);
 			if (ret == UPNP_E_SUCCESS) {
 				SampleUtilPrint("Subscribed to EventURL with SID=%s\n",	eventSID[service]);
 			} else {
-				SampleUtilPrint("Error Subscribing to EventURL -- %d\n", ret);
+				SampleUtilPrint("Error Subscribing to EventURL %d\n", ret);
 				strcpy(eventSID[service], "");
 			}
 		} else {

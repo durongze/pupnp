@@ -62,13 +62,6 @@ extern "C" {
 #define TV_ERROR		(-1)
 #define TV_WARNING		1
 
-/* This should be the maximum VARCOUNT from above */
-#define TV_MAXVARS		TV_PICTURE_VARCOUNT
-
-extern const char *TvServiceName[];
-extern const char *TvVarName[TV_SERVICE_SERVCOUNT][TV_MAXVARS];
-extern char TvVarCount[];
-
 struct tv_service {
     char ServiceId[NAME_SIZE];
     char ServiceType[NAME_SIZE];
@@ -78,25 +71,19 @@ struct tv_service {
     char SID[NAME_SIZE];
 };
 
-extern struct TvDeviceNode *GlobalDeviceList;
-
 struct TvDevice {
     char UDN[250];
     char DescDocURL[250];
     char FriendlyName[250];
     char PresURL[250];
     int  AdvrTimeOut;
-    struct tv_service TvService[TV_SERVICE_SERVCOUNT];
+    struct tv_service TvService[DU_SERVICE_SERVCOUNT];
 };
 
 struct TvDeviceNode {
     struct TvDevice device;
     struct TvDeviceNode *next;
 };
-
-extern ithread_mutex_t DeviceListMutex;
-
-extern UpnpClient_Handle ctrlpt_handle;
 
 void	TvCtrlPointPrintHelp(void);
 int		TvCtrlPointDeleteNode(struct TvDeviceNode *);
