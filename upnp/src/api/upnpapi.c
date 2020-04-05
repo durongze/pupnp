@@ -640,23 +640,18 @@ int UpnpFinish(void)
 		gSslCtx = NULL;
 	}
 #endif
-	ApiPrintf(UPNP_INFO, "Inside UpnpSdkInit is %d\n", UpnpSdkInit);
 	if (UpnpSdkInit != 1) {
 		return UPNP_E_FINISH;
     }
 
-	PrintThreadPoolStats(
-		&gSendThreadPool, __FUNCTION__, __LINE__, "Send Thread Pool");
-	PrintThreadPoolStats(
-		&gRecvThreadPool, __FUNCTION__, __LINE__, "Recv Thread Pool");
+	PrintThreadPoolStats(&gSendThreadPool, __FUNCTION__, __LINE__, "Send Thread Pool");
+	PrintThreadPoolStats(&gRecvThreadPool, __FUNCTION__, __LINE__, "Recv Thread Pool");
 	PrintThreadPoolStats(&gMiniServerThreadPool, __FUNCTION__, __LINE__, "MiniServer Thread Pool");
 #ifdef INCLUDE_DEVICE_APIS
-	while (GetDeviceHandleInfo(0, AF_INET, &device_handle, &temp) ==
-		HND_DEVICE) {
+	while (GetDeviceHandleInfo(0, AF_INET, &device_handle, &temp) == HND_DEVICE) {
 		UpnpUnRegisterRootDevice(device_handle);
 	}
-	while (GetDeviceHandleInfo(0, AF_INET6, &device_handle, &temp) ==
-		HND_DEVICE) {
+	while (GetDeviceHandleInfo(0, AF_INET6, &device_handle, &temp) == HND_DEVICE) {
 		UpnpUnRegisterRootDevice(device_handle);
 	}
 #endif

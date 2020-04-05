@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 	UpnpSetLogFileNames("tv_ctrlpt.txt", "");
 	rc = TvCtrlPointStart(linux_print, NULL, 0);
 	if (rc != TV_SUCCESS) {
-		SampleUtilPrint("Error starting UPnP TV Control Point\n");
+		SampleUtil_Print("Error starting UPnP TV Control Point\n");
 		return rc;
 	}
 	/* start a command loop thread */
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 	sigemptyset(&sigs_to_catch);
 	sigaddset(&sigs_to_catch, SIGINT);
 	sigwait(&sigs_to_catch, &sig);
-	SampleUtilPrint("Shutting down on signal %d...\n", sig);
+	SampleUtil_Print("Shutting down on signal %d...\n", sig);
 #endif
 	rc = TvCtrlPointStop();
 
