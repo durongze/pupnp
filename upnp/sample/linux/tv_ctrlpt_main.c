@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 	sigset_t sigs_to_catch;
 #endif
 	int code;
-	UpnpSetLogLevel(UPNP_ALL);
+	UpnpSetLogLevel(UPNP_TRACE);
 	UpnpSetLogFileNames("tv_ctrlpt.txt", "");
 	rc = TvCtrlPointStart(linux_print, NULL, 0);
 	if (rc != TV_SUCCESS) {

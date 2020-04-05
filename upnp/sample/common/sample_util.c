@@ -216,9 +216,9 @@ char *SampleUtil_GetFirstDocumentItem(IXML_Document *doc, const char *item)
 			}
 		} else
 			SampleUtilPrintf(UPNP_INFO, "nodeList is NULL\n");
-	} else
+	} else {
 		SampleUtilPrintf(UPNP_ERROR, "finding %s in XML Node\n", item);
-
+    }
 epilogue:
 	if (nodeList)
 		ixmlNodeList_free(nodeList);

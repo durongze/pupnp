@@ -641,6 +641,136 @@ int TvCtrlPointPrintDevice(int devnum)
 	return TV_SUCCESS;
 }
 
+int TvCtrlPointAddDeviceTv(IXML_Document * DescDoc, const char *UDN,
+    struct TvDeviceNode *deviceNode, const char * location,int expires)
+{
+	int ret;
+	char *friendlyName = NULL;
+    char *baseURL = NULL;
+	char *relURL = NULL;
+    char *presURL = NULL;
+	friendlyName = SampleUtil_GetFirstDocumentItem(DescDoc, "friendlyName");
+	baseURL = SampleUtil_GetFirstDocumentItem(DescDoc, "URLBase");
+	relURL = SampleUtil_GetFirstDocumentItem(DescDoc, "presentationURL");
+
+	ret = UpnpResolveURL2((baseURL ? baseURL : location), relURL, &presURL);
+	if (ret != UPNP_E_SUCCESS) {
+	    return ret;
+	}
+    SampleUtilPrintf(UPNP_INFO, "gen presURL from %s:%s\n", baseURL, relURL);
+
+    /* Create a new device node */
+    *deviceNode = (struct TvDeviceNode *)malloc(sizeof(struct TvDeviceNode));
+    strcpy(deviceNode->device.UDN, UDN);
+    strcpy(deviceNode->device.DescDocURL, location);
+    strcpy(deviceNode->device.FriendlyName, friendlyName);
+    strcpy(deviceNode->device.PresURL, presURL);
+    deviceNode->device.AdvrTimeOut = expires;
+
+	if (friendlyName)
+		free(friendlyName);
+	if (baseURL)
+		free(baseURL);
+	if (relURL)
+		free(relURL);
+	if (presURL)
+		free(presURL);
+    return ret;
+}
+
+int TvCtrlPointAddDeviceTvSrv(IXML_Document * DescDoc,
+    struct TvDeviceNode *deviceNode, const char * location)
+{
+	SampleUtilPrint("Found Tv device\n");
+	struct TvDeviceNode *tmpdevnode;
+	char *serviceId[TV_SERVICE_SERVCOUNT] = { NULL, NULL };
+	char *eventURL[TV_SERVICE_SERVCOUNT] = { NULL, NULL };
+	char *controlURL[TV_SERVICE_SERVCOUNT] = { NULL, NULL };
+	Upnp_SID eventSID[TV_SERVICE_SERVCOUNT];
+	int TimeOut[TV_SERVICE_SERVCOUNT] = { default_timeout, default_timeout };
+	int service;
+	int ret = 1;
+	int var;
+ 
+	for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
+		if (SampleUtil_FindAndParseService(DescDoc, location, TvServiceType[service],
+				&serviceId[service], &eventURL[service], &controlURL[service])) {
+			SampleUtilPrint("Subscribing to EventURL %s...\n", eventURL[service]);
+			ret = UpnpSubscribe(ctrlpt_handle, eventURL[service], &TimeOut[service],eventSID[service]);
+			if (ret == UPNP_E_SUCCESS) {
+				SampleUtilPrint("Subscribed to EventURL with SID=%s\n",	eventSID[service]);
+			} else {
+				SampleUtilPrint("Error Subscribing to EventURL -- %d\n", ret);
+				strcpy(eventSID[service], "");
+			}
+		} else {
+			SampleUtilPrint("Error: Could not find Service: %s\n", TvServiceType[service]);
+		}
+	}
+
+	for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
+		if (serviceId[service] == NULL) {
+			/* not found */
+			continue;
+		}
+		strcpy(deviceNode->device.TvService[service].ServiceId,	serviceId[service]);
+		strcpy(deviceNode->device.TvService[service].ServiceType, TvServiceType[service]);
+		strcpy(deviceNode->device.TvService[service].ControlURL, controlURL[service]);
+		strcpy(deviceNode->device.TvService[service].EventURL, eventURL[service]);
+		strcpy(deviceNode->device.TvService[service].SID, eventSID[service]);
+		for (var = 0; var < TvVarCount[service]; var++) {
+			deviceNode->device.TvService[service].VariableStrVal[var] =	(char *)malloc(TV_MAX_VAL_LEN);
+			strcpy(deviceNode->device.TvService[service].VariableStrVal[var],"");
+		}
+	}
+	deviceNode->next = NULL;
+	/* Insert the new device node in the list */
+	if ((tmpdevnode = GlobalDeviceList)) {
+		while (tmpdevnode) {
+			if (tmpdevnode->next) {
+				tmpdevnode = tmpdevnode->next;
+			} else {
+				tmpdevnode->next = deviceNode;
+				break;
+			}
+		}
+	} else {
+		GlobalDeviceList = deviceNode;
+	}
+	/*Notify New Device Added */
+	SampleUtil_StateUpdate(NULL,NULL,deviceNode->device.UDN,	DEVICE_ADDED);
+	
+	for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
+		if (serviceId[service])
+			free(serviceId[service]);
+		if (controlURL[service])
+			free(controlURL[service]);
+		if (eventURL[service])
+			free(eventURL[service]);
+	}
+    return UPNP_E_SUCCESS;
+}    
+
+int DeviceIsExist(const char *UDN, int expires)
+{
+	int found = 0;
+	struct TvDeviceNode *tmpdevnode;
+	/* Check if this device is already in the list */
+	tmpdevnode = GlobalDeviceList;
+	while (tmpdevnode) {
+		if (strcmp(tmpdevnode->device.UDN, UDN) == 0) {
+			found = 1;
+			break;
+		}
+		tmpdevnode = tmpdevnode->next;
+	}
+	if (found) {
+		/* The device is already there, so just update  */
+		/* the advertisement timeout field */
+		tmpdevnode->device.AdvrTimeOut = expires;
+	}
+	return found;
+}
 /********************************************************************************
  * TvCtrlPointAddDevice
  *
@@ -657,178 +787,42 @@ int TvCtrlPointPrintDevice(int devnum)
 void TvCtrlPointAddDevice(
 	IXML_Document *DescDoc, const char *location, int expires)
 {
+	struct TvDeviceNode *deviceNode = NULL;
 	char *deviceType = NULL;
-	char *friendlyName = NULL;
-	char *presURL = NULL;
-	char *baseURL = NULL;
-	char *relURL = NULL;
 	char *UDN = NULL;
-	char *serviceId[TV_SERVICE_SERVCOUNT] = {NULL, NULL};
-	char *eventURL[TV_SERVICE_SERVCOUNT] = {NULL, NULL};
-	char *controlURL[TV_SERVICE_SERVCOUNT] = {NULL, NULL};
-	Upnp_SID eventSID[TV_SERVICE_SERVCOUNT];
-	int TimeOut[TV_SERVICE_SERVCOUNT];
-	struct TvDeviceNode *deviceNode;
-	struct TvDeviceNode *tmpdevnode;
 	int ret = 1;
-	int found = 0;
-	int service;
-	int var;
 
-	TimeOut[0] = default_timeout;
-	TimeOut[1] = default_timeout;
 	ithread_mutex_lock(&DeviceListMutex);
 
 	/* Read key elements from description document */
 	UDN = SampleUtil_GetFirstDocumentItem(DescDoc, "UDN");
 	deviceType = SampleUtil_GetFirstDocumentItem(DescDoc, "deviceType");
-	friendlyName = SampleUtil_GetFirstDocumentItem(DescDoc, "friendlyName");
-	baseURL = SampleUtil_GetFirstDocumentItem(DescDoc, "URLBase");
-	relURL = SampleUtil_GetFirstDocumentItem(DescDoc, "presentationURL");
-
-	ret = UpnpResolveURL2((baseURL ? baseURL : location), relURL, &presURL);
-
-	if (UPNP_E_SUCCESS != ret)
-		SampleUtilPrint("Error generating presURL from %s + %s\n",
-			baseURL,
-			relURL);
+	if (UPNP_E_SUCCESS != ret) {
+        char *buf = ixmlDocumenttoString(DescDoc);
+        SampleUtilPrintf(UPNP_ERROR, "%s", buf);
+		ixmlFreeDOMString(buf);
+    }
 
 	if (strcmp(deviceType, TvDeviceType) == 0) {
-		SampleUtilPrint("Found Tv device\n");
-
-		/* Check if this device is already in the list */
-		tmpdevnode = GlobalDeviceList;
-		while (tmpdevnode) {
-			if (strcmp(tmpdevnode->device.UDN, UDN) == 0) {
-				found = 1;
-				break;
-			}
-			tmpdevnode = tmpdevnode->next;
+		if (!DeviceIsExist(UDN, expires)) {
+			ret = TvCtrlPointAddDeviceTv(DescDoc, UDN, &deviceNode, location, expires);
+            if (ret != UPNP_E_SUCCESS) {
+                TvCtrlPointAddDeviceTvSrv(DescDoc, deviceNode, location);                
+            } else {
+                if (deviceNode) free(deviceNode);
+            }
 		}
-
-		if (found) {
-			/* The device is already there, so just update  */
-			/* the advertisement timeout field */
-			tmpdevnode->device.AdvrTimeOut = expires;
-		} else {
-			for (service = 0; service < TV_SERVICE_SERVCOUNT;
-				service++) {
-				if (SampleUtil_FindAndParseService(DescDoc,
-					    location,
-					    TvServiceType[service],
-					    &serviceId[service],
-					    &eventURL[service],
-					    &controlURL[service])) {
-					SampleUtilPrint("Subscribing to "
-							 "EventURL %s...\n",
-						eventURL[service]);
-					ret = UpnpSubscribe(ctrlpt_handle,
-						eventURL[service],
-						&TimeOut[service],
-						eventSID[service]);
-					if (ret == UPNP_E_SUCCESS) {
-						SampleUtilPrint(
-							"Subscribed to "
-							"EventURL with "
-							"SID=%s\n",
-							eventSID[service]);
-					} else {
-						SampleUtilPrint(
-							"Error Subscribing to "
-							"EventURL -- %d\n",
-							ret);
-						strcpy(eventSID[service], "");
-					}
-				} else {
-					SampleUtilPrint("Error: Could not "
-							 "find Service: %s\n",
-						TvServiceType[service]);
-				}
-			}
-			/* Create a new device node */
-			deviceNode = (struct TvDeviceNode *)malloc(
-				sizeof(struct TvDeviceNode));
-			strcpy(deviceNode->device.UDN, UDN);
-			strcpy(deviceNode->device.DescDocURL, location);
-			strcpy(deviceNode->device.FriendlyName, friendlyName);
-			strcpy(deviceNode->device.PresURL, presURL);
-			deviceNode->device.AdvrTimeOut = expires;
-			for (service = 0; service < TV_SERVICE_SERVCOUNT;
-				service++) {
-				if (serviceId[service] == NULL) {
-					/* not found */
-					continue;
-				}
-				strcpy(deviceNode->device.TvService[service]
-						.ServiceId,
-					serviceId[service]);
-				strcpy(deviceNode->device.TvService[service]
-						.ServiceType,
-					TvServiceType[service]);
-				strcpy(deviceNode->device.TvService[service]
-						.ControlURL,
-					controlURL[service]);
-				strcpy(deviceNode->device.TvService[service]
-						.EventURL,
-					eventURL[service]);
-				strcpy(deviceNode->device.TvService[service]
-						.SID,
-					eventSID[service]);
-				for (var = 0; var < TvVarCount[service];
-					var++) {
-					deviceNode->device.TvService[service]
-						.VariableStrVal[var] =
-						(char *)malloc(TV_MAX_VAL_LEN);
-					strcpy(deviceNode->device
-							.TvService[service]
-							.VariableStrVal[var],
-						"");
-				}
-			}
-			deviceNode->next = NULL;
-			/* Insert the new device node in the list */
-			if ((tmpdevnode = GlobalDeviceList)) {
-				while (tmpdevnode) {
-					if (tmpdevnode->next) {
-						tmpdevnode = tmpdevnode->next;
-					} else {
-						tmpdevnode->next = deviceNode;
-						break;
-					}
-				}
-			} else {
-				GlobalDeviceList = deviceNode;
-			}
-			/*Notify New Device Added */
-			SampleUtil_StateUpdate(NULL,
-				NULL,
-				deviceNode->device.UDN,
-				DEVICE_ADDED);
-		}
-	}
+    } else {
+        SampleUtilPrintf(UPNP_ERROR, "UDN:%s, deviceType:%s no supported", UDN, deviceType);
+    }
 
 	ithread_mutex_unlock(&DeviceListMutex);
 
 	if (deviceType)
 		free(deviceType);
-	if (friendlyName)
-		free(friendlyName);
 	if (UDN)
 		free(UDN);
-	if (baseURL)
-		free(baseURL);
-	if (relURL)
-		free(relURL);
-	if (presURL)
-		free(presURL);
-	for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
-		if (serviceId[service])
-			free(serviceId[service]);
-		if (controlURL[service])
-			free(controlURL[service]);
-		if (eventURL[service])
-			free(eventURL[service]);
-	}
+    return UPNP_E_SUCCESS;
 }
 
 void TvStateUpdate(
@@ -858,31 +852,18 @@ void TvStateUpdate(
 			/* For each variable name in the state table,
 			 * check if this is a corresponding property change */
 			for (j = 0; j < TvVarCount[Service]; j++) {
-				variables = ixmlElement_getElementsByTagName(
-					property, TvVarName[Service][j]);
+				variables = ixmlElement_getElementsByTagName(property, TvVarName[Service][j]);
 				/* If a match is found, extract
 				 * the value, and update the state table */
 				if (variables) {
-					length1 =
-						ixmlNodeList_length(variables);
+					length1 = ixmlNodeList_length(variables);
 					if (length1) {
-						variable = (IXML_Element *)
-							ixmlNodeList_item(
-								variables, 0);
-						tmpstate =
-							SampleUtil_GetElementValue(
-								variable);
+						variable = (IXML_Element *)ixmlNodeList_item(variables, 0);
+						tmpstate = SampleUtil_GetElementValue(variable);
 						if (tmpstate) {
-							strcpy(State[j],
-								tmpstate);
-							SampleUtilPrint(
-								" Variable "
-								"Name: %s New "
-								"Value:'%s'\n",
-								TvVarName
-									[Service]
-									[j],
-								State[j]);
+							strcpy(State[j], tmpstate);
+							SampleUtilPrint(" Variable Name: %s New Value:'%s'\n",
+								TvVarName[Service][j],	State[j]);
 						}
 						if (tmpstate)
 							free(tmpstate);
@@ -1246,7 +1227,7 @@ int TvCtrlPointStart(print_string printFunctionPtr,
 	int rc;
 	unsigned short port = 0;
     char *ip_address = NULL;
-	char *if_name = NULL;
+	char *if_name = "share";
 
 	SampleUtil_Initialize(printFunctionPtr);
 	SampleUtil_RegisterUpdateFunction(updateFunctionPtr);
