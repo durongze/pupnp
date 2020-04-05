@@ -642,13 +642,14 @@ int TvCtrlPointPrintDevice(int devnum)
 }
 
 int TvCtrlPointAddDeviceTv(IXML_Document * DescDoc, const char *UDN,
-    struct TvDeviceNode *deviceNode, const char * location,int expires)
+    struct TvDeviceNode **device, const char * location,int expires)
 {
 	int ret;
 	char *friendlyName = NULL;
     char *baseURL = NULL;
 	char *relURL = NULL;
     char *presURL = NULL;
+	struct TvDeviceNode *deviceNode = NULL;
 	friendlyName = SampleUtil_GetFirstDocumentItem(DescDoc, "friendlyName");
 	baseURL = SampleUtil_GetFirstDocumentItem(DescDoc, "URLBase");
 	relURL = SampleUtil_GetFirstDocumentItem(DescDoc, "presentationURL");
@@ -660,13 +661,13 @@ int TvCtrlPointAddDeviceTv(IXML_Document * DescDoc, const char *UDN,
     SampleUtilPrintf(UPNP_INFO, "gen presURL from %s:%s\n", baseURL, relURL);
 
     /* Create a new device node */
-    *deviceNode = (struct TvDeviceNode *)malloc(sizeof(struct TvDeviceNode));
+    deviceNode = (struct TvDeviceNode *)malloc(sizeof(struct TvDeviceNode));
     strcpy(deviceNode->device.UDN, UDN);
     strcpy(deviceNode->device.DescDocURL, location);
     strcpy(deviceNode->device.FriendlyName, friendlyName);
     strcpy(deviceNode->device.PresURL, presURL);
     deviceNode->device.AdvrTimeOut = expires;
-
+	*device = deviceNode;
 	if (friendlyName)
 		free(friendlyName);
 	if (baseURL)
