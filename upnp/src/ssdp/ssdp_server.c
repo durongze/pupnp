@@ -820,7 +820,7 @@ static int create_ssdp_sock_v4(
 			 (char *)&addr, sizeof addr);
 	if (ret == -1) {
 		strerror_r(errno, errorBuffer, ERROR_BUFFER_LEN);
-		SsdpPrintf(UPNP_INFO, "Error in setsockopt() IP_MULTICAST_IF:%s\n",
+		SsdpPrintf(UPNP_ERROR, "setsockopt() IP_MULTICAST_IF:%s\n",
 			   errorBuffer);
 		/* This is probably not a critical error, so let's continue. */
 	}

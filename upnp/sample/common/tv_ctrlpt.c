@@ -1245,18 +1245,19 @@ int TvCtrlPointStart(print_string printFunctionPtr,
 	ithread_t timer_thread;
 	int rc;
 	unsigned short port = 0;
-	char *ip_address = NULL;
+    char *ip_address = NULL;
+	char *if_name = NULL;
 
 	SampleUtil_Initialize(printFunctionPtr);
 	SampleUtil_RegisterUpdateFunction(updateFunctionPtr);
 
 	ithread_mutex_init(&DeviceListMutex, 0);
 
-	rc = UpnpInit2(ip_address, port);
-	SampleUtil_Print("Init UPnP Sdk with ip:%s,port:%u\n",
-		ip_address ? ip_address : "{NULL}",	port);
+	rc = UpnpInit2(if_name, port);
+	SampleUtil_Print("Init UPnP Sdk with if_name:%s,port:%u\n",
+		if_name ? if_name : "{NULL}",	port);
 	if (rc != UPNP_E_SUCCESS) {
-		SampleUtilPrintf(UPNP_ERROR, "UpnpInit2() Error: %d\n", rc);
+		SampleUtil_Print("UpnpInit2() Error: %d\n", rc);
 		if (!combo) {
 			UpnpFinish();
 			return TV_ERROR;

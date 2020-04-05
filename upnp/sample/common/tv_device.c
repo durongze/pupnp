@@ -1258,7 +1258,7 @@ int TvDeviceCallbackEventHandler(
 	return 0;
 }
 
-int TvDeviceStart(char *ip_address,
+int TvDeviceStart(char *if_name,
 	unsigned short port,
 	const char *desc_doc_name,
 	const char *web_dir_path,
@@ -1267,15 +1267,16 @@ int TvDeviceStart(char *ip_address,
 {
 	int ret = UPNP_E_SUCCESS;
 	char desc_doc_url[DESC_URL_SIZE];
+    char *ip_address = NULL;
 
 	ithread_mutex_init(&TVDevMutex, NULL);
 
 	SampleUtil_Initialize(pfun);
 	SampleUtil_Print("Init UPnP Sdk with ipaddr:%s port:%u\n",
-		ip_address ? ip_address : "{NULL}",	port);
-	ret = UpnpInit2(ip_address, port);
+		if_name ? if_name : "{NULL}",	port);
+	ret = UpnpInit2(if_name, port);
 	if (ret != UPNP_E_SUCCESS) {
-		SampleUtilPrintf(UPNP_ERROR, "UpnpInit2 %d\n", ret);
+		SampleUtil_Print("UpnpInit2 %d\n", ret);
 		UpnpFinish();
 
 		return ret;

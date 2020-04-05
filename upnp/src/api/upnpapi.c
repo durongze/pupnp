@@ -589,11 +589,8 @@ void PrintThreadPoolStats(
 {
 	ThreadPoolStats stats;
 	ThreadPoolGetStats(tp, &stats);
-	Upnp_Printf(UPNP_INFO,
-		API,
-		DbgFileName,
-		DbgLineNo,
-		"%s\n"
+	Upnp_Printf(UPNP_INFO, API,	DbgFileName, DbgLineNo,
+        "%s\n"
 		"High Jobs pending: %d\n"
 		"Med Jobs Pending: %d\n"
 		"Low Jobs Pending: %d\n"
@@ -643,8 +640,7 @@ int UpnpFinish(void)
 		gSslCtx = NULL;
 	}
 #endif
-	ApiPrintf(UPNP_INFO, "Inside UpnpSdkInit is %d\n",
-		UpnpSdkInit);
+	ApiPrintf(UPNP_INFO, "Inside UpnpSdkInit is %d\n", UpnpSdkInit);
 	if (UpnpSdkInit != 1) {
 		return UPNP_E_FINISH;
     }
