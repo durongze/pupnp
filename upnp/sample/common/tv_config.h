@@ -95,7 +95,7 @@
 #define TV_MAX_VAL_LEN 7
 
 #define DU_SERVICE_SERVCOUNT  3
-#define DU_MAXVARS		TV_PICTURE_VARCOUNT
+#define DU_MAXVARS		32
 
 /*! Tags for valid commands issued at the command prompt. */
 enum cmdloop_tvcmds

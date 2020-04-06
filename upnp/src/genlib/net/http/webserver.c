@@ -1569,18 +1569,14 @@ static int http_RecvPostMessage(
 			goto ExitFunction;
 		}
 		/* read more if necessary entity */
-		while (entity_offset + Data_Buf_Size >
-				parser->msg.entity.length &&
+		while (entity_offset + Data_Buf_Size >	parser->msg.entity.length &&
 			parser->position != POS_COMPLETE) {
 			num_read = sock_read(info, Buf, sizeof(Buf), &Timeout);
 			if (num_read > 0) {
 				/* append data to buffer */
-				if (membuffer_append(&parser->msg.msg,
-					    Buf,
-					    (size_t)num_read) != 0) {
+				if (membuffer_append(&parser->msg.msg, Buf, (size_t)num_read) != 0) {
 					/* set failure status */
-					parser->http_error_code =
-						HTTP_INTERNAL_SERVER_ERROR;
+					parser->http_error_code = HTTP_INTERNAL_SERVER_ERROR;
 					ret_code = HTTP_INTERNAL_SERVER_ERROR;
 					goto ExitFunction;
 				}
@@ -1602,8 +1598,7 @@ static int http_RecvPostMessage(
 					parser->position = POS_COMPLETE;
 				} else {
 					/* partial msg or response */
-					parser->http_error_code =
-						HTTP_BAD_REQUEST;
+					parser->http_error_code = HTTP_BAD_REQUEST;
 					ret_code = HTTP_BAD_REQUEST;
 					goto ExitFunction;
 				}
@@ -1612,22 +1607,13 @@ static int http_RecvPostMessage(
 				goto ExitFunction;
 			}
 		}
-		if ((entity_offset + Data_Buf_Size) >
-			parser->msg.entity.length) {
-			Data_Buf_Size =
-				parser->msg.entity.length - entity_offset;
+		if ((entity_offset + Data_Buf_Size) > parser->msg.entity.length) {
+			Data_Buf_Size =	parser->msg.entity.length - entity_offset;
 		}
-		memcpy(Buf,
-			&parser->msg.msg.buf[parser->entity_start_position +
-					     entity_offset],
-			Data_Buf_Size);
+		memcpy(Buf,	&parser->msg.msg.buf[parser->entity_start_position + entity_offset], Data_Buf_Size);
 		entity_offset += Data_Buf_Size;
 		if (Instr && Instr->IsVirtualFile) {
-			int n = virtualDirCallback.write(Fp,
-				Buf,
-				Data_Buf_Size,
-				Instr->Cookie,
-				Instr->RequestCookie);
+			int n = virtualDirCallback.write(Fp, Buf, Data_Buf_Size, Instr->Cookie, Instr->RequestCookie);
 			if (n < 0) {
 				ret_code = HTTP_INTERNAL_SERVER_ERROR;
 				goto ExitFunction;
@@ -1639,12 +1625,10 @@ static int http_RecvPostMessage(
 				goto ExitFunction;
 			}
 		}
-	} while (parser->position != POS_COMPLETE ||
-		 entity_offset != parser->msg.entity.length);
+	} while (parser->position != POS_COMPLETE || entity_offset != parser->msg.entity.length);
 ExitFunction:
 	if (Instr && Instr->IsVirtualFile) {
-		virtualDirCallback.close(
-			Fp, Instr->Cookie, Instr->RequestCookie);
+		virtualDirCallback.close(Fp, Instr->Cookie, Instr->RequestCookie);
 	} else {
 		fclose(Fp);
 	}
@@ -1671,77 +1655,41 @@ void web_server_callback(
 	/*Process request should create the different kind of header depending
 	 * on the */
 	/*the type of request. */
-	ret = process_request(
-		req, &rtype, &headers, &filename, &xmldoc, &RespInstr);
+	ret = process_request(req, &rtype, &headers, &filename, &xmldoc, &RespInstr);
 	if (ret != HTTP_OK) {
 		/* send error code */
-		http_SendStatusResponse(
-			info, ret, req->major_version, req->minor_version);
+		http_SendStatusResponse(info, ret, req->major_version, req->minor_version);
 	} else {
 		/* send response */
 		switch (rtype) {
 		case RESP_FILEDOC:
-			http_SendMessage(info,
-				&timeout,
-				"Ibf",
-				&RespInstr,
-				headers.buf,
-				headers.length,
-				filename.buf);
+			http_SendMessage(info, &timeout, "Ibf", &RespInstr,	headers.buf, headers.length,
+                filename.buf);
 			break;
 		case RESP_XMLDOC:
-			http_SendMessage(info,
-				&timeout,
-				"Ibb",
-				&RespInstr,
-				headers.buf,
-				headers.length,
-				xmldoc.doc.buf,
-				xmldoc.doc.length);
+			http_SendMessage(info, &timeout, "Ibb", &RespInstr, headers.buf, headers.length,
+				xmldoc.doc.buf,	xmldoc.doc.length);
 			alias_release(&xmldoc);
 			break;
 		case RESP_WEBDOC:
-			/*http_SendVirtualDirDoc(info, &timeout, "Ibf",
-				&RespInstr,
-				headers.buf, headers.length,
-				filename.buf);*/
-			http_SendMessage(info,
-				&timeout,
-				"Ibf",
-				&RespInstr,
-				headers.buf,
-				headers.length,
+			/* http_SendVirtualDirDoc(info, &timeout, "Ibf", &RespInstr, headers.buf, headers.length,
+				filename.buf); */
+			http_SendMessage(info, &timeout, "Ibf",	&RespInstr,	headers.buf, headers.length,
 				filename.buf);
 			break;
 		case RESP_HEADERS:
 			/* headers only */
-			http_SendMessage(info,
-				&timeout,
-				"b",
-				headers.buf,
-				headers.length);
+			http_SendMessage(info, &timeout, "b", headers.buf, headers.length);
 			break;
 		case RESP_POST:
 			/* headers only */
-			ret = http_RecvPostMessage(
-				parser, info, filename.buf, &RespInstr);
+			ret = http_RecvPostMessage(parser, info, filename.buf, &RespInstr);
 			/* Send response. */
-			http_MakeMessage(&headers,
-				1,
-				1,
-				"RTLSXcCc",
-				ret,
-				"text/html",
-				&RespInstr,
-				X_USER_AGENT);
-			http_SendMessage(info,
-				&timeout,
-				"b",
-				headers.buf,
-				headers.length);
+			http_MakeMessage(&headers, 1, 1, "RTLSXcCc", ret, "text/html", &RespInstr, X_USER_AGENT);
+			http_SendMessage(info, &timeout, "b", headers.buf, headers.length);
 			break;
 		default:
-			HttpPrintf(UPNP_INFO, "webserver: Invalid response type received.\n");
+			HttpPrintf(UPNP_ERROR, "webserver: Invalid response type received.\n");
 			assert(0);
 		}
 	}
