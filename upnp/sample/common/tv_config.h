@@ -92,7 +92,39 @@
 #define TV_MAXVARS		TV_PICTURE_VARCOUNT
 
 /*! Max value length */
-#define TV_MAX_VAL_LEN 7
+#define TV_MAX_VAL_LEN 256
+
+#define  GetCurrentTransportActions "GetCurrentTransportActions"
+#define  GetDeviceCapabilities "GetDeviceCapabilities"
+#define  GetMediaInfo "GetMediaInfo"
+#define  GetPositionInfo "GetPositionInfo"
+#define  GetTransportInfo "GetTransportInfo"
+#define  GetTransportSettings "GetTransportSettings"
+#define  Next "Next"
+#define  Pause "Pause"
+#define  Play "Play"
+#define  Previous "Previous"
+#define  Seek "Seek"
+#define  SetAVTransportURI "SetAVTransportURI"
+#define  SetPlayMode "SetPlayMode"
+#define  Stop "Stop"
+
+#define  GetCurrentConnectionInfo "GetCurrentConnectionInfo"
+#define  GetProtocolInfo "GetProtocolInfo"
+#define  GetCurrentConnectionIDs "GetCurrentConnectionIDs"
+
+#define  GetMute "GetMute"
+#define  GetVolume "GetVolume"
+#define  GetVolumeDB "GetVolumeDB"
+#define  GetVolumeDBRange "GetVolumeDBRange"
+#define  ListPresets "ListPresets"
+#define  SelectPreset "SelectPreset"
+#define  SetMute "SetMute"
+#define  SetVolume "SetVolume"
+
+#define DU_TRANSPORT_VARCOUNT 23
+#define DU_MANAGER_VARCOUNT   10
+#define DU_RENDER_VARCOUNT    4
 
 #define DU_SERVICE_SERVCOUNT  3
 #define DU_MAXVARS		32

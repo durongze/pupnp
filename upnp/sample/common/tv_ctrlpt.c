@@ -59,25 +59,41 @@ UpnpClient_Handle ctrlpt_handle = -1;
 const char TvDeviceType[] = "urn:schemas-upnp-org:device:tvdevice:1";
 const char DuDeviceType[] = "urn:schemas-upnp-org:device:MediaRenderer:1";
 /*! Service names.*/
-const char *TvServiceName[] = {"Control", "Picture"};
+const char *TvServiceName[] = {"Control", "Picture", ""};
 const char *DuServiceName[] = {"AVTransport", "ConnectionManager", "RenderingControl"};
 
 /*!
    Global arrays for storing variable names and counts for
    TvControl and TvPicture services
  */
-const char *TvVarName[TV_SERVICE_SERVCOUNT][TV_MAXVARS] = {
+const char *TvVarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = {
 	{CTRL_POWER, CTRL_CHANNEL, CTRL_VOLUME, CTRL_LOGLVL},
 	{PIC_COLOR, PIC_TINT, PIC_CONTRAST, PIC_BRIGHTNESS}};
 char TvVarCount[TV_SERVICE_SERVCOUNT] = {
 	TV_CONTROL_VARCOUNT, TV_PICTURE_VARCOUNT};
+//"LastChange", "RelativeTimePosition","AbsoluteCounterPosition", "RelativeCounterPosition",
+// "A_ARG_TYPE_InstanceID", "AbsoluteTimePosition", "A_ARG_TYPE_SeekMode", 
 
+// "PresetName",  "Channel",          "InstanceID",   "LastChange", 
 const char *DuVarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = {
-	{CTRL_POWER, CTRL_CHANNEL, CTRL_VOLUME, CTRL_LOGLVL},
-	{PIC_COLOR, PIC_TINT, PIC_CONTRAST, PIC_BRIGHTNESS},
-	{PIC_COLOR, PIC_TINT, PIC_CONTRAST, PIC_BRIGHTNESS},};
+    {"CurrentPlayMode",           "RecordStorageMedium",       "CurrentTrackURI", 
+     "CurrentTrackDuration",      "CurrentRecordQualityMode",  "CurrentMediaDuration",  
+     "InstanceID",                "AVTransportURI",            "TransportPlaySpeed",
+	 "TransportState",            "CurrentTrackMetaData",      "NextAVTransportURI", 
+	 "PossibleRecordQualityModes","CurrentTrack",              "TransportStatus",  
+	 "NextAVTransportURIMetaData","PlaybackStorageMedium",     "CurrentTransportActions",
+	 "RecordMediumWriteStatus",   "PossiblePlaybackStorageMedia", "AVTransportURIMetaData",
+	 "NumberOfTracks",            "PossibleRecordStorageMedia",  },
+
+	{"ProtocolInfo",              "ConnectionStatus",          "AVTransportID",
+	 "RcsID",                     "ConnectionID",              "ConnectionManager",
+	 "Direction",                 "SourceProtocolInfo",        "SinkProtocolInfo",            
+	 "CurrentConnectionIDs"},
+
+	{"Volume",   "Mute",        "PresetNameList",     "VolumeDB"},
+    };
 char DuVarCount[DU_SERVICE_SERVCOUNT] = {
-	TV_CONTROL_VARCOUNT, TV_PICTURE_VARCOUNT};
+	DU_TRANSPORT_VARCOUNT, DU_MANAGER_VARCOUNT, DU_RENDER_VARCOUNT};
 
 /*!
    Timeout to request during subscriptions
@@ -106,8 +122,7 @@ int TvCtrlPointDeleteNode(struct TvDeviceNode *node)
 	int rc, service, var;
 
 	if (NULL == node) {
-		SampleUtilPrint(
-			"ERROR: TvCtrlPointDeleteNode: Node is empty\n");
+		SampleUtilPrintf(UPNP_ERROR, "Node is empty\n");
 		return TV_ERROR;
 	}
 
@@ -116,26 +131,19 @@ int TvCtrlPointDeleteNode(struct TvDeviceNode *node)
 		   If we have a valid control SID, then unsubscribe
 		 */
 		if (strcmp(node->device.TvService[service].SID, "") != 0) {
-			rc = UpnpUnSubscribe(ctrlpt_handle,
-				node->device.TvService[service].SID);
+			rc = UpnpUnSubscribe(ctrlpt_handle,	node->device.TvService[service].SID);
 			if (UPNP_E_SUCCESS == rc) {
-				SampleUtilPrint("Unsubscribed from Tv %s "
-						 "EventURL with SID=%s\n",
-					TvServiceName[service],
-					node->device.TvService[service].SID);
+				SampleUtilPrint("Unsubscribed from Tv %s EventURL with SID=%s\n",
+					TvServiceName[service], node->device.TvService[service].SID);
 			} else {
-				SampleUtilPrint("Error unsubscribing to Tv %s "
-						 "EventURL -- %d\n",
-					TvServiceName[service],
-					rc);
+				SampleUtilPrintf(UPNP_ERROR, "unsubscribing to Tv %s EventURL %d\n",
+					TvServiceName[service], rc);
 			}
 		}
 
 		for (var = 0; var < TvVarCount[service]; var++) {
-			if (node->device.TvService[service]
-					.VariableStrVal[var]) {
-				free(node->device.TvService[service]
-						.VariableStrVal[var]);
+			if (node->device.TvService[service].VariableStrVal[var]) {
+				free(node->device.TvService[service].VariableStrVal[var]);
 			}
 		}
 	}
@@ -385,8 +393,7 @@ int TvCtrlPointSendAction(int service,
 			TvServiceType[service],	NULL,
 			actionNode,	TvCtrlPointCallbackEventHandler, NULL);
 		if (rc != UPNP_E_SUCCESS) {
-			SampleUtilPrint(
-				"Error in UpnpSendActionAsync -- %d\n", rc);
+			SampleUtilPrint("Error in UpnpSendActionAsync -- %d\n", rc);
 			rc = TV_ERROR;
 		}
 	}
@@ -558,6 +565,70 @@ int TvCtrlPointPrintList()
 	return TV_SUCCESS;
 }
 
+int TvCtrlPointPrintDeviceNode(struct TvDeviceNode *tmpdevnode)
+{
+	char spacer[256];
+    int service = 0, var = 0;
+    char *VarCount = NULL;
+    int ServiceNum = 0;
+    const char **ServiceName;
+	const char *VarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = { 0 };
+    char* devType = tmpdevnode->device.DeviceType;
+    if (devType && strcmp(DuDeviceType, devType, strlen(devType) == 0)) {
+        VarCount = DuVarCount;
+        memcpy(VarName, DuVarName, sizeof(VarName));
+        ServiceName = DuServiceName;
+        ServiceNum = DU_SERVICE_SERVCOUNT;
+    } else {
+        VarCount = TvVarCount;
+		memcpy(VarName, TvVarName, sizeof(VarName));
+        ServiceName = TvServiceName;
+        ServiceNum = TV_SERVICE_SERVCOUNT;
+    }
+
+    SampleUtil_Print(
+             "    |                  \n"
+             "    +- UDN        = %s\n"
+             "    +- DescDocURL     = %s\n"
+             "    +- FriendlyName   = %s\n"
+             "    +- PresURL        = %s\n"
+             "    +- Adver. TimeOut = %d\n",
+        tmpdevnode->device.UDN,
+        tmpdevnode->device.DescDocURL,
+        tmpdevnode->device.FriendlyName,
+        tmpdevnode->device.PresURL,
+        tmpdevnode->device.AdvrTimeOut);
+    for (service = 0; service < ServiceNum; service++) {
+        if (service < ServiceNum - 1)
+            sprintf(spacer, "    |    ");
+        else
+            sprintf(spacer, "         ");
+        SampleUtil_Print("    |                  \n"
+                 "    +- Tv %s Service\n"
+                 "%s+- ServiceId       = %s\n"
+                 "%s+- ServiceType     = %s\n"
+                 "%s+- EventURL        = %s\n"
+                 "%s+- ControlURL      = %s\n"
+                 "%s+- SID             = %s\n"
+                 "%s+- ServiceStateTable\n",
+            ServiceName[service],
+            spacer, tmpdevnode->device.TvService[service].ServiceId,
+            spacer, tmpdevnode->device.TvService[service].ServiceType,
+            spacer, tmpdevnode->device.TvService[service].EventURL,
+            spacer, tmpdevnode->device.TvService[service].ControlURL,
+            spacer, tmpdevnode->device.TvService[service].SID,
+            spacer);
+        for (var = 0; var < VarCount[service]; var++) {
+            SampleUtil_Print("%s     +- %-10s = %s\n",
+                spacer, VarName[service][var],
+                tmpdevnode->device.TvService[service].VariableStrVal[var]);
+        }
+    }
+    return 0;
+}
+
+
+
 /********************************************************************************
  * TvCtrlPointPrintDevice
  *
@@ -574,12 +645,11 @@ int TvCtrlPointPrintDevice(int devnum)
 {
 	struct TvDeviceNode *tmpdevnode;
 	int i = 0, service, var;
-	char spacer[15];
+
 
 	if (devnum <= 0) {
 		SampleUtil_Print("Error in TvCtrlPointPrintDevice: "
-				 "invalid devnum = %d\n",
-			devnum);
+				 "invalid devnum = %d\n", devnum);
 		return TV_ERROR;
 	}
 
@@ -594,61 +664,12 @@ int TvCtrlPointPrintDevice(int devnum)
 		tmpdevnode = tmpdevnode->next;
 	}
 	if (!tmpdevnode) {
-		SampleUtil_Print(
-			"Error in TvCtrlPointPrintDevice: "
+		SampleUtil_Print("Error in TvCtrlPointPrintDevice: "
 			"invalid devnum = %d  --  actual device count = %d\n",
-			devnum,
-			i);
+			devnum,	i);
 	} else {
-		SampleUtil_Print("  TvDevice -- %d\n"
-				 "    |                  \n"
-				 "    +- UDN        = %s\n"
-				 "    +- DescDocURL     = %s\n"
-				 "    +- FriendlyName   = %s\n"
-				 "    +- PresURL        = %s\n"
-				 "    +- Adver. TimeOut = %d\n",
-			devnum,
-			tmpdevnode->device.UDN,
-			tmpdevnode->device.DescDocURL,
-			tmpdevnode->device.FriendlyName,
-			tmpdevnode->device.PresURL,
-			tmpdevnode->device.AdvrTimeOut);
-		for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
-			if (service < TV_SERVICE_SERVCOUNT - 1)
-				sprintf(spacer, "    |    ");
-			else
-				sprintf(spacer, "         ");
-			SampleUtil_Print("    |                  \n"
-					 "    +- Tv %s Service\n"
-					 "%s+- ServiceId       = %s\n"
-					 "%s+- ServiceType     = %s\n"
-					 "%s+- EventURL        = %s\n"
-					 "%s+- ControlURL      = %s\n"
-					 "%s+- SID             = %s\n"
-					 "%s+- ServiceStateTable\n",
-				TvServiceName[service],
-				spacer,
-				tmpdevnode->device.TvService[service].ServiceId,
-				spacer,
-				tmpdevnode->device.TvService[service]
-					.ServiceType,
-				spacer,
-				tmpdevnode->device.TvService[service].EventURL,
-				spacer,
-				tmpdevnode->device.TvService[service]
-					.ControlURL,
-				spacer,
-				tmpdevnode->device.TvService[service].SID,
-				spacer);
-			for (var = 0; var < TvVarCount[service]; var++) {
-				SampleUtil_Print("%s     +- %-10s = %s\n",
-					spacer,
-					TvVarName[service][var],
-					tmpdevnode->device.TvService[service]
-						.VariableStrVal[var]);
-			}
-		}
-	}
+        TvCtrlPointPrintDeviceNode(tmpdevnode);
+    }
 	SampleUtil_Print("\n");
 	ithread_mutex_unlock(&DeviceListMutex);
 
@@ -664,6 +685,7 @@ int TvCtrlPointAddDeviceTv(IXML_Document * DescDoc, const char *UDN,
 	char *relURL = NULL;
     char *presURL = NULL;
 	struct TvDeviceNode *deviceNode = NULL;
+    char* deviceType = SampleUtil_GetFirstDocumentItem(DescDoc, "deviceType");    
 	friendlyName = SampleUtil_GetFirstDocumentItem(DescDoc, "friendlyName");
 	baseURL = SampleUtil_GetFirstDocumentItem(DescDoc, "URLBase");
 	relURL = SampleUtil_GetFirstDocumentItem(DescDoc, "presentationURL");
@@ -677,6 +699,7 @@ int TvCtrlPointAddDeviceTv(IXML_Document * DescDoc, const char *UDN,
     /* Create a new device node */
     deviceNode = (struct TvDeviceNode *)malloc(sizeof(struct TvDeviceNode));
     strcpy(deviceNode->device.UDN, UDN);
+    strcpy(deviceNode->device.DeviceType, deviceType);
     strcpy(deviceNode->device.DescDocURL, location);
     strcpy(deviceNode->device.FriendlyName, friendlyName);
     strcpy(deviceNode->device.PresURL, presURL);
@@ -684,6 +707,8 @@ int TvCtrlPointAddDeviceTv(IXML_Document * DescDoc, const char *UDN,
 	*device = deviceNode;
 	if (friendlyName)
 		free(friendlyName);
+	if (deviceType)
+		free(deviceType);    
 	if (baseURL)
 		free(baseURL);
 	if (relURL)
@@ -753,7 +778,7 @@ int TvCtrlPointAddDeviceTvSrv(IXML_Document * DescDoc,
 		GlobalDeviceList = deviceNode;
 	}
 	/*Notify New Device Added */
-	SampleUtil_StateUpdate(NULL,NULL,deviceNode->device.UDN,	DEVICE_ADDED);
+	SampleUtil_StateUpdate(NULL,NULL,deviceNode->device.UDN, DEVICE_ADDED);
 	
 	for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
 		if (serviceId[service])
@@ -772,6 +797,7 @@ int TvCtrlPointAddDeviceDu(IXML_Document * DescDoc, const char *UDN,
 	int ret = UPNP_E_SUCCESS;
 	char *friendlyName = NULL;
 	struct TvDeviceNode *deviceNode = NULL;
+    char* deviceType = SampleUtil_GetFirstDocumentItem(DescDoc, "deviceType");
 	friendlyName = SampleUtil_GetFirstDocumentItem(DescDoc, "friendlyName");
 
     SampleUtilPrintf(UPNP_INFO, "friendlyName:%s\n", friendlyName);
@@ -780,12 +806,15 @@ int TvCtrlPointAddDeviceDu(IXML_Document * DescDoc, const char *UDN,
     deviceNode = (struct TvDeviceNode *)malloc(sizeof(struct TvDeviceNode));
     memset(deviceNode, 0, sizeof(struct TvDeviceNode));
     strcpy(deviceNode->device.UDN, UDN);
+    strcpy(deviceNode->device.DeviceType, deviceType);
     strcpy(deviceNode->device.DescDocURL, location);
     strcpy(deviceNode->device.FriendlyName, friendlyName);
     deviceNode->device.AdvrTimeOut = expires;
 	*device = deviceNode;
 	if (friendlyName)
 		free(friendlyName);
+	if (deviceType)
+		free(deviceType);
 
     return ret;
 }
@@ -830,7 +859,7 @@ int TvCtrlPointAddDeviceDuSrv(IXML_Document * DescDoc,
 		strcpy(deviceNode->device.TvService[service].ControlURL, controlURL[service]);
 		strcpy(deviceNode->device.TvService[service].EventURL, eventURL[service]);
 		strcpy(deviceNode->device.TvService[service].SID, eventSID[service]);
-		for (var = 0; var < TvVarCount[service]; var++) {
+		for (var = 0; var < DuVarCount[service]; var++) {
 			deviceNode->device.TvService[service].VariableStrVal[var] =	(char *)malloc(TV_MAX_VAL_LEN);
 			strcpy(deviceNode->device.TvService[service].VariableStrVal[var],"");
 		}
@@ -946,6 +975,23 @@ void TvCtrlPointAddDevice(
     return UPNP_E_SUCCESS;
 }
 
+char *GetDeviceType(char *UDN)
+{
+    char *devType = NULL;
+
+	struct TvDeviceNode *tmpdevnode;
+	/* Check if this device is already in the list */
+	tmpdevnode = GlobalDeviceList;
+	while (tmpdevnode) {
+		if (strcmp(tmpdevnode->device.UDN, UDN) == 0) {
+			devType = tmpdevnode->device.DeviceType;
+			break;
+		}
+		tmpdevnode = tmpdevnode->next;
+	}
+    return devType;
+}
+
 void TvStateUpdate(
 	char *UDN, int Service, IXML_Document *ChangedVariables, char **State)
 {
@@ -958,12 +1004,20 @@ void TvStateUpdate(
 	long unsigned int i;
 	int j;
 	char *tmpstate = NULL;
-	(void)UDN;
+    char *VarCount = NULL;
+	const char *VarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = { 0 };
+    char *devType = GetDeviceType(UDN);
+    if (devType && strcmp(DuDeviceType, devType, strlen(devType) == 0)) {
+        VarCount = DuVarCount;
+        memcpy(VarName, DuVarName, sizeof(VarName));
+    } else {
+        VarCount = TvVarCount;
+        memcpy(VarName, TvVarName, sizeof(VarName));
+    }
 
 	SampleUtilPrint("Tv State Update (service %d):\n", Service);
 	/* Find all of the e:property tags in the document */
-	properties = ixmlDocument_getElementsByTagName(
-		ChangedVariables, "e:property");
+	properties = ixmlDocument_getElementsByTagName(ChangedVariables, "e:property");
 	if (properties) {
 		length = ixmlNodeList_length(properties);
 		for (i = 0; i < length; i++) {
@@ -972,8 +1026,8 @@ void TvStateUpdate(
 				properties, i);
 			/* For each variable name in the state table,
 			 * check if this is a corresponding property change */
-			for (j = 0; j < TvVarCount[Service]; j++) {
-				variables = ixmlElement_getElementsByTagName(property, TvVarName[Service][j]);
+			for (j = 0; j < VarCount[Service]; j++) {
+				variables = ixmlElement_getElementsByTagName(property, VarName[Service][j]);
 				/* If a match is found, extract
 				 * the value, and update the state table */
 				if (variables) {
@@ -984,7 +1038,7 @@ void TvStateUpdate(
 						if (tmpstate) {
 							strcpy(State[j], tmpstate);
 							SampleUtilPrint(" Variable Name: %s New Value:'%s'\n",
-								TvVarName[Service][j],	State[j]);
+								VarName[Service][j],	State[j]);
 						}
 						if (tmpstate)
 							free(tmpstate);
@@ -1023,11 +1077,12 @@ void TvCtrlPointHandleEvent(
 
 	tmpdevnode = GlobalDeviceList;
 	while (tmpdevnode) {
-		for (service = 0; service < TV_SERVICE_SERVCOUNT; ++service) {
-			if (strcmp(tmpdevnode->device.TvService[service].SID,
-				    sid) == 0) {
+		for (service = 0; service < DU_SERVICE_SERVCOUNT; ++service) {
+			if (strcmp(tmpdevnode->device.TvService[service].SID, sid) == 0) {
 				SampleUtilPrint("Received Tv %s Event: %d for SID %s\n",
 					TvServiceName[service],	evntkey, sid);
+                SampleUtilPrint("Received Du %s Event: %d for SID %s\n",
+					DuServiceName[service],	evntkey, sid);
 				TvStateUpdate(tmpdevnode->device.UDN, service, changes,
 					(char **)&tmpdevnode->device.TvService[service].VariableStrVal);
 				break;
@@ -1064,10 +1119,12 @@ void TvCtrlPointHandleSubscribeUpdate(
 
 	tmpdevnode = GlobalDeviceList;
 	while (tmpdevnode) {
-		for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
+		for (service = 0; service < DU_SERVICE_SERVCOUNT; service++) {
 			if (strcmp(tmpdevnode->device.TvService[service].EventURL, eventURL) == 0) {
 				SampleUtilPrint("Received Tv %s Event Renewal for eventURL %s\n",
 					TvServiceName[service],	eventURL);
+				SampleUtilPrint("Received Du %s Event Renewal for eventURL %s\n",
+					DuServiceName[service],	eventURL);
 				strcpy(tmpdevnode->device.TvService[service].SID, sid);
 				break;
 			}
@@ -1600,8 +1657,7 @@ int TvCtrlPointProcessCommand(char *cmdline)
 		break;
 	case SETLOG:
 		/* re-parse commandline since second arg is string. */
-		validargs = sscanf(cmdline, "%s %d %d %d",
-		    cmd, &devnum, &arg1, &arg2);
+		validargs = sscanf(cmdline, "%s %d %d %d", cmd, &devnum, &arg1, &arg2);
 		if (validargs == 4)
 			TvCtrlPointSendSetLog(devnum, arg1, arg2);
 		else
@@ -1623,12 +1679,7 @@ int TvCtrlPointProcessCommand(char *cmdline)
 		/* re-parse commandline since second arg is string. */
 		validargs = sscanf(cmdline, "%s %d %s", cmd, &arg1, strarg);
 		if (validargs == 3)
-			TvCtrlPointSendAction(TV_SERVICE_CONTROL,
-				arg1,
-				strarg,
-				NULL,
-				NULL,
-				0);
+			TvCtrlPointSendAction(TV_SERVICE_CONTROL, arg1, strarg, NULL, NULL, 0);
 		else
 			invalidargs++;
 		break;
@@ -1636,12 +1687,7 @@ int TvCtrlPointProcessCommand(char *cmdline)
 		/* re-parse commandline since second arg is string. */
 		validargs = sscanf(cmdline, "%s %d %s", cmd, &arg1, strarg);
 		if (validargs == 3)
-			TvCtrlPointSendAction(TV_SERVICE_PICTURE,
-				arg1,
-				strarg,
-				NULL,
-				NULL,
-				0);
+			TvCtrlPointSendAction(TV_SERVICE_PICTURE, arg1, strarg, NULL, NULL, 0);
 		else
 			invalidargs++;
 		break;
