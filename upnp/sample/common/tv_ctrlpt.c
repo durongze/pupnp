@@ -574,7 +574,7 @@ int TvCtrlPointPrintDeviceNode(struct TvDeviceNode *tmpdevnode)
     const char **ServiceName;
 	const char *VarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = { 0 };
     char* devType = tmpdevnode->device.DeviceType;
-    if (devType && strcmp(DuDeviceType, devType, strlen(devType) == 0)) {
+    if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0) {
         VarCount = DuVarCount;
         memcpy(VarName, DuVarName, sizeof(VarName));
         ServiceName = DuServiceName;
@@ -1007,7 +1007,7 @@ void TvStateUpdate(
     char *VarCount = NULL;
 	const char *VarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = { 0 };
     char *devType = GetDeviceType(UDN);
-    if (devType && strcmp(DuDeviceType, devType, strlen(devType) == 0)) {
+    if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0) {
         VarCount = DuVarCount;
         memcpy(VarName, DuVarName, sizeof(VarName));
     } else {
