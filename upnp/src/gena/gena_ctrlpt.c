@@ -86,10 +86,7 @@ static void GenaAutoRenewSubscription(
 	} else {
 		GenaPrintf(UPNP_INFO, "GENA AUTO RENEW");
 		timeout = UpnpEventSubscribe_get_TimeOut(sub_struct);
-		errCode = genaRenewSubscription(
-			event->handle,
-			UpnpEventSubscribe_get_SID(sub_struct),
-			&timeout);
+		errCode = genaRenewSubscription(event->handle, UpnpEventSubscribe_get_SID(sub_struct), &timeout);
 		UpnpEventSubscribe_set_ErrCode(sub_struct, errCode);
 		UpnpEventSubscribe_set_TimeOut(sub_struct, timeout);
 		if (errCode != UPNP_E_SUCCESS &&
@@ -298,8 +295,7 @@ static int gena_subscribe(
 		memset(timeout_str, 0, sizeof(timeout_str));
 		strncpy(timeout_str, "infinite", sizeof(timeout_str) - 1);
 	} else if(*timeout < CP_MINIMUM_SUBSCRIPTION_TIME) {
-		rc = snprintf(timeout_str, sizeof(timeout_str),
-			"%d", CP_MINIMUM_SUBSCRIPTION_TIME);
+		rc = snprintf(timeout_str, sizeof(timeout_str), "%d", CP_MINIMUM_SUBSCRIPTION_TIME);
 	} else {
 		rc = snprintf(timeout_str, sizeof(timeout_str), "%d", *timeout);
 	}
@@ -307,10 +303,7 @@ static int gena_subscribe(
 		return UPNP_E_OUTOF_MEMORY;
 
 	/* parse url */
-	return_code = http_FixStrUrl(
-		UpnpString_get_String(url),
-		UpnpString_get_Length(url),
-		&dest_url);
+	return_code = http_FixStrUrl(UpnpString_get_String(url),UpnpString_get_Length(url),	&dest_url);
 	if (return_code != 0) {
 		return return_code;
 	}
@@ -320,34 +313,20 @@ static int gena_subscribe(
 	request.size_inc = 30;
 	if (renewal_sid) {
 		/* renew subscription */
-		return_code = http_MakeMessage(
-			&request, 1, 1,
-			"q" "ssc" "sscc",
-			HTTPMETHOD_SUBSCRIBE, &dest_url,
-			"SID: ", UpnpString_get_String(renewal_sid),
-			"TIMEOUT: Second-", timeout_str );
+		return_code = http_MakeMessage(&request, 1, 1, "q" "ssc" "sscc", HTTPMETHOD_SUBSCRIBE,
+		    &dest_url, "SID: ", UpnpString_get_String(renewal_sid),	"TIMEOUT: Second-", timeout_str);
 	} else {
 		/* subscribe */
 		if (dest_url.hostport.IPaddress.ss_family == AF_INET6) {
 			struct sockaddr_in6* DestAddr6 = (struct sockaddr_in6*)&dest_url.hostport.IPaddress;
-			return_code = http_MakeMessage(
-				&request, 1, 1,
-				"q" "sssdsc" "sc" "sscc",
-				HTTPMETHOD_SUBSCRIBE, &dest_url,
-				"CALLBACK: <http://[",
-				(IN6_IS_ADDR_LINKLOCAL(&DestAddr6->sin6_addr) || strlen(gIF_IPV6_ULA_GUA) == 0) ?
-					gIF_IPV6 : gIF_IPV6_ULA_GUA,
-				"]:", LOCAL_PORT_V6, "/>",
-				"NT: upnp:event",
-				"TIMEOUT: Second-", timeout_str);
+			return_code = http_MakeMessage(&request, 1, 1, "q" "sssdsc" "sc" "sscc", HTTPMETHOD_SUBSCRIBE,
+                &dest_url, "CALLBACK: <http://[", (IN6_IS_ADDR_LINKLOCAL(&DestAddr6->sin6_addr) ||
+                strlen(gIF_IPV6_ULA_GUA) == 0) ? gIF_IPV6 : gIF_IPV6_ULA_GUA, "]:", LOCAL_PORT_V6, "/>",
+				"NT: upnp:event", "TIMEOUT: Second-", timeout_str);
 		} else {
-			return_code = http_MakeMessage(
-				&request, 1, 1,
-				"q" "sssdsc" "sc" "sscc",
-				HTTPMETHOD_SUBSCRIBE, &dest_url,
-				"CALLBACK: <http://", gIF_IPV4, ":", LOCAL_PORT_V4, "/>",
-				"NT: upnp:event",
-				"TIMEOUT: Second-", timeout_str);
+			return_code = http_MakeMessage(&request, 1, 1, "q" "sssdsc" "sc" "sscc", HTTPMETHOD_SUBSCRIBE,
+                &dest_url, "CALLBACK: <http://", gIF_IPV4, ":", LOCAL_PORT_V4, "/>",
+				"NT: upnp:event", "TIMEOUT: Second-", timeout_str);
 		}
 	}
 	if (return_code != 0) {
@@ -355,11 +334,8 @@ static int gena_subscribe(
 	}
 
 	/* send request and get reply */
-	return_code = http_RequestAndResponse(&dest_url, request.buf,
-		request.length,
-		HTTPMETHOD_SUBSCRIBE,
-		HTTP_DEFAULT_TIMEOUT,
-		&response);
+	return_code = http_RequestAndResponse(&dest_url, request.buf, request.length,
+		HTTPMETHOD_SUBSCRIBE, HTTP_DEFAULT_TIMEOUT,	&response);
 	membuffer_destroy(&request);
 
 	if (return_code != 0) {
@@ -369,7 +345,7 @@ static int gena_subscribe(
 	}
 	if (response.msg.status_code != HTTP_OK) {
 		httpmsg_destroy(&response.msg);
-
+        GenaPrintf(UPNP_ERROR, "msg.status_code:%d", response.msg.status_code);
 		return UPNP_E_SUBSCRIBE_UNACCEPTED;
 	}
 
