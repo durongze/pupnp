@@ -198,9 +198,6 @@ typedef void (*state_update)(
 	/*! [in] . */
 	eventType type);
 
-/*! global state update function used by smaple util */
-extern state_update gStateUpdateFun;
-
 /*!
  * \brief Initializes the sample util. Must be called before any sample util
  * functions. May be called multiple times.

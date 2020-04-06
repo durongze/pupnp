@@ -65,17 +65,18 @@ extern "C" {
 struct tv_service {
     char ServiceId[NAME_SIZE];
     char ServiceType[NAME_SIZE];
-    char *VariableStrVal[TV_MAXVARS];
+    char *VariableStrVal[DU_MAXVARS];
     char EventURL[NAME_SIZE];
     char ControlURL[NAME_SIZE];
     char SID[NAME_SIZE];
 };
 
 struct TvDevice {
-    char UDN[250];
-    char DescDocURL[250];
-    char FriendlyName[250];
-    char PresURL[250];
+    char UDN[NAME_SIZE];
+    char DescDocURL[NAME_SIZE];
+    char FriendlyName[NAME_SIZE];
+    char PresURL[NAME_SIZE];
+    char DeviceType[NAME_SIZE];
     int  AdvrTimeOut;
     struct tv_service TvService[DU_SERVICE_SERVCOUNT];
 };

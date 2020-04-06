@@ -37,6 +37,19 @@
 #include <string.h>
 #include "upnpdebug.h"
 
+void DevStateUpdate(
+	/*! [in] . */
+	const char *varName,
+	/*! [in] . */
+	const char *varValue,
+	/*! [in] . */
+	const char *UDN,
+	/*! [in] . */
+	eventType type)
+{
+    SampleUtilPrint("%s [%s:%s] type:%d\n", UDN, varName, varValue, type);
+}
+
 int main(int argc, char **argv)
 {
 	(void)argc;
@@ -51,7 +64,7 @@ int main(int argc, char **argv)
 	int code;
 	UpnpSetLogLevel(UPNP_TRACE);
 	UpnpSetLogFileNames("tv_ctrlpt.txt", "");
-	rc = TvCtrlPointStart(linux_print, NULL, 0);
+	rc = TvCtrlPointStart(linux_print, DevStateUpdate, 0);
 	if (rc != TV_SUCCESS) {
 		SampleUtil_Print("Error starting UPnP TV Control Point\n");
 		return rc;

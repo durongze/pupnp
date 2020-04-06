@@ -673,15 +673,13 @@ int http_RequestAndResponse(uri_type *destination,
 		goto end_function;
 	}
 	/* send request */
-	ret_code = http_SendMessage(
-		&info, &timeout_secs, "b", request, request_length);
+	ret_code = http_SendMessage(&info, &timeout_secs, "b", request, request_length);
 	if (ret_code != 0) {
 		parser_response_init(response, req_method);
 		goto end_function;
 	}
 	/* recv response */
-	ret_code = http_RecvMessage(
-		&info, response, req_method, &timeout_secs, &http_error_code);
+	ret_code = http_RecvMessage(&info, response, req_method, &timeout_secs, &http_error_code);
 
 end_function:
 	/* should shutdown completely */

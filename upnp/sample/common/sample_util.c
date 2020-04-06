@@ -472,12 +472,10 @@ int SampleUtil_PrintEventReceived(const void *Event)
     UpnpEvent *e_event = (UpnpEvent *)Event;
     char *xmlbuff = NULL;
     
-    xmlbuff = ixmlPrintNode(
-        (IXML_Node *)UpnpEvent_get_ChangedVariables(e_event));
+    xmlbuff = ixmlPrintNode((IXML_Node *)UpnpEvent_get_ChangedVariables(e_event));
     SampleUtilPrint("SID         =  %s\n""EventKey    =  %d\n""ChangedVars =  %s\n",
         UpnpString_get_String(UpnpEvent_get_SID(e_event)),
-        UpnpEvent_get_EventKey(e_event),
-        xmlbuff);
+        UpnpEvent_get_EventKey(e_event), xmlbuff);
     ixmlFreeDOMString(xmlbuff);
     return 0;
 }

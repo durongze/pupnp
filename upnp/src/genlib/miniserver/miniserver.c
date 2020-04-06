@@ -138,7 +138,7 @@ static int dispatch_request(
 	case HTTPMETHOD_SUBSCRIBE:
 	case HTTPMETHOD_UNSUBSCRIBE:
 		MservPrintf(UPNP_INFO, "socket %d: got GENA msg\n", info->socket);
-			callback = gGenaCallback;
+		callback = gGenaCallback;
 		break;
 	/* HTTP server call */
 	case HTTPMETHOD_GET:
