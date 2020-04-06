@@ -731,9 +731,13 @@ int TvCtrlPointAddDeviceTvSrv(IXML_Document * DescDoc,
 	int service;
 	int ret = 1;
 	int var;
- 
-	for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
-		if (SampleUtil_FindAndParseService(DescDoc, location, TvServiceType[service],
+
+    const char **ServiceType = TvServiceType; 
+    char *VarCount = TvVarCount;
+    int ServiceNum = TV_SERVICE_SERVCOUNT;
+
+	for (service = 0; service < ServiceNum; service++) {
+		if (SampleUtil_FindAndParseService(DescDoc, location, ServiceType[service],
 				&serviceId[service], &eventURL[service], &controlURL[service])) {
 			SampleUtilPrint("Subscribing to EventURL[%d] %s\n", service, eventURL[service]);
 			ret = UpnpSubscribe(ctrlpt_handle, eventURL[service], &TimeOut[service],eventSID[service]);
@@ -744,21 +748,21 @@ int TvCtrlPointAddDeviceTvSrv(IXML_Document * DescDoc,
 				strcpy(eventSID[service], "");
 			}
 		} else {
-			SampleUtilPrint("Error: Could not find Service: %s\n", TvServiceType[service]);
+			SampleUtilPrint("Error: Could not find Service: %s\n", ServiceType[service]);
 		}
 	}
 
-	for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
+	for (service = 0; service < ServiceNum; service++) {
 		if (serviceId[service] == NULL) {
 			/* not found */
 			continue;
 		}
 		strcpy(deviceNode->device.TvService[service].ServiceId,	serviceId[service]);
-		strcpy(deviceNode->device.TvService[service].ServiceType, TvServiceType[service]);
+		strcpy(deviceNode->device.TvService[service].ServiceType, ServiceType[service]);
 		strcpy(deviceNode->device.TvService[service].ControlURL, controlURL[service]);
 		strcpy(deviceNode->device.TvService[service].EventURL, eventURL[service]);
 		strcpy(deviceNode->device.TvService[service].SID, eventSID[service]);
-		for (var = 0; var < TvVarCount[service]; var++) {
+		for (var = 0; var < VarCount[service]; var++) {
 			deviceNode->device.TvService[service].VariableStrVal[var] =	(char *)malloc(TV_MAX_VAL_LEN);
 			strcpy(deviceNode->device.TvService[service].VariableStrVal[var],"");
 		}
@@ -780,7 +784,7 @@ int TvCtrlPointAddDeviceTvSrv(IXML_Document * DescDoc,
 	/*Notify New Device Added */
 	SampleUtil_StateUpdate(NULL,NULL,deviceNode->device.UDN, DEVICE_ADDED);
 	
-	for (service = 0; service < TV_SERVICE_SERVCOUNT; service++) {
+	for (service = 0; service < ServiceNum; service++) {
 		if (serviceId[service])
 			free(serviceId[service]);
 		if (controlURL[service])
@@ -832,34 +836,39 @@ int TvCtrlPointAddDeviceDuSrv(IXML_Document * DescDoc,
 	int service;
 	int ret = 1;
 	int var;
- 
-	for (service = 0; service < DU_SERVICE_SERVCOUNT; service++) {
-		if (SampleUtil_FindAndParseService(DescDoc, location, DuServiceType[service],
+    const char **ServiceType = DuServiceType; 
+    char *VarCount = DuVarCount;
+    int ServiceNum = DU_SERVICE_SERVCOUNT;
+	for (service = 0; service < ServiceNum; service++) {
+		if (SampleUtil_FindAndParseService(DescDoc, location, ServiceType[service],
 				&serviceId[service], &eventURL[service], &controlURL[service])) {
 			SampleUtilPrint("Subscribing to EventURL[%d] %s\n", service, eventURL[service]);
 			ret = UpnpSubscribe(ctrlpt_handle, eventURL[service], &TimeOut[service],eventSID[service]);
 			if (ret == UPNP_E_SUCCESS) {
 				SampleUtilPrint("Subscribed to EventURL with SID=%s\n",	eventSID[service]);
 			} else {
-				SampleUtilPrint("Error Subscribing to EventURL %d\n", ret);
+				SampleUtilPrintf(UPNP_ERROR,"Subscribing to EventURL %d\n", ret);
 				strcpy(eventSID[service], "");
 			}
 		} else {
-			SampleUtilPrint("Error: Could not find Service: %s\n", DuServiceType[service]);
+			SampleUtilPrintf(UPNP_ERROR,"Could not find Service: %s\n", ServiceType[service]);
+            char *buf = ixmlDocumenttoString(DescDoc);
+            SampleUtilPrintf(UPNP_ERROR, "%s", buf);
+    		ixmlFreeDOMString(buf);
 		}
 	}
 
-	for (service = 0; service < DU_SERVICE_SERVCOUNT; service++) {
+	for (service = 0; service < ServiceNum; service++) {
 		if (serviceId[service] == NULL) {
 			/* not found */
 			continue;
 		}
 		strcpy(deviceNode->device.TvService[service].ServiceId,	serviceId[service]);
-		strcpy(deviceNode->device.TvService[service].ServiceType, DuServiceType[service]);
+		strcpy(deviceNode->device.TvService[service].ServiceType, ServiceType[service]);
 		strcpy(deviceNode->device.TvService[service].ControlURL, controlURL[service]);
 		strcpy(deviceNode->device.TvService[service].EventURL, eventURL[service]);
 		strcpy(deviceNode->device.TvService[service].SID, eventSID[service]);
-		for (var = 0; var < DuVarCount[service]; var++) {
+		for (var = 0; var < VarCount[service]; var++) {
 			deviceNode->device.TvService[service].VariableStrVal[var] =	(char *)malloc(TV_MAX_VAL_LEN);
 			strcpy(deviceNode->device.TvService[service].VariableStrVal[var],"");
 		}
@@ -881,7 +890,7 @@ int TvCtrlPointAddDeviceDuSrv(IXML_Document * DescDoc,
 	/*Notify New Device Added */
 	SampleUtil_StateUpdate(NULL,NULL,deviceNode->device.UDN, DEVICE_ADDED);
 	
-	for (service = 0; service < DU_SERVICE_SERVCOUNT; service++) {
+	for (service = 0; service < ServiceNum; service++) {
 		if (serviceId[service])
 			free(serviceId[service]);
 		if (controlURL[service])

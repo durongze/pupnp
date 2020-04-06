@@ -2019,33 +2019,25 @@ parser_parse( http_parser_t * parser )
     assert( parser != NULL );
 
     do {
-	switch ( parser->position ) {
-	    case POS_ENTITY:
-		status = parser_parse_entity( parser );
-
-		break;
-
-	    case POS_HEADERS:
-		status = parser_parse_headers( parser );
-
-		break;
-
-	    case POS_REQUEST_LINE:
-		status = parser_parse_requestline( parser );
-
-		break;
-
-	    case POS_RESPONSE_LINE:
-		status = parser_parse_responseline( parser );
-
-		break;
-
-	    default:
-		{
-		    status = PARSE_FAILURE;
-		    assert( 0 );
-		}
-	}
+    	switch ( parser->position ) {
+    	    case POS_ENTITY:
+    		status = parser_parse_entity( parser );
+    		break;
+    	    case POS_HEADERS:
+    		status = parser_parse_headers( parser );
+    		break;
+    	    case POS_REQUEST_LINE:
+    		status = parser_parse_requestline( parser );
+    		break;
+    	    case POS_RESPONSE_LINE:
+    		status = parser_parse_responseline( parser );
+    		break;
+    	    default:
+    		{
+    		    status = PARSE_FAILURE;
+    		    assert( 0 );
+    		}
+    	}
 
     } while( status == ( parse_status_t ) PARSE_OK );
 
