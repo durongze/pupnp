@@ -1987,7 +1987,7 @@ int UpnpSubscribe(UpnpClient_Handle Hnd,
 
 exit_function:
 	if (retVal != UPNP_E_SUCCESS) {
-    	UpnpPrintf(UPNP_ERROR, API, "EvtUrl %s, Exiting retVal=%d\n", EvtUrl, retVal);
+    	UpnpPrintf(UPNP_ERROR, API, "EvtUrl:%s,SubsId:%s,ret:%d\n", EvtUrl_const, SubsId, retVal);
     }
 	UpnpString_delete(SubsIdTmp);
 	UpnpString_delete(EvtUrl);
@@ -2034,8 +2034,7 @@ int UpnpUnSubscribe(UpnpClient_Handle Hnd, const Upnp_SID SubsId)
 	retVal = genaUnSubscribe(Hnd, SubsIdTmp);
 
 exit_function:
-	UpnpPrintf(UPNP_ALL, API, "Exiting retVal=%d\n",
-		retVal);
+	UpnpPrintf(UPNP_ALL, API, "Exiting retVal=%d\n", retVal);
 
 	UpnpString_delete(SubsIdTmp);
 
@@ -2154,9 +2153,9 @@ int UpnpRenewSubscription(
 	retVal = genaRenewSubscription(Hnd, SubsIdTmp, TimeOut);
 
 exit_function:
-	UpnpPrintf(UPNP_ALL, API, "Exiting retVal=%d\n",
-		retVal);
-
+    if (retVal != UPNP_E_SUCCESS) {
+	    UpnpPrintf(UPNP_ERROR, API, "SubsId:%x, Exiting retVal=%d\n", SubsId, retVal);
+    }
 	UpnpString_delete(SubsIdTmp);
 
 	return retVal;

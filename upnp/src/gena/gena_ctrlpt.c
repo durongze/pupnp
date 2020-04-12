@@ -345,7 +345,7 @@ static int gena_subscribe(
 	}
 	if (response.msg.status_code != HTTP_OK) {
 		httpmsg_destroy(&response.msg);
-        GenaPrintf(UPNP_ERROR, "msg.status_code:%d", response.msg.status_code);
+        GenaPrintf(UPNP_ERROR, "msg.status_code:%d\n", response.msg.status_code);
 		return UPNP_E_SUBSCRIBE_UNACCEPTED;
 	}
 

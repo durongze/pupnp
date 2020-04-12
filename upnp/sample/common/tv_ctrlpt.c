@@ -526,8 +526,7 @@ int TvCtrlPointGetDevice(int devnum, struct TvDeviceNode **devnode)
 		tmpdevnode = tmpdevnode->next;
 	}
 	if (!tmpdevnode) {
-		SampleUtilPrint(
-			"Error finding TvDevice number -- %d\n", devnum);
+		SampleUtilPrintf(UPNP_ERROR, "finding TvDev num %d\n", devnum);
 		return TV_ERROR;
 	}
 	*devnode = tmpdevnode;
@@ -842,7 +841,7 @@ int TvCtrlPointAddDeviceDuSrv(IXML_Document * DescDoc,
 	for (service = 0; service < ServiceNum; service++) {
 		if (SampleUtil_FindAndParseService(DescDoc, location, ServiceType[service],
 				&serviceId[service], &eventURL[service], &controlURL[service])) {
-			SampleUtilPrint("Subscribing to EventURL[%d] %s\n", service, eventURL[service]);
+			SampleUtilPrint("Subscribing to EventURL[%d]: %s\n", service, eventURL[service]);
 			ret = UpnpSubscribe(ctrlpt_handle, eventURL[service], &TimeOut[service],eventSID[service]);
 			if (ret == UPNP_E_SUCCESS) {
 				SampleUtilPrint("Subscribed to EventURL with SID=%s\n",	eventSID[service]);
@@ -1001,18 +1000,47 @@ char *GetDeviceType(char *UDN)
     return devType;
 }
 
+void TvGetValueByVarName(char *UDN, IXML_Element *property, const char *VarName, char *State)
+{
+	IXML_NodeList *variables;
+	long unsigned int length1;
+	IXML_Element *variable;
+	char *tmpstate = NULL;
+
+    variables = ixmlElement_getElementsByTagName(property, VarName);
+    /* If a match is found, extract
+     * the value, and update the state table */
+    if (variables == NULL) { 
+        char *xmlbuff = ixmlPrintNode(property ? &property->n : NULL);
+        if (xmlbuff) free(xmlbuff);
+        return;
+    }
+    length1 = ixmlNodeList_length(variables);
+    if (length1 == NULL) {
+        return;
+    }
+    variable = (IXML_Element *)ixmlNodeList_item(variables, 0);
+    tmpstate = SampleUtil_GetElementValue(variable);
+    if (tmpstate) {
+        strcpy(State, tmpstate);
+        SampleUtilPrint("Variable:%s Value:'%s'\n", VarName, State);
+        free(tmpstate);
+        tmpstate = NULL;
+    }
+
+    ixmlNodeList_free(variables);
+    variables = NULL;
+    return;
+}
+
 void TvStateUpdate(
 	char *UDN, int Service, IXML_Document *ChangedVariables, char **State)
 {
 	IXML_NodeList *properties;
-	IXML_NodeList *variables;
 	IXML_Element *property;
-	IXML_Element *variable;
 	long unsigned int length;
-	long unsigned int length1;
 	long unsigned int i;
 	int j;
-	char *tmpstate = NULL;
     char *VarCount = NULL;
 	const char *VarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = { 0 };
     char *devType = GetDeviceType(UDN);
@@ -1027,39 +1055,21 @@ void TvStateUpdate(
 	SampleUtilPrint("Tv State Update (service %d):\n", Service);
 	/* Find all of the e:property tags in the document */
 	properties = ixmlDocument_getElementsByTagName(ChangedVariables, "e:property");
-	if (properties) {
-		length = ixmlNodeList_length(properties);
-		for (i = 0; i < length; i++) {
-			/* Loop through each property change found */
-			property = (IXML_Element *)ixmlNodeList_item(
-				properties, i);
-			/* For each variable name in the state table,
-			 * check if this is a corresponding property change */
-			for (j = 0; j < VarCount[Service]; j++) {
-				variables = ixmlElement_getElementsByTagName(property, VarName[Service][j]);
-				/* If a match is found, extract
-				 * the value, and update the state table */
-				if (variables) {
-					length1 = ixmlNodeList_length(variables);
-					if (length1) {
-						variable = (IXML_Element *)ixmlNodeList_item(variables, 0);
-						tmpstate = SampleUtil_GetElementValue(variable);
-						if (tmpstate) {
-							strcpy(State[j], tmpstate);
-							SampleUtilPrint(" Variable Name: %s New Value:'%s'\n",
-								VarName[Service][j],	State[j]);
-						}
-						if (tmpstate)
-							free(tmpstate);
-						tmpstate = NULL;
-					}
-					ixmlNodeList_free(variables);
-					variables = NULL;
-				}
-			}
+	if (properties == NULL) {
+        return;
+    }
+	length = ixmlNodeList_length(properties);
+	for (i = 0; i < length; i++) {
+		/* Loop through each property change found */
+		property = (IXML_Element *)ixmlNodeList_item(properties, i);
+		/* For each variable name in the state table,
+		 * check if this is a corresponding property change */
+		for (j = 0; j < VarCount[Service]; j++) {
+            TvGetValueByVarName(UDN, property, VarName[Service][j], State[j]);
 		}
-		ixmlNodeList_free(properties);
 	}
+	ixmlNodeList_free(properties);
+
 	return;
 }
 
