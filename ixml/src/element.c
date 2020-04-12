@@ -365,7 +365,7 @@ IXML_NodeList *ixmlElement_getElementsByTagName(
 
 	if (element != NULL && tagName != NULL) {
 		ixmlNode_getElementsByTagName(
-			(IXML_Node *)element, tagName, &returnNodeList);
+			&element->n, tagName, &returnNodeList);
 	}
 	return returnNodeList;
 }

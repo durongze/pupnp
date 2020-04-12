@@ -447,7 +447,8 @@ int SampleUtil_PrintEventVarComplete(const void *Event)
 {
     UpnpStateVarComplete *sv_event = (UpnpStateVarComplete *)Event;
     
-    SampleUtilPrint("ErrCode     =  %d\n""CtrlUrl     =  %s\n""StateVarName=  %s\n""CurrentVal  =  %s\n",
+    SampleUtilPrint("ErrCode     =  %d\n""CtrlUrl     =  %s\n"
+        "StateVarName=  %s\n""CurrentVal  =  %s\n",
         UpnpStateVarComplete_get_ErrCode(sv_event),
         UpnpString_get_String(UpnpStateVarComplete_get_CtrlUrl(sv_event)),
         UpnpString_get_String(UpnpStateVarComplete_get_StateVarName(sv_event)),

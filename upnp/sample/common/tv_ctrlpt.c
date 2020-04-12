@@ -175,8 +175,7 @@ int TvCtrlPointRemoveDevice(const char *UDN)
 
 	curdevnode = GlobalDeviceList;
 	if (!curdevnode) {
-		SampleUtilPrint("WARNING: TvCtrlPointRemoveDevice: Device "
-				 "list empty\n");
+		SampleUtilPrintf(UPNP_ERROR, "TvCtrlPointRemoveDevice: Device list empty\n");
 	} else {
 		if (0 == strcmp(curdevnode->device.UDN, UDN)) {
 			GlobalDeviceList = curdevnode->next;
@@ -1208,7 +1207,7 @@ void TvCtrlPointHandleDiscovery(const void *Event)
     location = UpnpString_get_String(UpnpDiscovery_get_Location(d_event));
     errCode = UpnpDownloadXmlDoc(location, &DescDoc);
     if (errCode != UPNP_E_SUCCESS) {
-        SampleUtilPrintf(UPNP_ERROR, "UpnpDownloadXmlDoc from %s,error:%d\n", location, errCode);
+        SampleUtilPrintf(UPNP_ERROR, "UpnpDownloadXmlDoc from %s, error:%d\n", location, errCode);
     } else {
         TvCtrlPointAddDevice(DescDoc, location, UpnpDiscovery_get_Expires(d_event));
     }
@@ -1253,11 +1252,10 @@ void TvCtrlPointHandleAdvert(const void *Event)
     UpnpDiscovery *d_event = (UpnpDiscovery *)Event;
     int errCode = UpnpDiscovery_get_ErrCode(d_event);
     const char *deviceId = UpnpString_get_String(UpnpDiscovery_get_DeviceID(d_event));
-    
     if (errCode != UPNP_E_SUCCESS) {
         SampleUtilPrintf(UPNP_ERROR, "UpnpDiscovery_get_DeviceID:%d\n", errCode);
     }
-    SampleUtilPrint("Received ByeBye for Device:%s\n", deviceId);
+    SampleUtilPrintf(UPNP_INFO, "Received ByeBye for Device:%s\n", deviceId);
     TvCtrlPointRemoveDevice(deviceId);
     TvCtrlPointPrintList();
     return ;
