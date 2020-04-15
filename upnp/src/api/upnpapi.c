@@ -1987,7 +1987,7 @@ int UpnpSubscribe(UpnpClient_Handle Hnd,
 
 exit_function:
 	if (retVal != UPNP_E_SUCCESS) {
-    	UpnpPrintf(UPNP_ERROR, API, "EvtUrl:%s,SubsId:%s,ret:%d\n", EvtUrl_const, SubsId, retVal);
+    	UpnpPrintf(UPNP_ERROR, API, "EvtUrl:%s,\nSubsId:%s,ret:%d\n", EvtUrl_const, SubsId, retVal);
     }
 	UpnpString_delete(SubsIdTmp);
 	UpnpString_delete(EvtUrl);

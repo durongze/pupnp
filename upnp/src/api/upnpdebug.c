@@ -201,7 +201,7 @@ static void UpnpDisplayFileAndLine(
 	FILE *fp, const char *DbgFunName,
 	int DbgLineNo, Upnp_LogLevel DLevel, Dbg_Module Module)
 {
-	char timebuf[26];
+	char timebuf[64];
 	time_t now = time(NULL);
 	struct tm *timeinfo;
 	char *slev = UpnpGetLevelName(DLevel);

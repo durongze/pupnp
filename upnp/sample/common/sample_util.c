@@ -477,7 +477,9 @@ int SampleUtil_PrintEventReceived(const void *Event)
     SampleUtilPrint("SID         =  %s\n""EventKey    =  %d\n""ChangedVars =  %s\n",
         UpnpString_get_String(UpnpEvent_get_SID(e_event)),
         UpnpEvent_get_EventKey(e_event), xmlbuff);
-    ixmlFreeDOMString(xmlbuff);
+	if (xmlbuff) {
+		ixmlFreeDOMString(xmlbuff);
+	}
     return 0;
 }
 

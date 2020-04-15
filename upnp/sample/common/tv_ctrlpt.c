@@ -567,22 +567,12 @@ int TvCtrlPointPrintDeviceNode(struct TvDeviceNode *tmpdevnode)
 {
 	char spacer[256];
     int service = 0, var = 0;
-    char *VarCount = NULL;
-    int ServiceNum = 0;
-    const char **ServiceName;
-	const char *VarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = { 0 };
     char* devType = tmpdevnode->device.DeviceType;
-    if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0) {
-        VarCount = DuVarCount;
-        memcpy(VarName, DuVarName, sizeof(VarName));
-        ServiceName = DuServiceName;
-        ServiceNum = DU_SERVICE_SERVCOUNT;
-    } else {
-        VarCount = TvVarCount;
-		memcpy(VarName, TvVarName, sizeof(VarName));
-        ServiceName = TvServiceName;
-        ServiceNum = TV_SERVICE_SERVCOUNT;
-    }
+    int SrvNameCnt = DU_SERVICE_SERVCOUNT;
+    char *SrvName[DU_SERVICE_SERVCOUNT];
+	char *VarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = { 0 };
+    char *VarCount = NULL;
+    GetServiceVarByDevType(devType, SrvName, &SrvNameCnt, &VarCount, VarName);
 
     SampleUtil_Print(
              "    |                  \n"
@@ -596,8 +586,8 @@ int TvCtrlPointPrintDeviceNode(struct TvDeviceNode *tmpdevnode)
         tmpdevnode->device.FriendlyName,
         tmpdevnode->device.PresURL,
         tmpdevnode->device.AdvrTimeOut);
-    for (service = 0; service < ServiceNum; service++) {
-        if (service < ServiceNum - 1)
+    for (service = 0; service < SrvNameCnt; service++) {
+        if (service < SrvNameCnt - 1)
             sprintf(spacer, "    |    ");
         else
             sprintf(spacer, "         ");
@@ -609,7 +599,7 @@ int TvCtrlPointPrintDeviceNode(struct TvDeviceNode *tmpdevnode)
                  "%s+- ControlURL      = %s\n"
                  "%s+- SID             = %s\n"
                  "%s+- ServiceStateTable\n",
-            ServiceName[service],
+            SrvName[service],
             spacer, tmpdevnode->device.TvService[service].ServiceId,
             spacer, tmpdevnode->device.TvService[service].ServiceType,
             spacer, tmpdevnode->device.TvService[service].EventURL,
@@ -999,6 +989,31 @@ char *GetDeviceType(char *UDN)
     return devType;
 }
 
+int GetServiceVarByDevType(char *devType, char*SrvName[], int *SrvNameNum,
+    char **VarCount, char(*VarName)[DU_MAXVARS])
+{
+    if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0) {
+        *VarCount = DuVarCount;
+        memcpy(VarName, DuVarName, sizeof(char*) * DU_MAXVARS * (*SrvNameNum));
+        memcpy(SrvName, DuServiceName, sizeof(char*) * (*SrvNameNum));
+        *SrvNameNum = DU_SERVICE_SERVCOUNT;
+    } else {
+        *VarCount = TvVarCount;
+        memcpy(VarName, TvVarName, sizeof(char*) * DU_MAXVARS * (*SrvNameNum));
+        memcpy(SrvName, TvServiceName, sizeof(char*) * (*SrvNameNum));
+        *SrvNameNum = TV_SERVICE_SERVCOUNT;
+    }
+    return 0;
+}
+
+int GetServiceVar(char *UDN, char*SrvName[], int *SrvNameNum,
+    char **VarCount, char (*VarName)[DU_MAXVARS])
+{
+    char *devType = GetDeviceType(UDN);
+    return GetServiceVarByDevType(devType, SrvName, SrvNameNum,
+        VarCount, VarName);
+}
+
 void TvGetValueByVarName(char *UDN, IXML_Element *property, const char *VarName, char *State)
 {
 	IXML_NodeList *variables;
@@ -1032,6 +1047,42 @@ void TvGetValueByVarName(char *UDN, IXML_Element *property, const char *VarName,
     return;
 }
 
+int DuGetValueByVarName(char *UDN, IXML_Element *property, const char *VarName, char *State)
+{
+	IXML_NodeList *variables;
+	long unsigned int length1;
+	IXML_Element *variable;
+    IXML_Element *LastChange;
+    IXML_Element *Event;
+    IXML_Element *InstanceID;
+	char *tmpstate = NULL;
+
+    variables = ixmlElement_getElementsByTagName(property, VarName);
+    /* If a match is found, extract
+     * the value, and update the state table */
+    if (variables == NULL) { 
+        return -1;
+    }
+    length1 = ixmlNodeList_length(variables);
+    if (length1 == 0) {
+        return -2;
+    }
+    variable = (IXML_Element *)ixmlNodeList_item(variables, 0);
+    tmpstate = SampleUtil_GetElementValue(variable);
+    if (tmpstate) {
+        strcpy(State, tmpstate);
+        SampleUtilPrint("Variable %d:%s Value:'%s'\n", length1, VarName, State);
+        free(tmpstate);
+        tmpstate = NULL;
+    } else {
+        SampleUtilPrintf(UPNP_ERROR, "Variable %d:%s\n", length1, VarName);
+    }
+
+    ixmlNodeList_free(variables);
+    variables = NULL;
+    return 0;
+}
+
 void TvStateUpdate(
 	char *UDN, int Service, IXML_Document *ChangedVariables, char **State)
 {
@@ -1040,23 +1091,19 @@ void TvStateUpdate(
 	long unsigned int length;
 	long unsigned int i;
 	int j;
+    int SrvNameCnt = DU_SERVICE_SERVCOUNT;
+    char *SrvName[DU_SERVICE_SERVCOUNT];
+	char *VarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = { 0 };
     char *VarCount = NULL;
-	const char *VarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = { 0 };
-    char *devType = GetDeviceType(UDN);
-    if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0) {
-        VarCount = DuVarCount;
-        memcpy(VarName, DuVarName, sizeof(VarName));
-    } else {
-        VarCount = TvVarCount;
-        memcpy(VarName, TvVarName, sizeof(VarName));
-    }
-
+ 
+    GetServiceVar(UDN, SrvName, &SrvNameCnt, &VarCount, VarName);
 	SampleUtilPrint("Tv State Update (service %d):\n", Service);
 	/* Find all of the e:property tags in the document */
 	properties = ixmlDocument_getElementsByTagName(ChangedVariables, "e:property");
 	if (properties == NULL) {
         return;
     }
+    char *devType = GetDeviceType(UDN);
 	length = ixmlNodeList_length(properties);
 	for (i = 0; i < length; i++) {
 		/* Loop through each property change found */
@@ -1064,7 +1111,11 @@ void TvStateUpdate(
 		/* For each variable name in the state table,
 		 * check if this is a corresponding property change */
 		for (j = 0; j < VarCount[Service]; j++) {
-            TvGetValueByVarName(UDN, property, VarName[Service][j], State[j]);
+            if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0) {
+                DuGetValueByVarName(UDN, property, VarName[Service][j], State[j]);
+            } else {
+                TvGetValueByVarName(UDN, property, VarName[Service][j], State[j]);
+            }
 		}
 	}
 	ixmlNodeList_free(properties);
