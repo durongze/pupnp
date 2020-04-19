@@ -83,14 +83,34 @@ const char *DuVarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = {
 	 "PossibleRecordQualityModes","CurrentTrack",              "TransportStatus",  
 	 "NextAVTransportURIMetaData","PlaybackStorageMedium",     "CurrentTransportActions",
 	 "RecordMediumWriteStatus",   "PossiblePlaybackStorageMedia", "AVTransportURIMetaData",
-	 "NumberOfTracks",            "PossibleRecordStorageMedia",  },
+	 "NumberOfTracks",            "PossibleRecordStorageMedia", NULL,
+ 	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL},
 
-	{"ProtocolInfo",              "ConnectionStatus",          "AVTransportID",
+	{"SourceProtocolInfo",        "SinkProtocolInfo",          "CurrentConnectionIDs",
+	 "ProtocolInfo",              "ConnectionStatus",          "AVTransportID",
 	 "RcsID",                     "ConnectionID",              "ConnectionManager",
-	 "Direction",                 "SourceProtocolInfo",        "SinkProtocolInfo",            
-	 "CurrentConnectionIDs"},
+	 "Direction",                 NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,	 
+ 	 NULL,                        NULL,                         NULL,
+ 	 NULL,                        NULL,                         NULL,	 
+	 NULL,                        NULL},
 
-	{"Volume",   "Mute",        "PresetNameList",     "VolumeDB"},
+	{"Volume",           "PresetNameList",               "VolumeDB",
+	 "Mute",                      NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,	 
+	 NULL,                        NULL,                         NULL,
+	 NULL,                        NULL,                         NULL,	 
+	 NULL,                        NULL},
     };
 char DuVarCount[DU_SERVICE_SERVCOUNT] = {
 	DU_TRANSPORT_VARCOUNT, DU_MANAGER_VARCOUNT, DU_RENDER_VARCOUNT};
@@ -1068,7 +1088,7 @@ int DuGetValueByVarName(char *UDN, IXML_Element *property, const char *VarName, 
         return -2;
     }
     variable = (IXML_Element *)ixmlNodeList_item(variables, 0);
-    tmpstate = SampleUtil_GetElementValue(variable);
+    tmpstate = SampleUtil_GetAttrValue(variable);
     if (tmpstate) {
         strcpy(State, tmpstate);
         SampleUtilPrint("Variable %d:%s Value:'%s'\n", length1, VarName, State);
@@ -1083,40 +1103,90 @@ int DuGetValueByVarName(char *UDN, IXML_Element *property, const char *VarName, 
     return 0;
 }
 
-void TvStateUpdate(
-	char *UDN, int Service, IXML_Document *ChangedVariables, char **State)
+void TvStateUpdateProperty(char *UDN, int Service, IXML_Element *property, char **State)
 {
-	IXML_NodeList *properties;
-	IXML_Element *property;
-	long unsigned int length;
-	long unsigned int i;
 	int j;
     int SrvNameCnt = DU_SERVICE_SERVCOUNT;
     char *SrvName[DU_SERVICE_SERVCOUNT];
 	char *VarName[DU_SERVICE_SERVCOUNT][DU_MAXVARS] = { 0 };
     char *VarCount = NULL;
- 
+
     GetServiceVar(UDN, SrvName, &SrvNameCnt, &VarCount, VarName);
+    char *devType = GetDeviceType(UDN);
+
+    /* For each variable name in the state table,
+     * check if this is a corresponding property change */
+    for (j = 0; j < VarCount[Service]; j++) {
+        if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0) {
+            DuGetValueByVarName(UDN, property, VarName[Service][j], State[j]);
+        } else {
+            TvGetValueByVarName(UDN, property, VarName[Service][j], State[j]);
+        }
+    }
+    return ;
+}
+
+IXML_NodeList *TvStateUpdateGetProperty(IXML_NodeList *propertys)
+{
+	IXML_NodeList *ps = NULL;
+    IXML_NodeList *props = NULL;
+	IXML_Element *LastChange = NULL;
+	if (propertys != NULL) {
+		int len = ixmlNodeList_length(propertys);
+		LastChange = ixmlNode_getFirstChild(ixmlNodeList_item(propertys, 0));
+	}
+
+    if (LastChange != NULL && strncmp(LastChange->n.nodeName, "LastChange", strlen("LastChange")) == 0){
+        IXML_Element *Event = ixmlNode_getFirstChild(LastChange);
+#if 1
+		char *xmlbuff = ixmlPrintDocument(Event);
+        if (xmlbuff) {
+            SampleUtil_Print(xmlbuff);
+            free(xmlbuff);
+        }
+#endif
+        // IXML_Element *InstanceID = ixmlNode_getFirstChild(Event);
+        IXML_Document *doc = ixmlParseBuffer(ixmlNode_getNodeValue(Event));
+		ps = ixmlDocument_getElementsByTagName(doc, "InstanceID");
+        IXML_Element *EventNew = ixmlNode_getFirstChild(&doc->n);
+        IXML_Element *InstanceID = ixmlNode_getFirstChild(EventNew);
+        props = ixmlNode_getChildNodes(InstanceID);
+        ixmlNodeList_free(ps);
+    }
+    return props;
+}
+
+void TvStateUpdate(char *UDN, int Service, IXML_Document *ChangedVariables, char **State)
+{
+	IXML_NodeList *properties;
+    IXML_NodeList *props;
+	IXML_Element *property;
+	long unsigned int length;
+	long unsigned int i;
+
 	SampleUtilPrint("Tv State Update (service %d):\n", Service);
 	/* Find all of the e:property tags in the document */
 	properties = ixmlDocument_getElementsByTagName(ChangedVariables, "e:property");
 	if (properties == NULL) {
         return;
     }
-    char *devType = GetDeviceType(UDN);
+#if 1
+	char *xmlbuff = ixmlPrintDocument(ChangedVariables);
+	if (xmlbuff) {
+		SampleUtil_Print(xmlbuff);
+		free(xmlbuff);
+	}
+#endif
+    props = TvStateUpdateGetProperty(properties);
+    if (props != NULL) {
+        ixmlNodeList_free(properties);
+        properties = props;
+    }
 	length = ixmlNodeList_length(properties);
 	for (i = 0; i < length; i++) {
 		/* Loop through each property change found */
 		property = (IXML_Element *)ixmlNodeList_item(properties, i);
-		/* For each variable name in the state table,
-		 * check if this is a corresponding property change */
-		for (j = 0; j < VarCount[Service]; j++) {
-            if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0) {
-                DuGetValueByVarName(UDN, property, VarName[Service][j], State[j]);
-            } else {
-                TvGetValueByVarName(UDN, property, VarName[Service][j], State[j]);
-            }
-		}
+		TvStateUpdateProperty(UDN, Service, property, State);
 	}
 	ixmlNodeList_free(properties);
 

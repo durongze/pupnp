@@ -1475,7 +1475,7 @@ int device_main(int argc, char *argv[])
 	}
 	port = (unsigned short)portTemp;
 	return TvDeviceStart(
-		if_name, port, desc_doc_name, web_dir_path, linux_print, 0);
+		"share", port, desc_doc_name, web_dir_path, linux_print, 0);
 }
 
 /*! @} Device Sample Module */

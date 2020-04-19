@@ -91,6 +91,10 @@ char *SampleUtil_GetElementValue(
 	/*! [in] The DOM node from which to extract the value. */
 	IXML_Element *element);
 
+char *SampleUtil_GetAttrValue(
+	/*! [in] The DOM node from which to extract the value. */
+	IXML_Element *element);
+
 /*!
  * \brief Given a DOM node representing a UPnP Device Description Document,
  * this routine parses the document and finds the first service list

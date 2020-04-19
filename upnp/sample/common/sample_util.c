@@ -112,6 +112,14 @@ char *SampleUtil_GetElementValue(IXML_Element *element)
 	return temp;
 }
 
+char *SampleUtil_GetAttrValue(IXML_Element *element)
+{
+	if (element == NULL) return NULL;
+	IXML_NamedNodeMap *attr = ixmlNode_getAttributes(element);
+	if (attr == NULL) return NULL;
+	return strdup(ixmlNode_getNodeValue(attr->nodeItem));
+}
+
 IXML_NodeList *SampleUtil_GetFirstServiceList(IXML_Document *doc)
 {
 	IXML_NodeList *ServiceList = NULL;
