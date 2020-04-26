@@ -115,7 +115,7 @@ int		TvCtrlPointGetBrightness(int);
 int		TvCtrlPointGetDevice(int, struct TvDeviceNode **);
 int		TvCtrlPointPrintList(void);
 int		TvCtrlPointPrintDevice(int);
-void	TvCtrlPointAddDevice(IXML_Document *, const char *, int); 
+int  	TvCtrlPointAddDevice(IXML_Document *, const char *, int); 
 void    TvCtrlPointHandleGetVar(const char *, const char *, const DOMString);
 
 /*!

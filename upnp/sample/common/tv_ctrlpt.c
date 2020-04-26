@@ -942,7 +942,7 @@ int DeviceIsExist(const char *UDN, int expires)
  *   expires -- The expiration time for this advertisement
  *
  ********************************************************************************/
-void TvCtrlPointAddDevice(
+int TvCtrlPointAddDevice(
 	IXML_Document *DescDoc, const char *location, int expires)
 {
 	struct TvDeviceNode *deviceNode = NULL;
@@ -989,7 +989,7 @@ void TvCtrlPointAddDevice(
 		free(deviceType);
 	if (UDN)
 		free(UDN);
-    return UPNP_E_SUCCESS;
+    return ret;
 }
 
 char *GetDeviceType(char *UDN)
@@ -1117,7 +1117,8 @@ void TvStateUpdateProperty(char *UDN, int Service, IXML_Element *property, char 
     /* For each variable name in the state table,
      * check if this is a corresponding property change */
     for (j = 0; j < VarCount[Service]; j++) {
-        if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0) {
+        if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0 &&
+            Service != 1) {
             DuGetValueByVarName(UDN, property, VarName[Service][j], State[j]);
         } else {
             TvGetValueByVarName(UDN, property, VarName[Service][j], State[j]);
@@ -1330,12 +1331,14 @@ void TvCtrlPointHandleDiscovery(const void *Event)
     if (errCode != UPNP_E_SUCCESS) {
         SampleUtilPrintf(UPNP_ERROR, "UpnpDownloadXmlDoc from %s, error:%d\n", location, errCode);
     } else {
-        TvCtrlPointAddDevice(DescDoc, location, UpnpDiscovery_get_Expires(d_event));
+        int ret = TvCtrlPointAddDevice(DescDoc, location, UpnpDiscovery_get_Expires(d_event));
+        if (ret == UPNP_E_SUCCESS) {
+            TvCtrlPointPrintList();
+        }
     }
     if (DescDoc) {
         ixmlDocument_free(DescDoc);
     }
-    TvCtrlPointPrintList();
     return ;
 }
 
@@ -1729,13 +1732,13 @@ void *TvCtrlPointCommandLoop(void *args)
 	char cmdline[100];
 	char *s;
 	(void)args;
-
+	SampleUtil_Print("\n>> ");
 	while (1) {
-		SampleUtil_Print("\n>> ");
 		s = fgets(cmdline, 100, stdin);
 		if (!s)
 			break;
 		TvCtrlPointProcessCommand(cmdline);
+		SampleUtil_Print("\n>> ");
 	}
 
 	return NULL;
