@@ -571,10 +571,8 @@ SoapSendAction( char *action_url,
     }
 
     SoapPrintf( UPNP_INFO, "path:%.*s, hostport:%.*s\n",
-        (int)url.pathquery.size,
-        url.pathquery.buff,
-        (int)url.hostport.text.size,
-        url.hostport.text.buff );
+        (int)url.pathquery.size, url.pathquery.buff,
+        (int)url.hostport.text.size, url.hostport.text.buff);
 
     xml_start_len = strlen( xml_start );
     xml_end_len = strlen( xml_end );
@@ -583,16 +581,11 @@ SoapSendAction( char *action_url,
     /* make request msg */
     request.size_inc = 50;
     content_length = (off_t)(xml_start_len + action_str_len + xml_end_len);
-    if (http_MakeMessage(
-       	&request, 1, 1,
-        "q" "N" "s" "sssbsc" "Uc" "b" "b" "b",
-        SOAPMETHOD_POST, &url, 
-        content_length,
-        ContentTypeHeader,
+    int ret = http_MakeMessage(&request, 1, 1, "q" "N" "s" "sssbsc" "Uc" "b" "b" "b",
+        SOAPMETHOD_POST, &url, content_length, ContentTypeHeader,
         "SOAPACTION: \"", service_type, "#", name.buf, name.length, "\"",
-        xml_start, xml_start_len,
-        action_str, action_str_len,
-        xml_end, xml_end_len ) != 0 ) {
+        xml_start, xml_start_len, action_str, action_str_len, xml_end, xml_end_len );
+    if (ret != 0) {
         goto error_handler;
     }
 
@@ -609,13 +602,11 @@ SoapSendAction( char *action_url,
     }
     /* get action node from the response */
     ret_code = get_response_value( &response.msg, SOAP_ACTION_RESP,
-                                   responsename.buf, &upnp_error_code,
-                                   ( IXML_Node ** ) response_node,
-                                   &upnp_error_str );
-
-    if( ret_code == SOAP_ACTION_RESP ) {
+        responsename.buf, &upnp_error_code, (IXML_Node **)response_node,
+        &upnp_error_str);
+    if(ret_code == SOAP_ACTION_RESP) {
         err_code = UPNP_E_SUCCESS;
-    } else if( ret_code == SOAP_ACTION_RESP_ERROR ) {
+    } else if(ret_code == SOAP_ACTION_RESP_ERROR) {
         err_code = upnp_error_code;
     } else {
         err_code = ret_code;
@@ -724,10 +715,8 @@ int SoapSendActionEx(
     }
 
     SoapPrintf(UPNP_INFO, "path=%.*s, hostport=%.*s\n",
-        (int)url.pathquery.size,
-        url.pathquery.buff,
-        (int)url.hostport.text.size,
-        url.hostport.text.buff );
+        (int)url.pathquery.size, url.pathquery.buff,
+        (int)url.hostport.text.size, url.hostport.text.buff );
 
     xml_start_len = strlen( xml_start );
     xml_body_start_len = strlen( xml_body_start );
@@ -743,19 +732,12 @@ int SoapSendActionEx(
     content_length = (off_t)(xml_start_len + xml_header_start_len +
 	xml_header_str_len + xml_header_end_len +
         xml_body_start_len + action_str_len + xml_end_len);
-    if (http_MakeMessage(
-        &request, 1, 1,
-        "q" "N" "s" "sssbsc" "Uc" "b" "b" "b" "b" "b" "b" "b",
-        SOAPMETHOD_POST, &url,
-        content_length,
-        ContentTypeHeader,
+    if (http_MakeMessage(&request, 1, 1, "q""N""s""sssbsc""Uc""b""b""b""b""b""b""b",
+        SOAPMETHOD_POST, &url, content_length, ContentTypeHeader,
         "SOAPACTION: \"", service_type, "#", name.buf, name.length, "\"",
-        xml_start, xml_start_len,
-        xml_header_start, xml_header_start_len,
-        xml_header_str, xml_header_str_len,
-        xml_header_end, xml_header_end_len,
-        xml_body_start, xml_body_start_len,
-        action_str, action_str_len,
+        xml_start, xml_start_len, xml_header_start, xml_header_start_len,
+        xml_header_str, xml_header_str_len, xml_header_end, xml_header_end_len,
+        xml_body_start, xml_body_start_len, action_str, action_str_len,
         xml_end, xml_end_len ) != 0 ) {
         goto error_handler;
     }
@@ -773,10 +755,8 @@ int SoapSendActionEx(
     }
     /* get action node from the response */
     ret_code = get_response_value( &response.msg, SOAP_ACTION_RESP,
-                                   responsename.buf, &upnp_error_code,
-                                   ( IXML_Node ** ) response_node,
+        responsename.buf, &upnp_error_code, (IXML_Node **)response_node,
                                    &upnp_error_str );
-
     if( ret_code == SOAP_ACTION_RESP ) {
         err_code = UPNP_E_SUCCESS;
     } else if( ret_code == SOAP_ACTION_RESP_ERROR ) {
@@ -850,15 +830,11 @@ SoapGetServiceVarStatus( char *action_url,
     request.size_inc = 50;
     content_length = (off_t)(strlen(xml_start) + strlen(var_name) +
 	strlen(xml_end));
-    if (http_MakeMessage(
-	&request, 1, 1,
-	"Q" "sbc" "N" "s" "sc" "Ucc" "sss",
-	SOAPMETHOD_POST, path.buf, path.length,
-	"HOST: ", host.buf, host.length,
-	content_length,
-	ContentTypeHeader,
-	"SOAPACTION: \"urn:schemas-upnp-org:control-1-0#QueryStateVariable\"",
-	xml_start, var_name, xml_end ) != 0 ) {
+    if (http_MakeMessage(&request, 1, 1, "Q""sbc""N""s""sc""Ucc""sss",
+    	SOAPMETHOD_POST, path.buf, path.length,
+    	"HOST: ", host.buf, host.length, content_length, ContentTypeHeader,
+    	"SOAPACTION: \"urn:schemas-upnp-org:control-1-0#QueryStateVariable\"",
+    	xml_start, var_name, xml_end ) != 0 ) {
         return UPNP_E_OUTOF_MEMORY;
     }
     /* send msg and get reply */

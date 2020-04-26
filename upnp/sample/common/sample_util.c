@@ -222,8 +222,9 @@ char *SampleUtil_GetFirstDocumentItem(IXML_Document *doc, const char *item)
 				SampleUtilPrintf(UPNP_ERROR, "alloc memory for nodeValue\n");
 				ret = strdup("");
 			}
-		} else
+		} else {
 			SampleUtilPrintf(UPNP_INFO, "nodeList is NULL\n");
+        }
 	} else {
 		SampleUtilPrintf(UPNP_ERROR, "finding %s in XML Node\n", item);
     }
