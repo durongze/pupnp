@@ -387,34 +387,38 @@ int TvCtrlPointSendAction(int service,
 	IXML_Document *actionNode = NULL;
 	int rc = TV_SUCCESS;
 	int param;
-
+    int SrvTypeCnt = DU_SERVICE_SERVCOUNT;
+    char *SrvType[DU_SERVICE_SERVCOUNT];
+    
 	ithread_mutex_lock(&DeviceListMutex);
 
 	rc = TvCtrlPointGetDevice(devnum, &devnode);
 	if (TV_SUCCESS == rc) {
-		if (0 == param_count) {
-			actionNode = UpnpMakeAction(
-				actionname, TvServiceType[service], 0, NULL);
-		} else {
-			for (param = 0; param < param_count; param++) {
-				int ret = UpnpAddToAction(&actionNode, actionname,
-					TvServiceType[service], param_name[param], param_val[param]);
-				if (ret != UPNP_E_SUCCESS) {
-					SampleUtilPrint("ERROR: UpnpAddToAction:%d\n", ret);
-					/*return -1; // TBD - BAD! leaves mutex
-					 * locked */
-				}
-			}
-		}
+        GetServiceTypeByDev(devnode->device.UDN, SrvType, &SrvTypeCnt);
+        if (SrvType != NULL && service < SrvTypeCnt) {
+    		if (0 == param_count) {
+    			actionNode = UpnpMakeAction(
+    				actionname, SrvType[service], 0, NULL);
+    		} else {
+    			for (param = 0; param < param_count; param++) {
+    				int ret = UpnpAddToAction(&actionNode, actionname,
+    					SrvType[service], param_name[param], param_val[param]);
+    				if (ret != UPNP_E_SUCCESS) {
+    					SampleUtilPrint("ERROR: UpnpAddToAction:%d\n", ret);
+    				}
+    			}
+    		}
 
-		rc = UpnpSendActionAsync(ctrlpt_handle,
-			devnode->device.TvService[service].ControlURL,
-			TvServiceType[service],	NULL,
-			actionNode,	TvCtrlPointCallbackEventHandler, NULL);
-		if (rc != UPNP_E_SUCCESS) {
-			SampleUtilPrint("Error in UpnpSendActionAsync -- %d\n", rc);
-			rc = TV_ERROR;
-		}
+    		rc = UpnpSendActionAsync(ctrlpt_handle, devnode->device.TvService[service].ControlURL,
+    			SrvType[service], NULL,	actionNode,	TvCtrlPointCallbackEventHandler, NULL);
+            SampleUtilPrint("ctrl:%s\n SrvType:%s\n Action:%s\n",
+                devnode->device.TvService[service].ControlURL,
+    			SrvType[service], actionname);
+    		if (rc != UPNP_E_SUCCESS) {
+    			SampleUtilPrint("Error in UpnpSendActionAsync -- %d\n", rc);
+    			rc = TV_ERROR;
+    		}
+        }
 	}
 
 	ithread_mutex_unlock(&DeviceListMutex);
@@ -517,6 +521,17 @@ int TvCtrlPointSendSetBrightness(int devnum, int brightness)
 		SET_BRIGHTNESS,
 		PIC_BRIGHTNESS,
 		brightness);
+}
+
+int TvCtrlPointSendPlay(int devnum, int brightness)
+{
+    char *paramName[2] = {"InstanceID", "Speed"};
+	char *paramVal[2] = {"0", "1"};
+
+	return TvCtrlPointSendAction(
+		0, devnum, Play, paramName, paramVal, 2);
+
+    return 0;
 }
 
 /********************************************************************************
@@ -1007,6 +1022,19 @@ char *GetDeviceType(char *UDN)
 		tmpdevnode = tmpdevnode->next;
 	}
     return devType;
+}
+
+int GetServiceTypeByDev(char *dev, char*SrvType[], int *SrvTypeNum)
+{
+    char *devType = GetDeviceType(dev);
+    if (devType && strncmp(DuDeviceType, devType, strlen(devType)) == 0) {
+        memcpy(SrvType, DuServiceType, sizeof(char*) * (*SrvTypeNum));
+        *SrvTypeNum = DU_SERVICE_SERVCOUNT;
+    } else {
+        memcpy(SrvType, TvServiceType, sizeof(char*) * (*SrvTypeNum));
+        *SrvTypeNum = TV_SERVICE_SERVCOUNT;
+    }
+    return 0;
 }
 
 int GetServiceVarByDevType(char *devType, char*SrvName[], int *SrvNameNum,
@@ -1725,6 +1753,7 @@ static cmdloop cpCmdList[] = {
 	{"PictAction", PICTACTION, 2, "<devnum> <action (string)>"},
 	{"CtrlGetVar", CTRLGETVAR, 2, "<devnum> <varname (string)>"},
 	{"PictGetVar", PICTGETVAR, 2, "<devnum> <varname (string)>"},
+	{"Play", PLAY, 3, "<devnum> <varname (string)>"},
 	{"Exit", EXITCMD, 1, ""}};
 
 void *TvCtrlPointCommandLoop(void *args)
@@ -1857,6 +1886,9 @@ int TvCtrlPointProcessCommand(char *cmdline)
 	case REFRESH:
 		TvCtrlPointRefresh();
 		break;
+	case PLAY:
+		TvCtrlPointSendPlay(arg1, arg2);
+		break;        
 	case EXITCMD:
 		rc = TvCtrlPointStop();
 		exit(rc);

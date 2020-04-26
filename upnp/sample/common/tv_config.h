@@ -150,6 +150,8 @@ enum cmdloop_tvcmds
 	PRTDEV,
 	LSTDEV,
 	REFRESH,
+
+    PLAY,
 	EXITCMD
 };
 
