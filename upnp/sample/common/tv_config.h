@@ -152,6 +152,9 @@ enum cmdloop_tvcmds
 	REFRESH,
 
     PLAY,
+    SET_AV_TRANSPORT_URI,
+    GET_POS,
+    GET_TRANSPORT_INFO,
 	EXITCMD
 };
 

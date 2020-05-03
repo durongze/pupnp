@@ -534,6 +534,60 @@ int TvCtrlPointSendPlay(int devnum, int brightness)
     return 0;
 }
 
+#define ccvt1 "http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8"
+#define ccvt3 "http://ivi.bupt.edu.cn/hls/cctv3hd.m3u8"
+#define ccvt5 "http://ivi.bupt.edu.cn/hls/cctv5hd.m3u8"
+#define ccvt6 "http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8"
+#define locavi "http://192.168.137.1:53467/temp4.mp4"
+
+#define vvv "&lt;DIDL-Lite "\
+"xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\" "\
+"xmlns:dc=\"http://purl.org/dc/elements/1.1/\" "\
+"xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\"&gt;"\
+"&lt;item id=\"temp4\" parentID=\"-1\" restricted=\"1\"&gt;"\
+    "&lt;upnp:storageMedium&gt;UNKNOWN&lt;/upnp:storageMedium&gt;"\
+    "&lt;upnp:writeStatus&gt;UNKNOWN&lt;/upnp:writeStatus&gt;"\
+    "&lt;dc:title&gt;temp4.mp4&lt;/dc:title&gt;"\
+    "&lt;upnp:class&gt;object.item.videoItem.movie&lt;/upnp:class&gt;"\
+    "&lt;res size=\"153475138\" protocolInfo=\"http-get:*:video/mp4:*\"&gt;"\
+        "http://192.168.137.1:53467/temp4.mp4"\
+    "&lt;/res&gt;"\
+"&lt;/item&gt;"\
+"&lt;/DIDL-Lite&gt;"
+
+int TvCtrlPointSendSetAVTransportURI(int devnum, int brightness)
+{
+    char *paramName[3] = {"InstanceID", "CurrentURI", "CurrentURIMetaData"};
+	char *paramVal[3] = {"0", locavi, vvv};
+
+	return TvCtrlPointSendAction(
+		0, devnum, SetAVTransportURI, paramName, paramVal, 3);
+
+    return 0;
+}
+
+int TvCtrlPointSendGetPositionInfo(int devnum, int brightness)
+{
+    char *paramName[1] = {"InstanceID"};
+	char *paramVal[1] = {"0"};
+
+	return TvCtrlPointSendAction(
+		0, devnum, GetPositionInfo, paramName, paramVal, 1);
+
+    return 0;
+}
+
+int TvCtrlPointSendGetTransportInfo(int devnum, int brightness)
+{
+    char *paramName[1] = {"InstanceID"};
+	char *paramVal[1] = {"0"};
+
+	return TvCtrlPointSendAction(
+		0, devnum, GetTransportInfo, paramName, paramVal, 1);
+
+    return 0;
+}
+
 /********************************************************************************
  * TvCtrlPointGetDevice
  *
@@ -1754,6 +1808,9 @@ static cmdloop cpCmdList[] = {
 	{"CtrlGetVar", CTRLGETVAR, 2, "<devnum> <varname (string)>"},
 	{"PictGetVar", PICTGETVAR, 2, "<devnum> <varname (string)>"},
 	{"Play", PLAY, 3, "<devnum> <varname (string)>"},
+	{"SetAV", SET_AV_TRANSPORT_URI, 3, "<devnum> <varname (string)>"},	
+	{"GetPos", GET_POS, 3, "<devnum> <varname (string)>"},		
+	{"GetTransInfo", GET_TRANSPORT_INFO, 3, "<devnum> <varname (string)>"},			
 	{"Exit", EXITCMD, 1, ""}};
 
 void *TvCtrlPointCommandLoop(void *args)
@@ -1888,7 +1945,16 @@ int TvCtrlPointProcessCommand(char *cmdline)
 		break;
 	case PLAY:
 		TvCtrlPointSendPlay(arg1, arg2);
-		break;        
+		break;     
+    case SET_AV_TRANSPORT_URI:
+        TvCtrlPointSendSetAVTransportURI(arg1, arg2);
+        break;
+    case GET_POS:
+        TvCtrlPointSendGetPositionInfo(arg1, arg2);
+        break;
+    case GET_TRANSPORT_INFO:
+        TvCtrlPointSendGetTransportInfo(arg1, arg2);
+        break;        
 	case EXITCMD:
 		rc = TvCtrlPointStop();
 		exit(rc);
