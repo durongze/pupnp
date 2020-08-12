@@ -151,7 +151,7 @@ include_directories(ctrlpt ${PTHREAD_WIN32_INC_DIR} ${IXML_INC_DIR} ${UPNP_INC_D
  ${UPNP_SRC_DIR}/inc ${IXML_SRC_DIR}/inc ${UPNP_SAMPLE_COMM_DIR} ${PTHREAD_WIN32_SRC_DIR} ${OPENSSL_INC_DIR})
 link_directories(ctrlpt ${PROJECT_SOURCE_DIR}/upnp/lib ${PTHREAD_WIN32_LIB_DIR} ${UPNP_SAMPLE_COMM_DIR} ${OPENSSL_LIB_DIR})
 add_executable(ctrlpt ${IXML_SRCS} ${UPNP_ALL_SRCS} ${UPNP_CTRLPT_MAIN_SRCS})
-target_link_libraries(ctrlpt pthreadVC2 ws2_32 iphlpapi kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
+target_link_libraries(ctrlpt libcrypto libssl pthreadVC2 ws2_32 iphlpapi kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
 
 include_directories(device ${PTHREAD_WIN32_INC_DIR} ${IXML_INC_DIR} ${UPNP_INC_DIR} ${UPNP_API_INC_DIR} ${UPNP_GENA_INC_DIR}
  ${UPNP_GENLIB_INC_DIR} ${UPNP_CLI_TAB_INC_DIR} ${UPNP_SVR_INC_DIR} ${UPNP_NET_INC_DIR} ${UPNP_SVR_TAB_INC_DIR} ${UPNP_UTIL_INC_DIR}
@@ -159,7 +159,9 @@ include_directories(device ${PTHREAD_WIN32_INC_DIR} ${IXML_INC_DIR} ${UPNP_INC_D
  ${UPNP_SRC_DIR}/inc ${IXML_SRC_DIR}/inc ${UPNP_SAMPLE_COMM_DIR} ${PTHREAD_WIN32_SRC_DIR} ${OPENSSL_INC_DIR})
 link_directories(device ${PROJECT_SOURCE_DIR}/upnp/lib ${PTHREAD_WIN32_LIB_DIR} ${UPNP_SAMPLE_COMM_DIR} ${OPENSSL_LIB_DIR})
 add_executable(device ${IXML_SRCS} ${UPNP_ALL_SRCS} ${UPNP_DEVICE_MAIN_SRCS})
-target_link_libraries(device pthreadVC2 ws2_32 iphlpapi kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
+target_link_libraries(device libcrypto libssl pthreadVC2 ws2_32 iphlpapi kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
+set(CMAKE_DEVICE_FLAGS "${CMAKE_CXX_FLAGS} -DUPNP_API")
+set_target_properties(device PROPERTIES COMPILE_FLAGS ${CMAKE_DEVICE_FLAGS})
 
 include_directories(combo ${PTHREAD_WIN32_INC_DIR} ${IXML_INC_DIR} ${UPNP_INC_DIR} ${UPNP_API_INC_DIR} ${UPNP_GENA_INC_DIR}
  ${UPNP_GENLIB_INC_DIR} ${UPNP_CLI_TAB_INC_DIR} ${UPNP_SVR_INC_DIR} ${UPNP_NET_INC_DIR} ${UPNP_SVR_TAB_INC_DIR} ${UPNP_UTIL_INC_DIR}
@@ -167,4 +169,6 @@ include_directories(combo ${PTHREAD_WIN32_INC_DIR} ${IXML_INC_DIR} ${UPNP_INC_DI
  ${UPNP_SRC_DIR}/inc ${IXML_SRC_DIR}/inc ${UPNP_SAMPLE_COMM_DIR} ${PTHREAD_WIN32_SRC_DIR} ${OPENSSL_INC_DIR})
 link_directories(combo ${PROJECT_SOURCE_DIR}/upnp/lib ${PTHREAD_WIN32_LIB_DIR} ${UPNP_SAMPLE_COMM_DIR} ${OPENSSL_LIB_DIR})
 add_executable(combo ${IXML_SRCS} ${UPNP_ALL_SRCS} ${UPNP_COMBO_MAIN_SRCS})
-target_link_libraries(combo pthreadVC2 ws2_32 iphlpapi kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
+target_link_libraries(combo libcrypto libssl pthreadVC2 ws2_32 iphlpapi kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
+set(CMAKE_COMBO_FLAGS "${CMAKE_CXX_FLAGS} -DUPNP_API")
+set_target_properties(combo PROPERTIES COMPILE_FLAGS ${CMAKE_COMBO_FLAGS})
